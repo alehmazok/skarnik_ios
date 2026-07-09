@@ -99,4 +99,5 @@ GoogleService-Info.plist
 
 # Claude
 CLAUDE.md
+.claude/settings.local.json
 
