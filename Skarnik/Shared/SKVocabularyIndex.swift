@@ -68,6 +68,11 @@ struct SKWord: Codable {
     let word: String
     var lword: String?
     let lang_id: ESKVocabularyType
+
+    /// `word_id` is only unique within a single `lang_id` table, not globally —
+    /// use this for SwiftUI `List`/`ForEach` identity to avoid collisions between
+    /// e.g. a rus_bel and a bel_definition entry that happen to share a word_id.
+    var uniqueId: String { "\(lang_id.rawValue)_\(word_id)" }
 }
 
 class SKVocabularyIndex {
