@@ -101,3 +101,6 @@ GoogleService-Info.plist
 CLAUDE.md
 .claude/settings.local.json
 
+# DB backups
+*.db.bak
+
