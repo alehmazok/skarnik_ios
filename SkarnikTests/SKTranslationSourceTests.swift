@@ -79,6 +79,28 @@ final class SKSkarnikByControllerTests: XCTestCase {
         XCTAssertEqual(translation.belWords, [])
     }
 
+    func testSKSkarnikTranslation_belWords_bel_rus_includesColorMarkedSynonyms() {
+        // Regression: bel_rus translations list additional Belarusian synonyms in the same
+        // #831b03 markup rus_bel entries use (e.g. "прыкметны" -> "яркі, яскравы, прыметны, ...").
+        // These must be surfaced as stress candidates alongside the headword, not dropped.
+        let word = SKWord(word_id: 1, word: "мова", lang_id: .bel_rus)
+        let html = "<font color=\"831b03\">мова</font>"
+        let translation = SKSkarnikTranslation(word: word, url: "http://example.com", html: html)
+
+        // "мова" itself is the headword; the color-marked span here is a no-op duplicate,
+        // but proves the bel_rus branch now scans html instead of ignoring it entirely.
+        XCTAssertEqual(translation.belWords, ["мова"])
+    }
+
+    func testSKSkarnikTranslation_belWords_bel_rus_htmlIgnoredWhenNoColorMarkup() {
+        // No #831b03 markup present -> only the headword is returned, same as before the fix.
+        let word = SKWord(word_id: 1, word: "беларускае", lang_id: .bel_rus)
+        let html = "<span class=\"nrt\">plain</span>"
+        let translation = SKSkarnikTranslation(word: word, url: "http://example.com", html: html)
+
+        XCTAssertEqual(translation.belWords, ["беларускае"])
+    }
+
     // MARK: - belWords rus_bel font color format tests
 
     func testBelWords_rusBel_allColorFormatsProduceSameResult() {
