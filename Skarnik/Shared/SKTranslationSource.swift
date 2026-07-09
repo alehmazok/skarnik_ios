@@ -201,6 +201,14 @@ enum SKSkarnikError: Error {
     case networkError
 }
 
+private extension String {
+    /// Extracts trailing numeric id from a redirect path like "/tsbm/3528".
+    var trailingWordId: Int64? {
+        guard let lastComponent = self.split(separator: "/").last else { return nil }
+        return Int64(lastComponent)
+    }
+}
+
 // MARK: - Protocol
 
 protocol SKTranslationSource {
@@ -275,7 +283,7 @@ struct SKApiTranslationSource: SKTranslationSource {
 
     private struct APIResponse: Decodable {
         let translation: String?
-        let redirect_to: Int64?
+        let redirect_to: String?
         let stress: String?
     }
 
@@ -298,7 +306,11 @@ struct SKApiTranslationSource: SKTranslationSource {
 
         let response = try JSONDecoder().decode(APIResponse.self, from: data)
 
-        if let redirectId = response.redirect_to {
+        if let redirectPath = response.redirect_to {
+            guard let redirectId = redirectPath.trailingWordId else {
+                skLog("[API] Unparseable redirect path: \(redirectPath)", type: .error)
+                return nil
+            }
             skLog("[API] Redirect — retrying with word id: \(redirectId)")
             guard let nextWord = SKVocabularyIndex.shared.word(id: redirectId, vocabularyType: word.lang_id) else {
                 return nil
@@ -328,7 +340,7 @@ struct SKSupabaseTranslationSource: SKTranslationSource {
 
     private struct SupabaseResponse: Decodable {
         let translation: String?
-        let redirect_to: Int64?
+        let redirect_to: String?
         let stress: String?
     }
 
@@ -354,7 +366,11 @@ struct SKSupabaseTranslationSource: SKTranslationSource {
             return nil
         }
 
-        if let redirectId = response.redirect_to {
+        if let redirectPath = response.redirect_to {
+            guard let redirectId = redirectPath.trailingWordId else {
+                skLog("[Supabase] Unparseable redirect path: \(redirectPath)", type: .error)
+                return nil
+            }
             skLog("[Supabase] Redirect — retrying with word id: \(redirectId)")
             guard let nextWord = SKVocabularyIndex.shared.word(id: redirectId, vocabularyType: word.lang_id) else {
                 return nil
