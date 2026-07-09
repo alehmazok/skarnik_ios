@@ -12,9 +12,9 @@ final class SKStarnikByControllerTests: XCTestCase {
         let json = """
         {
             "word_list": [
-                {"lemma": "муха", "id": 1, "table_name": "Nouns", "meaning": ""},
-                {"lemma": "мухалоўка", "id": 2, "table_name": "Nouns", "meaning": ""},
-                {"lemma": "мухавецкі", "id": 3, "table_name": "Adjectives", "meaning": ""}
+                {"lemma": "муха", "word": "му́ха", "id": 1, "table_name": "Nouns", "meaning": ""},
+                {"lemma": "мухалоўка", "word": "мухало́ўка", "id": 2, "table_name": "Nouns", "meaning": ""},
+                {"lemma": "мухавецкі", "word": "мухаве́цкі", "id": 3, "table_name": "Adjectives", "meaning": ""}
             ],
             "form_list": []
         }
@@ -29,7 +29,7 @@ final class SKStarnikByControllerTests: XCTestCase {
     func testSpellingWordSuggestions_isCaseInsensitive() {
         let json = """
         {
-            "word_list": [{"lemma": "Муха", "id": 1, "table_name": "Nouns", "meaning": ""}],
+            "word_list": [{"lemma": "Муха", "word": "му́ха", "id": 1, "table_name": "Nouns", "meaning": ""}],
             "form_list": []
         }
         """
@@ -46,9 +46,9 @@ final class SKStarnikByControllerTests: XCTestCase {
         let json = """
         {
             "word_list": [
-                {"lemma": "а", "id": 1, "table_name": "Nouns", "meaning": ""},
-                {"lemma": "а", "id": 234065, "table_name": "Conjunctions", "meaning": ""},
-                {"lemma": "а", "id": 250353, "table_name": "Prepositions", "meaning": ""}
+                {"lemma": "а", "word": "а́", "id": 1, "table_name": "Nouns", "meaning": ""},
+                {"lemma": "а", "word": "а́", "id": 234065, "table_name": "Conjunctions", "meaning": ""},
+                {"lemma": "а", "word": "а́", "id": 250353, "table_name": "Prepositions", "meaning": ""}
             ],
             "form_list": []
         }
@@ -63,7 +63,7 @@ final class SKStarnikByControllerTests: XCTestCase {
     func testSpellingWordSuggestions_fallsBackToFullListWhenNoExactMatch() {
         let json = """
         {
-            "word_list": [{"lemma": "мухалоўка", "id": 2, "table_name": "Nouns", "meaning": ""}],
+            "word_list": [{"lemma": "мухалоўка", "word": "мухало́ўка", "id": 2, "table_name": "Nouns", "meaning": ""}],
             "form_list": []
         }
         """
@@ -72,6 +72,27 @@ final class SKStarnikByControllerTests: XCTestCase {
         let words = SKStarnikByController.spellingWordSuggestions(data: data, matching: "муха")
 
         XCTAssertEqual(words?.map { $0.wordIdStr }, ["2"])
+    }
+
+    func testSpellingWordSuggestions_usesStressedWordNotRawLemmaForDisplay() {
+        // Regression: homonyms share a lemma but differ in stress placement (e.g. "муха"
+        // could stress the first or second syllable depending on sense). Using the raw
+        // lemma for `word` makes such candidates look identical in the picker; the API's
+        // stressed `word` field must be surfaced instead.
+        let json = """
+        {
+            "word_list": [
+                {"lemma": "казак", "word": "каза́к", "id": 1, "table_name": "Nouns", "meaning": ""},
+                {"lemma": "казак", "word": "ко́зак", "id": 2, "table_name": "Nouns", "meaning": ""}
+            ],
+            "form_list": []
+        }
+        """
+        let data = Data(json.utf8)
+
+        let words = SKStarnikByController.spellingWordSuggestions(data: data, matching: "казак")
+
+        XCTAssertEqual(words?.map { $0.word }, ["каза́к", "ко́зак"])
     }
 
     func testSpellingWordSuggestions_emptyWordListReturnsNil() {

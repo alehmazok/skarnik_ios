@@ -49,6 +49,7 @@ class SKStarnikByController {
     struct WordList: Codable {
         struct WordListBody: Codable {
             let lemma: String
+            let word: String
             let id: Int
             let table_name: String
             let meaning: String
@@ -89,7 +90,10 @@ class SKStarnikByController {
         let exactMatches = wordList.word_list.filter { $0.lemma.lowercased() == query }
         let candidates = exactMatches.isEmpty ? wordList.word_list : exactMatches
         let words: [SKStarnikSpellingWord] = candidates.compactMap { word in
-            SKStarnikSpellingWord(word: word.lemma, wordIdStr: String(word.id), wordType: word.table_name, unknownParam1: word.meaning)
+            // `word.word` carries the stress mark (combining U+0301); `word.lemma` is the
+            // plain form used only for matching above. Homonyms share a lemma but differ in
+            // where the stress falls, so the picker must display the stressed form.
+            SKStarnikSpellingWord(word: word.word, wordIdStr: String(word.id), wordType: word.table_name, unknownParam1: word.meaning)
         }
         return words.count > 0 ? words : nil
     }
