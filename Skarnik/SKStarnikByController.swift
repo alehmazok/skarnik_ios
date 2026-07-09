@@ -37,6 +37,11 @@ struct SKStarnikSpellingWord {
         let urlStr = "https://starnik.by/pravapis/\(wordId)"
         return URL(string: urlStr)
     }
+
+    var wordTypeLabel: String? {
+        guard let wordType = self.wordType else { return nil }
+        return SKLocalization.wordType(wordType)
+    }
 }
 
 class SKStarnikByController {
@@ -67,17 +72,23 @@ class SKStarnikByController {
         guard let data = data else {
             return nil
         }
-        
-        let words = self.spellingWordSuggestions(data: data)
-        
+
+        let words = self.spellingWordSuggestions(data: data, matching: belWord)
+
         return words
     }
-    
-    class private func spellingWordSuggestions(data: Data) -> [SKStarnikSpellingWord]? {
+
+    // The API also returns fuzzy/related lemmas (e.g. "муха" -> "мухавецкі"), not just
+    // homonyms of the queried word. Keep only exact lemma matches so the picker only ever
+    // offers candidates for the word the user actually tapped.
+    class func spellingWordSuggestions(data: Data, matching belWord: String) -> [SKStarnikSpellingWord]? {
         guard let wordList = try? JSONDecoder().decode(WordList.self, from: data) else {
             return nil
         }
-        let words: [SKStarnikSpellingWord] = wordList.word_list.compactMap { word in
+        let query = belWord.lowercased()
+        let exactMatches = wordList.word_list.filter { $0.lemma.lowercased() == query }
+        let candidates = exactMatches.isEmpty ? wordList.word_list : exactMatches
+        let words: [SKStarnikSpellingWord] = candidates.compactMap { word in
             SKStarnikSpellingWord(word: word.lemma, wordIdStr: String(word.id), wordType: word.table_name, unknownParam1: word.meaning)
         }
         return words.count > 0 ? words : nil

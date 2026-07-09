@@ -75,4 +75,45 @@ final class SKWordDetailsViewControllerTests: XCTestCase {
             return
         }
     }
+
+    // MARK: - spellingWordPickerAlert
+
+    // Regression: resolving a tapped word to a starnik.by entry can surface several
+    // homonyms (e.g. "а" as noun/conjunction/preposition/...); the picker must offer one
+    // action per candidate plus a cancel action, not silently pick the first.
+    @MainActor
+    func testSpellingWordPickerAlert_oneActionPerCandidatePlusCancel() {
+        let candidates = [
+            SKStarnikSpellingWord(word: "а", wordIdStr: "1", wordType: "Nouns", unknownParam1: nil),
+            SKStarnikSpellingWord(word: "а", wordIdStr: "234065", wordType: "Conjunctions", unknownParam1: nil)
+        ]
+
+        let alert = sut.spellingWordPickerAlert(for: candidates)
+
+        XCTAssertEqual(alert.title, SKLocalization.wordDetailsSpellingTitle)
+        XCTAssertEqual(alert.message, SKLocalization.wordDetailsSpellingMessage)
+        XCTAssertEqual(alert.actions.count, 3)
+        XCTAssertEqual(alert.actions[0].title, "а — назоўнік")
+        XCTAssertEqual(alert.actions[1].title, "а — злучнік")
+        XCTAssertEqual(alert.actions[2].title, SKLocalization.wordDetailsSpellingCancel)
+        XCTAssertEqual(alert.actions[2].style, .cancel)
+    }
+
+    @MainActor
+    func testSpellingWordPickerAlert_fallsBackToRawTableNameWhenUnmapped() {
+        let candidate = SKStarnikSpellingWord(word: "тэст", wordIdStr: "1", wordType: "Gerunds", unknownParam1: nil)
+
+        let alert = sut.spellingWordPickerAlert(for: [candidate])
+
+        XCTAssertEqual(alert.actions.first?.title, "тэст — Gerunds")
+    }
+
+    @MainActor
+    func testSpellingWordPickerAlert_omitsPosSeparatorWhenTypeMissing() {
+        let candidate = SKStarnikSpellingWord(word: "тэст", wordIdStr: "1", wordType: nil, unknownParam1: nil)
+
+        let alert = sut.spellingWordPickerAlert(for: [candidate])
+
+        XCTAssertEqual(alert.actions.first?.title, "тэст")
+    }
 }

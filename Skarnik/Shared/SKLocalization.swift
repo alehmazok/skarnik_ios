@@ -66,4 +66,23 @@ class SKLocalization: Any {
     class var widgetWordDescriptioon: String { "Выпадковае слова і яго пераклад." }
     class var widgetWordSampleWord: String { "халэмус" }
     class var widgetWordSampleTranslation: String { "гибель, конец" }
+
+    private static let wordTypeLabels: [String: String] = [
+        "Nouns": "назоўнік",
+        "Adjectives": "прыметнік",
+        "Verbs": "дзеяслоў",
+        "Adverbs": "прыслоўе",
+        "Pronouns": "займеннік",
+        "Numerals": "лічэбнік",
+        "Conjunctions": "злучнік",
+        "Prepositions": "прыназоўнік",
+        "Particles": "часціца",
+        "Interjections": "выклічнік"
+    ]
+
+    /// Localizes a starnik.by `table_name` (e.g. "Nouns") into a Belarusian part-of-speech
+    /// label. Falls back to the raw value for any table name not in the map.
+    class func wordType(_ rawValue: String) -> String {
+        wordTypeLabels[rawValue] ?? rawValue
+    }
 }
