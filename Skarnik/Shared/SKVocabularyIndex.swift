@@ -68,6 +68,11 @@ struct SKWord: Codable {
     let word: String
     var lword: String?
     let lang_id: ESKVocabularyType
+
+    /// `word_id` is only unique within a single `lang_id` table, not globally —
+    /// use this for SwiftUI `List`/`ForEach` identity to avoid collisions between
+    /// e.g. a rus_bel and a bel_definition entry that happen to share a word_id.
+    var uniqueId: String { "\(lang_id.rawValue)_\(word_id)" }
 }
 
 class SKVocabularyIndex {
@@ -77,6 +82,16 @@ class SKVocabularyIndex {
     static let abcRu = "абвгдеёжзийклмнопрстуфхцчшщьыъэюя".uppercased().map { String($0) }
     private var indexCountCache: [ESKVocabularyType: [String: Int]] = [:]
     private let cacheLock = NSLock()
+
+    // Fuzzy fallback: only runs when exact prefix search on `lword`/`word_mask`
+    // finds nothing at all, and the query is long enough to make a distance-1/2
+    // match meaningful. See fuzzy_search_spec.md (Flutter app) for parity requirements.
+    static let fuzzySearchMinQueryLength = 3
+    // Cut off before scoring; must exceed the largest single first_char bucket
+    // (letter "п", ~62k of ~316k words as of 2026-07-02) or a typo target could
+    // be excluded before it's ever considered.
+    static let fuzzySearchCandidateLimit = 65000
+    static let wordsSearchLimit = 15
     
     private init() {
         let dbUrl = Bundle.main.url(forResource: "vocabulary", withExtension: "db")
@@ -227,7 +242,7 @@ class SKVocabularyIndex {
         guard let rows = rows else {
             return []
         }
-        
+
         var lang_id = vocabularyType
         for row in rows {
             if vocabularyType == .all {
@@ -237,7 +252,50 @@ class SKVocabularyIndex {
             words.append(word)
         }
 
+        // Fuzzy fallback only applies to the combined search (.all) first page:
+        // it's a rescue path for "no exact hits at all", not a paginated result set.
+        if vocabularyType == .all, index == 0, words.isEmpty,
+           preprocessedQuery.count >= SKVocabularyIndex.fuzzySearchMinQueryLength {
+            return fuzzyWords(query: preprocessedQuery, limit: limit)
+        }
+
         return words
+    }
+
+    // Step C of the fuzzy search spec: candidates are bucketed by first letter
+    // (indexed, cheap), then scored/filtered/sorted in memory. Only reached when
+    // Steps A/B (exact prefix match) found nothing, so there's nothing to exclude.
+    private func fuzzyWords(query: String, limit: Int) -> [SKWord] {
+        guard let firstChar = query.first else { return [] }
+
+        var candidates: Statement?
+        do {
+            candidates = try self.db.prepare(
+                "SELECT word_id, word, lang_id, lword FROM vocabulary WHERE first_char=? LIMIT ?",
+                String(firstChar), SKVocabularyIndex.fuzzySearchCandidateLimit
+            )
+        } catch {
+            return []
+        }
+
+        guard let candidates = candidates else { return [] }
+
+        let maxDistance = query.count <= 5 ? 1 : 2
+        var scored: [(word: SKWord, lword: String, distance: Int)] = []
+        for row in candidates {
+            guard let lword = row[3] as? String else { continue }
+            let distance = SKDamerauLevenshtein.distance(query, lword)
+            guard distance <= maxDistance else { continue }
+            let langId = ESKVocabularyType(rawValue: Int(row[2] as! Int64)) ?? .all
+            let word = SKWord(word_id: row[0] as! Int64, word: row[1] as! String, lang_id: langId)
+            scored.append((word, lword, distance))
+        }
+
+        scored.sort { lhs, rhs in
+            lhs.distance != rhs.distance ? lhs.distance < rhs.distance : lhs.lword < rhs.lword
+        }
+
+        return scored.prefix(min(limit, SKVocabularyIndex.wordsSearchLimit)).map { $0.word }
     }
     
     // Single bulk query via raw C SQLite API — avoids SQLite.swift per-row overhead (~5–7× faster).

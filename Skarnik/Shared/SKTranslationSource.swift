@@ -113,80 +113,67 @@ struct SKSkarnikTranslation {
         }
     }
 
+    /// Scans `html` for `#831b03`-colored `font`/`span` elements, which mark Belarusian
+    /// word forms in scraped skarnik.by markup, and returns the ones present in the local
+    /// vocabulary index (deduped against `existing`).
+    private static func colorMarkedBelWords(inHtml html: String, excluding existing: [String] = []) -> [String] {
+        guard let doc = try? SwiftSoup.parse(html) else { return [] }
+        var found: [String] = []
+        let fonts: Elements = (try? doc.select("font, span")) ?? Elements()
+        for fontContent in fonts {
+            let colorAttr = (try? fontContent.attr("color"))?.lowercased().trimmingCharacters(in: CharacterSet(charactersIn: "#")) ?? ""
+            let styleAttr = (try? fontContent.attr("style")) ?? ""
+            let styleColorMatch = styleAttr.range(of: "color:\\s*#?831b03", options: [.regularExpression, .caseInsensitive]) != nil
+            guard colorAttr == "831b03" || styleColorMatch,
+                  let text = try? fontContent.text().trimmingCharacters(in: CharacterSet.whitespacesAndNewlines) else { continue }
+
+            for candidate in text.components(separatedBy: ",") {
+                let candidate = candidate.trimmingCharacters(in: .whitespacesAndNewlines)
+                guard !candidate.isEmpty, !candidate.contains(" "),
+                      !existing.contains(candidate), !found.contains(candidate) else { continue }
+                if SKVocabularyIndex.shared.word(candidate, vocabularyType: .bel_definition) != nil ||
+                   SKVocabularyIndex.shared.word(candidate, vocabularyType: .bel_rus) != nil {
+                    found.append(candidate)
+                }
+            }
+        }
+        return found
+    }
+
     var belWords: [String] {
         get {
-
-            func parseWord(_ word: String) -> [String] {
-                var words: [String] = []
-                words = word.components(separatedBy: ",").compactMap { word in
-                    let word = word.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
-                    if word.contains(" ") {
-                        return nil
-                    }
-                    return word
-                }
-                return words
-            }
-
-            func isCorrectWord(_ word: String) -> Bool {
-                if word.contains(" ") {
-                    return false
-                }
-                return true
-            }
             let word = self.word
 
             var words: [String] = []
 
             if word.lang_id == .bel_rus || word.lang_id == .bel_definition {
-                if isCorrectWord(word.word) {
+                if !word.word.contains(" ") {
                     words = [word.word]
+                }
+                // bel_rus translations list additional Belarusian synonyms in the same
+                // #831b03 markup rus_bel entries use — surface those as stress candidates too.
+                if word.lang_id == .bel_rus {
+                    words += Self.colorMarkedBelWords(inHtml: self.html, excluding: words)
                 }
             } else if word.lang_id == .rus_bel {
                 let html = self.html
-                var foundWords: [String] = []
-                do {
-                    let doc = try SwiftSoup.parse(html)
-
-                    let dataWordElements: Elements = try doc.select("[data-word]")
-                    if !dataWordElements.isEmpty {
-                        for element in dataWordElements {
-                            let candidate = (try? element.attr("data-word").trimmingCharacters(in: .whitespacesAndNewlines)) ?? ""
-                            guard !candidate.isEmpty, !candidate.contains(" "),
-                                  !foundWords.contains(candidate) else { continue }
-                            if SKVocabularyIndex.shared.word(candidate, vocabularyType: .bel_definition) != nil ||
-                               SKVocabularyIndex.shared.word(candidate, vocabularyType: .bel_rus) != nil {
-                                foundWords.append(candidate)
-                            }
-                        }
-                    } else {
-                        let fonts: Elements = try doc.select("font, span")
-                        for fontContent in fonts {
-                            let colorAttr = (try? fontContent.attr("color"))?.lowercased().trimmingCharacters(in: CharacterSet(charactersIn: "#")) ?? ""
-                            let styleAttr = (try? fontContent.attr("style")) ?? ""
-                            let styleColorMatch = styleAttr.range(of: "color:\\s*#?831b03", options: [.regularExpression, .caseInsensitive]) != nil
-                            if colorAttr == "831b03" || styleColorMatch {
-                                    if let word = try? fontContent.text().trimmingCharacters(in: CharacterSet.whitespacesAndNewlines) {
-                                        let parsedWords = parseWord(word)
-                                        for parsedWord in parsedWords {
-                                            if foundWords.contains(parsedWord) == false {
-                                                if SKVocabularyIndex.shared.word(parsedWord, vocabularyType: .bel_definition) != nil {
-                                                    foundWords.append(parsedWord)
-                                                } else if SKVocabularyIndex.shared.word(parsedWord, vocabularyType: .bel_rus) != nil {
-                                                    foundWords.append(parsedWord)
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
+                if let doc = try? SwiftSoup.parse(html),
+                   let dataWordElements = try? doc.select("[data-word]"),
+                   !dataWordElements.isEmpty {
+                    var foundWords: [String] = []
+                    for element in dataWordElements {
+                        let candidate = (try? element.attr("data-word").trimmingCharacters(in: .whitespacesAndNewlines)) ?? ""
+                        guard !candidate.isEmpty, !candidate.contains(" "),
+                              !foundWords.contains(candidate) else { continue }
+                        if SKVocabularyIndex.shared.word(candidate, vocabularyType: .bel_definition) != nil ||
+                           SKVocabularyIndex.shared.word(candidate, vocabularyType: .bel_rus) != nil {
+                            foundWords.append(candidate)
                         }
                     }
-
                     words = foundWords
-                } catch {
-
+                } else {
+                    words = Self.colorMarkedBelWords(inHtml: html)
                 }
-
             }
             words = words.sorted { str1, str2 in
                 return str1.lowercased().compare(str2.lowercased()) == .orderedAscending
@@ -199,6 +186,14 @@ struct SKSkarnikTranslation {
 enum SKSkarnikError: Error {
     case nextWordIndexRequired
     case networkError
+}
+
+private extension String {
+    /// Extracts trailing numeric id from a redirect path like "/tsbm/3528".
+    var trailingWordId: Int64? {
+        guard let lastComponent = self.split(separator: "/").last else { return nil }
+        return Int64(lastComponent)
+    }
 }
 
 // MARK: - Protocol
@@ -275,7 +270,7 @@ struct SKApiTranslationSource: SKTranslationSource {
 
     private struct APIResponse: Decodable {
         let translation: String?
-        let redirect_to: Int64?
+        let redirect_to: String?
         let stress: String?
     }
 
@@ -298,7 +293,11 @@ struct SKApiTranslationSource: SKTranslationSource {
 
         let response = try JSONDecoder().decode(APIResponse.self, from: data)
 
-        if let redirectId = response.redirect_to {
+        if let redirectPath = response.redirect_to {
+            guard let redirectId = redirectPath.trailingWordId else {
+                skLog("[API] Unparseable redirect path: \(redirectPath)", type: .error)
+                return nil
+            }
             skLog("[API] Redirect — retrying with word id: \(redirectId)")
             guard let nextWord = SKVocabularyIndex.shared.word(id: redirectId, vocabularyType: word.lang_id) else {
                 return nil
@@ -328,7 +327,7 @@ struct SKSupabaseTranslationSource: SKTranslationSource {
 
     private struct SupabaseResponse: Decodable {
         let translation: String?
-        let redirect_to: Int64?
+        let redirect_to: String?
         let stress: String?
     }
 
@@ -354,7 +353,11 @@ struct SKSupabaseTranslationSource: SKTranslationSource {
             return nil
         }
 
-        if let redirectId = response.redirect_to {
+        if let redirectPath = response.redirect_to {
+            guard let redirectId = redirectPath.trailingWordId else {
+                skLog("[Supabase] Unparseable redirect path: \(redirectPath)", type: .error)
+                return nil
+            }
             skLog("[Supabase] Redirect — retrying with word id: \(redirectId)")
             guard let nextWord = SKVocabularyIndex.shared.word(id: redirectId, vocabularyType: word.lang_id) else {
                 return nil

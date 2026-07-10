@@ -47,7 +47,8 @@ class SKLocalization: Any {
     class var aboutSubscriptionDeveloper: String { "Распрацоўшчыкі" }
     class var aboutSubscriptionDesigner: String { "UI/UX дапамога" }
     class var aboutDescription: String { "Skarnik - электронны руска-беларускі слоўнік. За аснову ўзяты акадэмічны слоўнік, які быў выпушчаны ў 1953 годзе (пад рэдакцыяй Я. Коласа, К. Крапівы і П. Глебкі) і затым некалькі разоў перавыдаваўся з выпраўленнямі і дапаўненнямі.\n\nСайт skarnik.by пачаў працаваць 7 жніўня 2012 года." }
-    class var aboutSupport: String { "Праекту патрэбна дапамога: Dev, ML, PR, UX/UI. Прапановы пісаць [сюды](mailto:belanghelp@gmail.com?bcc=skarnikapp@gmail.com)." }
+    class var aboutSupportButtonTitle: String { "Напісаць распрацоўшчыкам" }
+    class var aboutSupportMailto: String { "mailto:belanghelp@gmail.com?bcc=skarnikapp@gmail.com" }
     class var wordStressLoadingLabel: String { "Пачакайце, калі ласка" }
     class var wordStressTitle: String { "Націск" }
     class var wordStressError: String { "Нешта пайшло не так, мо праблемы з інтэрнэтам ці серверам. Паспрабуйце яшчэ раз." }
@@ -66,4 +67,23 @@ class SKLocalization: Any {
     class var widgetWordDescriptioon: String { "Выпадковае слова і яго пераклад." }
     class var widgetWordSampleWord: String { "халэмус" }
     class var widgetWordSampleTranslation: String { "гибель, конец" }
+
+    private static let wordTypeLabels: [String: String] = [
+        "Nouns": "назоўнік",
+        "Adjectives": "прыметнік",
+        "Verbs": "дзеяслоў",
+        "Adverbs": "прыслоўе",
+        "Pronouns": "займеннік",
+        "Numerals": "лічэбнік",
+        "Conjunctions": "злучнік",
+        "Prepositions": "прыназоўнік",
+        "Particles": "часціца",
+        "Interjections": "выклічнік"
+    ]
+
+    /// Localizes a starnik.by `table_name` (e.g. "Nouns") into a Belarusian part-of-speech
+    /// label. Falls back to the raw value for any table name not in the map.
+    class func wordType(_ rawValue: String) -> String {
+        wordTypeLabels[rawValue] ?? rawValue
+    }
 }

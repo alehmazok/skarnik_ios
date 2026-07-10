@@ -38,8 +38,8 @@ final class SKHistoryViewModel: ObservableObject {
         searchTask = Task.detached(priority: .userInitiated) { [weak self] in
             guard !Task.isCancelled else { return }
             let results = SKVocabularyIndex.shared.word(index: 0, query: query, vocabularyType: .all, limit: 20)
-            guard !Task.isCancelled else { return }
-            await MainActor.run { self?.searchResults = results }
+            guard !Task.isCancelled, let self else { return }
+            await MainActor.run { self.searchResults = results }
         }
     }
 }
@@ -93,7 +93,7 @@ private struct SKHistoryContentView: View {
 
     private var wordList: some View {
         List {
-            ForEach(viewModel.words, id: \.word_id) { word in
+            ForEach(viewModel.words, id: \.uniqueId) { word in
                 Button {
                     onWordSelected(word, "history")
                 } label: {
@@ -121,7 +121,7 @@ private struct SKHistoryContentView: View {
                 Spacer()
             }
         } else {
-            List(viewModel.searchResults, id: \.word_id) { word in
+            List(viewModel.searchResults, id: \.uniqueId) { word in
                 Button {
                     onWordSelected(word, "search")
                 } label: {

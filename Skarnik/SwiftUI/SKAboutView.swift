@@ -28,9 +28,15 @@ struct SKAboutView: View {
 
                 Divider()
 
-                Text((try? AttributedString(markdown: SKLocalization.aboutSupport)) ?? AttributedString(SKLocalization.aboutSupport))
-                    .font(.system(size: 15))
-                    .foregroundStyle(Color(UIColor.secondaryLabel))
+                Button {
+                    guard let url = URL(string: SKLocalization.aboutSupportMailto) else { return }
+                    UIApplication.shared.open(url)
+                } label: {
+                    Label(SKLocalization.aboutSupportButtonTitle, systemImage: "envelope")
+                        .font(.system(size: 15, design: .monospaced))
+                        .padding(.horizontal, 4)
+                }
+                .buttonStyle(.borderedProminent)
             }
             .padding()
         }
