@@ -24,7 +24,6 @@ enum SKAnalyticsEvent: String {
     case starnikByOpened = "starnik_by_opened"
     case drukarnikOpened = "drukarnik_opened"
     case widgetDeepLink = "widget_deep_link"
-    case shareClicked = "share"
 }
 
 enum SKWidgetDeepLinkAppState: String {
