@@ -84,8 +84,8 @@ final class SKWordDetailsViewControllerTests: XCTestCase {
     @MainActor
     func testSpellingWordPickerAlert_oneActionPerCandidatePlusCancel() {
         let candidates = [
-            SKStarnikSpellingWord(word: "а", wordIdStr: "1", wordType: "Nouns", unknownParam1: nil),
-            SKStarnikSpellingWord(word: "а", wordIdStr: "234065", wordType: "Conjunctions", unknownParam1: nil)
+            SKStressWordEntry(id: 1, lemma: "а", word: "а", tableName: "Nouns", source: .api),
+            SKStressWordEntry(id: 234065, lemma: "а", word: "а", tableName: "Conjunctions", source: .api)
         ]
 
         let alert = sut.spellingWordPickerAlert(for: candidates)
@@ -101,7 +101,7 @@ final class SKWordDetailsViewControllerTests: XCTestCase {
 
     @MainActor
     func testSpellingWordPickerAlert_fallsBackToRawTableNameWhenUnmapped() {
-        let candidate = SKStarnikSpellingWord(word: "тэст", wordIdStr: "1", wordType: "Gerunds", unknownParam1: nil)
+        let candidate = SKStressWordEntry(id: 1, lemma: "тэст", word: "тэст", tableName: "Gerunds", source: .api)
 
         let alert = sut.spellingWordPickerAlert(for: [candidate])
 
@@ -110,10 +110,31 @@ final class SKWordDetailsViewControllerTests: XCTestCase {
 
     @MainActor
     func testSpellingWordPickerAlert_omitsPosSeparatorWhenTypeMissing() {
-        let candidate = SKStarnikSpellingWord(word: "тэст", wordIdStr: "1", wordType: nil, unknownParam1: nil)
+        let candidate = SKStressWordEntry(id: 1, lemma: "тэст", word: "тэст", tableName: nil, source: .api)
 
         let alert = sut.spellingWordPickerAlert(for: [candidate])
 
         XCTAssertEqual(alert.actions.first?.title, "тэст")
+    }
+
+    // MARK: - stressMessageAlert
+
+    @MainActor
+    func testStressMessageAlert_notFound_showsSpecCopyWithSingleDoneAction() {
+        let alert = sut.stressMessageAlert(SKLocalization.wordStressNotFound)
+
+        XCTAssertNil(alert.title)
+        XCTAssertEqual(alert.message, SKLocalization.wordStressNotFound)
+        XCTAssertEqual(alert.actions.count, 1)
+        XCTAssertEqual(alert.actions[0].title, SKLocalization.aboutDone)
+        XCTAssertEqual(alert.actions[0].style, .default)
+    }
+
+    @MainActor
+    func testStressMessageAlert_error_showsSpecCopy() {
+        let alert = sut.stressMessageAlert(SKLocalization.wordStressError)
+
+        XCTAssertEqual(alert.message, SKLocalization.wordStressError)
+        XCTAssertEqual(alert.actions.count, 1)
     }
 }

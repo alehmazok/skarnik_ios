@@ -2,135 +2,132 @@
 import XCTest
 @testable import Skarnik
 
-final class SKStarnikByControllerTests: XCTestCase {
+final class SKStarnikStressBackendTests: XCTestCase {
 
-    // MARK: - Exact lemma filtering
+    // MARK: - parseWordList
 
-    func testSpellingWordSuggestions_keepsOnlyExactLemmaMatches() {
-        // Regression: the API also returns unrelated fuzzy lemmas (e.g. "мухавецкі" for
-        // query "муха"), which must not leak into the disambiguation picker.
+    func testParseWordList_mapsAllEntriesUnfiltered() {
+        // Exact-match filtering is the resolver's job (stress_spec.md §4a), not the
+        // backend's — the backend must surface every entry the API returned, including
+        // fuzzy/related lemmas (e.g. "мухавецкі" for query "муха").
         let json = """
         {
             "word_list": [
-                {"lemma": "муха", "word": "му́ха", "id": 1, "table_name": "Nouns", "meaning": ""},
-                {"lemma": "мухалоўка", "word": "мухало́ўка", "id": 2, "table_name": "Nouns", "meaning": ""},
-                {"lemma": "мухавецкі", "word": "мухаве́цкі", "id": 3, "table_name": "Adjectives", "meaning": ""}
-            ],
-            "form_list": []
+                {"lemma": "муха", "word": "му́ха", "id": 1, "table_name": "Nouns"},
+                {"lemma": "мухалоўка", "word": "мухало́ўка", "id": 2, "table_name": "Nouns"},
+                {"lemma": "мухавецкі", "word": "мухаве́цкі", "id": 3, "table_name": "Adjectives"}
+            ]
         }
         """
         let data = Data(json.utf8)
 
-        let words = SKStarnikByController.spellingWordSuggestions(data: data, matching: "муха")
+        let entries = try? SKStarnikStressBackend.parseWordList(data: data)
 
-        XCTAssertEqual(words?.map { $0.wordIdStr }, ["1"])
+        XCTAssertEqual(entries?.map { $0.id }, [1, 2, 3])
+        XCTAssertEqual(entries?.map { $0.source }, [.api, .api, .api])
     }
 
-    func testSpellingWordSuggestions_isCaseInsensitive() {
-        let json = """
-        {
-            "word_list": [{"lemma": "Муха", "word": "му́ха", "id": 1, "table_name": "Nouns", "meaning": ""}],
-            "form_list": []
-        }
-        """
-        let data = Data(json.utf8)
-
-        let words = SKStarnikByController.spellingWordSuggestions(data: data, matching: "муха")
-
-        XCTAssertEqual(words?.count, 1)
-    }
-
-    func testSpellingWordSuggestions_returnsAllHomonymsForExactLemma() {
+    func testParseWordList_returnsAllHomonymsForSharedLemma() {
         // "а" resolves to several parts of speech sharing the same lemma; all must surface
-        // for the user to pick from, not just the first.
+        // for the resolver/picker to work with, not just the first.
         let json = """
         {
             "word_list": [
-                {"lemma": "а", "word": "а́", "id": 1, "table_name": "Nouns", "meaning": ""},
-                {"lemma": "а", "word": "а́", "id": 234065, "table_name": "Conjunctions", "meaning": ""},
-                {"lemma": "а", "word": "а́", "id": 250353, "table_name": "Prepositions", "meaning": ""}
-            ],
-            "form_list": []
+                {"lemma": "а", "word": "а́", "id": 1, "table_name": "Nouns"},
+                {"lemma": "а", "word": "а́", "id": 234065, "table_name": "Conjunctions"},
+                {"lemma": "а", "word": "а́", "id": 250353, "table_name": "Prepositions"}
+            ]
         }
         """
         let data = Data(json.utf8)
 
-        let words = SKStarnikByController.spellingWordSuggestions(data: data, matching: "а")
+        let entries = try? SKStarnikStressBackend.parseWordList(data: data)
 
-        XCTAssertEqual(words?.map { $0.wordIdStr }, ["1", "234065", "250353"])
+        XCTAssertEqual(entries?.map { $0.id }, [1, 234065, 250353])
     }
 
-    func testSpellingWordSuggestions_fallsBackToFullListWhenNoExactMatch() {
-        let json = """
-        {
-            "word_list": [{"lemma": "мухалоўка", "word": "мухало́ўка", "id": 2, "table_name": "Nouns", "meaning": ""}],
-            "form_list": []
-        }
-        """
-        let data = Data(json.utf8)
-
-        let words = SKStarnikByController.spellingWordSuggestions(data: data, matching: "муха")
-
-        XCTAssertEqual(words?.map { $0.wordIdStr }, ["2"])
-    }
-
-    func testSpellingWordSuggestions_usesStressedWordNotRawLemmaForDisplay() {
-        // Regression: homonyms share a lemma but differ in stress placement (e.g. "муха"
+    func testParseWordList_usesStressedWordNotRawLemmaForDisplay() {
+        // Regression: homonyms share a lemma but differ in stress placement (e.g. "казак"
         // could stress the first or second syllable depending on sense). Using the raw
-        // lemma for `word` makes such candidates look identical in the picker; the API's
-        // stressed `word` field must be surfaced instead.
+        // lemma for `word` makes such candidates look identical; the API's stressed `word`
+        // field must be surfaced instead.
         let json = """
         {
             "word_list": [
-                {"lemma": "казак", "word": "каза́к", "id": 1, "table_name": "Nouns", "meaning": ""},
-                {"lemma": "казак", "word": "ко́зак", "id": 2, "table_name": "Nouns", "meaning": ""}
-            ],
-            "form_list": []
+                {"lemma": "казак", "word": "каза́к", "id": 1, "table_name": "Nouns"},
+                {"lemma": "казак", "word": "ко́зак", "id": 2, "table_name": "Nouns"}
+            ]
         }
         """
         let data = Data(json.utf8)
 
-        let words = SKStarnikByController.spellingWordSuggestions(data: data, matching: "казак")
+        let entries = try? SKStarnikStressBackend.parseWordList(data: data)
 
-        XCTAssertEqual(words?.map { $0.word }, ["каза́к", "ко́зак"])
+        XCTAssertEqual(entries?.map { $0.word }, ["каза́к", "ко́зак"])
     }
 
-    func testSpellingWordSuggestions_emptyWordListReturnsNil() {
-        let json = """
-        {"word_list": [], "form_list": []}
-        """
-        let data = Data(json.utf8)
+    func testParseWordList_emptyWordListReturnsEmptyArray() {
+        let data = Data(#"{"word_list": []}"#.utf8)
 
-        let words = SKStarnikByController.spellingWordSuggestions(data: data, matching: "муха")
+        let entries = try? SKStarnikStressBackend.parseWordList(data: data)
 
-        XCTAssertNil(words)
+        XCTAssertEqual(entries, [])
     }
 
-    func testSpellingWordSuggestions_malformedJsonReturnsNil() {
+    func testParseWordList_malformedJsonThrows() {
         let data = Data("not json".utf8)
 
-        let words = SKStarnikByController.spellingWordSuggestions(data: data, matching: "муха")
-
-        XCTAssertNil(words)
+        XCTAssertThrowsError(try SKStarnikStressBackend.parseWordList(data: data))
     }
 
-    // MARK: - SKStarnikSpellingWord.wordTypeLabel
+    // MARK: - parseHtml
+
+    func testParseHtml_extractsTwoColumnRowsFromWrapperTable() {
+        let html = """
+        <html><body>
+        <div class="wrapper">
+        <table>
+        <tr><td>форма</td><td>каза́к</td></tr>
+        <tr><td>множны лік</td><td>казакі́</td></tr>
+        <tr><td>лішні слупок</td><td>a</td><td>b</td></tr>
+        </table>
+        </div>
+        </body></html>
+        """
+        let data = Data(html.utf8)
+
+        let rows = try? SKStarnikStressBackend.parseHtml(data: data)
+
+        XCTAssertEqual(rows?.count, 2)
+        XCTAssertEqual(rows?.first?.title, "форма")
+        XCTAssertEqual(rows?.first?.content, "каза́к")
+    }
+
+    func testParseHtml_noWrapperTableReturnsEmptyArray() {
+        let data = Data("<html><body>нічога</body></html>".utf8)
+
+        let rows = try? SKStarnikStressBackend.parseHtml(data: data)
+
+        XCTAssertEqual(rows?.count, 0)
+    }
+
+    // MARK: - SKStressWordEntry.wordTypeLabel
 
     func testWordTypeLabel_mapsKnownTableName() {
-        let word = SKStarnikSpellingWord(word: "а", wordIdStr: "1", wordType: "Conjunctions", unknownParam1: nil)
+        let entry = SKStressWordEntry(id: 1, lemma: "а", word: "а", tableName: "Conjunctions", source: .api)
 
-        XCTAssertEqual(word.wordTypeLabel, "злучнік")
+        XCTAssertEqual(entry.wordTypeLabel, "злучнік")
     }
 
     func testWordTypeLabel_fallsBackToRawValueWhenUnmapped() {
-        let word = SKStarnikSpellingWord(word: "а", wordIdStr: "1", wordType: "Gerunds", unknownParam1: nil)
+        let entry = SKStressWordEntry(id: 1, lemma: "а", word: "а", tableName: "Gerunds", source: .api)
 
-        XCTAssertEqual(word.wordTypeLabel, "Gerunds")
+        XCTAssertEqual(entry.wordTypeLabel, "Gerunds")
     }
 
-    func testWordTypeLabel_nilWhenWordTypeMissing() {
-        let word = SKStarnikSpellingWord(word: "а", wordIdStr: "1", wordType: nil, unknownParam1: nil)
+    func testWordTypeLabel_nilWhenTableNameMissing() {
+        let entry = SKStressWordEntry(id: 1, lemma: "а", word: "а", tableName: nil, source: .api)
 
-        XCTAssertNil(word.wordTypeLabel)
+        XCTAssertNil(entry.wordTypeLabel)
     }
 }
