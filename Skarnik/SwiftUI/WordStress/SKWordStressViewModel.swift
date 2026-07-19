@@ -11,29 +11,35 @@ import Combine
 
 @MainActor
 class SKWordStressViewModel: ObservableObject {
-    @Published var table: [SKStarnikParserByController.StarnikTableElement] = []
+    @Published var table: [SKStressRow] = []
     @Published var error: String?
     @Published var isLoading: Bool
-    private let starnikWord: SKStarnikSpellingWord
+    private let entry: SKStressWordEntry
+    private let resolver: SKStressResolver
 
-    init(_ starnikWord: SKStarnikSpellingWord) {
-        self.starnikWord = starnikWord
+    init(_ entry: SKStressWordEntry, resolver: SKStressResolver = .shared) {
+        self.entry = entry
+        self.resolver = resolver
         self.isLoading = true
-        self.fetchWord((starnikWord.wordId!)) // 48920
+        self.fetchTable()
     }
 
     var presentLoadingLabel: String { SKLocalization.wordStressLoadingLabel }
     var presentTitle: String { SKLocalization.wordStressTitle }
 
-    func fetchWord(_ starnikWordId: Int) {
+    func fetchTable() {
         Task {
-            guard let content = await SKStarnikParserByController.wordContent(url: "https://starnik.by/pravapis/\(starnikWordId)") else {
+            switch await resolver.stressTable(entry) {
+            case .success(let rows):
+                self.table = rows
+                self.isLoading = false
+            case .notFound:
+                self.error = SKLocalization.wordStressNotFound
+                self.isLoading = false
+            case .error:
                 self.error = SKLocalization.wordStressError
                 self.isLoading = false
-                return
             }
-            self.isLoading = false
-            self.table = content
         }
     }
 }

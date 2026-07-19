@@ -59,12 +59,12 @@ struct SKWordStressView: View {
     }
     
     @ViewBuilder
-    func row(_ element: SKStarnikParserByController.StarnikTableElement) -> some View {
+    func row(_ element: SKStressRow) -> some View {
         HStack(content: {
-            SKHtmlTextView(html: element.titleHtml)
+            SKHtmlTextView(html: element.title)
                 .frame(minWidth: 0, maxWidth: .infinity)
 
-            SKHtmlTextView(html: element.contentHtml)
+            SKHtmlTextView(html: element.content)
                 .frame(minWidth: 0, maxWidth: .infinity)
 
         })
