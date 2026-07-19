@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		FC2AB0490A4470BD43C00D0F /* SKStressResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A21AA134C9191E3E29173FC /* SKStressResolver.swift */; };
 		B20ABABA28EEBF6F00AA2FC9 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20ABAB928EEBF6F00AA2FC9 /* AppDelegate.swift */; };
 		B20ABABC28EEBF6F00AA2FC9 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20ABABB28EEBF6F00AA2FC9 /* SceneDelegate.swift */; };
 		B20ABAC128EEBF6F00AA2FC9 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B20ABABF28EEBF6F00AA2FC9 /* Main.storyboard */; };
@@ -160,6 +161,7 @@
 		B284FE6E2AE0A527009CA21D /* SKWordWidgetView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SKWordWidgetView.swift; sourceTree = "<group>"; };
 		B284FE7A2AE0A6AD009CA21D /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.0.sdk/System/iOSSupport/System/Library/Frameworks/UIKit.framework; sourceTree = DEVELOPER_DIR; };
 		B2881B4C28F5DE9800649278 /* SKTranslationSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SKTranslationSource.swift; sourceTree = "<group>"; };
+		6A21AA134C9191E3E29173FC /* SKStressResolver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SKStressResolver.swift; sourceTree = "<group>"; };
 		B29000B52AF735780032532D /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		B2AA11223344556677880001 /* SKReportIssueView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SKReportIssueView.swift; sourceTree = "<group>"; };
 		B2AF0838291482DD0005E3E6 /* NSAttributedString+Skarnik.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NSAttributedString+Skarnik.swift"; sourceTree = "<group>"; };
@@ -310,6 +312,7 @@
 				B20ABAD828EF22AC00AA2FC9 /* SKVocabularyIndex.swift */,
 				B080BC497B8AC249E588E1F3 /* SKDamerauLevenshtein.swift */,
 				B2881B4C28F5DE9800649278 /* SKTranslationSource.swift */,
+				6A21AA134C9191E3E29173FC /* SKStressResolver.swift */,
 				B2462E6C2927AE9F005C8D33 /* String+Skarnik.swift */,
 				B2C557DD2908996500FEB28A /* UIColor+Skarnik.swift */,
 				B27D996228FB11E60047CCBF /* SKLocalization.swift */,
@@ -619,6 +622,7 @@
 				B2C81E042AFECCF70057FD56 /* SKDeprecatedView+Modifiers.swift in Sources */,
 				F2005D262F5CF009003A032C /* SKWordDetailsViewModel.swift in Sources */,
 				B27D996828FC92910047CCBF /* SKStarnikByController.swift in Sources */,
+				FC2AB0490A4470BD43C00D0F /* SKStressResolver.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

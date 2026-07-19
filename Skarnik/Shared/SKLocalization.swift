@@ -51,7 +51,8 @@ class SKLocalization: Any {
     class var aboutSupportMailto: String { "mailto:belanghelp@gmail.com?bcc=skarnikapp@gmail.com" }
     class var wordStressLoadingLabel: String { "Пачакайце, калі ласка" }
     class var wordStressTitle: String { "Націск" }
-    class var wordStressError: String { "Нешта пайшло не так, мо праблемы з інтэрнэтам ці серверам. Паспрабуйце яшчэ раз." }
+    class var wordStressError: String { "Адбылася памылка падчас загрузцы інфармацыі аб націску." }
+    class var wordStressNotFound: String { "Інфармацыя аб націску для гэтага слова не знойдзена." }
 
     class var historyEmptyPlaceholder: String { "Тут з'явяцца словы, якія вы адкрывалі.\nПашукайце альбо абярыце слова ў слоўніку." }
 

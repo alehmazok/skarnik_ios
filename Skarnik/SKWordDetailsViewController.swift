@@ -78,21 +78,25 @@ class SKWordDetailsViewController: UIHostingController<SKWordDetailsView> {
 
         Task { @MainActor [weak self] in
             guard let self else { return }
-            let candidates = (await SKStarnikByController.spellingWordSuggestions(belWord: word) ?? [])
-                .filter { $0.wordId != nil }
-
-            if candidates.count > 1 {
-                self.presentSpellingWordPicker(candidates)
-            } else if let candidate = candidates.first {
-                self.pushWordStress(candidate)
+            switch await SKStressResolver.shared.resolveWordList(word) {
+            case .success(let entries):
+                if entries.count > 1 {
+                    self.presentSpellingWordPicker(entries)
+                } else if let entry = entries.first {
+                    self.pushWordStress(entry)
+                }
+            case .notFound:
+                self.presentStressMessage(SKLocalization.wordStressNotFound)
+            case .error:
+                self.presentStressMessage(SKLocalization.wordStressError)
             }
         }
     }
 
     // Homonyms (e.g. "а" as noun/conjunction/preposition/...) share a lemma but resolve to
-    // different starnik.by word IDs with different stress/spelling data, so the user must
-    // pick which one they mean rather than us guessing the first one back.
-    private func presentSpellingWordPicker(_ candidates: [SKStarnikSpellingWord]) {
+    // different word IDs with different stress/spelling data, so the user must pick which
+    // one they mean rather than us guessing the first one back.
+    private func presentSpellingWordPicker(_ candidates: [SKStressWordEntry]) {
         let alertController = spellingWordPickerAlert(for: candidates)
         if let popPresenter = alertController.popoverPresentationController {
             popPresenter.sourceView = view
@@ -102,7 +106,7 @@ class SKWordDetailsViewController: UIHostingController<SKWordDetailsView> {
         present(alertController, animated: true)
     }
 
-    func spellingWordPickerAlert(for candidates: [SKStarnikSpellingWord]) -> UIAlertController {
+    func spellingWordPickerAlert(for candidates: [SKStressWordEntry]) -> UIAlertController {
         let alertController = UIAlertController(
             title: SKLocalization.wordDetailsSpellingTitle,
             message: SKLocalization.wordDetailsSpellingMessage,
@@ -118,8 +122,18 @@ class SKWordDetailsViewController: UIHostingController<SKWordDetailsView> {
         return alertController
     }
 
-    private func pushWordStress(_ word: SKStarnikSpellingWord) {
-        let wordStressViewModel = SKWordStressViewModel(word)
+    private func presentStressMessage(_ message: String) {
+        present(stressMessageAlert(message), animated: true)
+    }
+
+    func stressMessageAlert(_ message: String) -> UIAlertController {
+        let alertController = UIAlertController(title: nil, message: message, preferredStyle: .alert)
+        alertController.addAction(UIAlertAction(title: SKLocalization.aboutDone, style: .default))
+        return alertController
+    }
+
+    private func pushWordStress(_ entry: SKStressWordEntry) {
+        let wordStressViewModel = SKWordStressViewModel(entry)
         let wordStressView = SKWordStressView(viewModel: wordStressViewModel)
         let wordStressViewController = UIHostingController(rootView: wordStressView)
         navigationController?.pushViewController(wordStressViewController, animated: true)

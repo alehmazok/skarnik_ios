@@ -6,131 +6,60 @@
 //  Copyright © 2022 Skarnik. All rights reserved.
 //
 
-import UIKit
+import Foundation
+import SwiftSoup
 
-struct SKStarnikSpellingWord {
-    let word: String?
-    let wordIdStr: String?
-    let wordType: String?
-    let unknownParam1: String?
-    
-    var wordId: Int? {
-        get {
-            guard let wordIdStr = self.wordIdStr else {
-                return nil
-            }
-            return Int(wordIdStr)
-        }
-    }
-    
-    var isValid: Bool {
-        get {
-            let status = (self.word ?? "").isEmpty == false && self.wordId != nil
-            return status
-        }
-    }
-    
-    var url: URL? {
-        guard let wordId = self.wordId else {
-            return nil
-        }
-        let urlStr = "https://starnik.by/pravapis/\(wordId)"
-        return URL(string: urlStr)
-    }
+// MARK: - Primary source: starnik.by (live HTML scrape) — stress_spec.md §2
 
-    var wordTypeLabel: String? {
-        guard let wordType = self.wordType else { return nil }
-        return SKLocalization.wordType(wordType)
-    }
-}
+struct SKStarnikStressBackend: SKStressBackend {
+    let source: SKStressSource = .api
 
-class SKStarnikByController {
-    
-    struct WordList: Codable {
+    private static let baseUrl = "https://starnik.by"
+
+    private struct WordList: Codable {
         struct WordListBody: Codable {
             let lemma: String
             let word: String
             let id: Int
-            let table_name: String
-            let meaning: String
+            let table_name: String?
         }
-        struct FormListBody: Codable {
-            let lemma: String
-            let id: Int
-            let state: String
-        }
-
         let word_list: [WordListBody]
-        let form_list: [FormListBody]
     }
 
-    class func spellingWordSuggestions(belWord: String) async -> [SKStarnikSpellingWord]? {
-        guard let urlStr = self.spellingWordUrlStr(belWord: belWord) else {
+    func resolveWordList(_ word: String) async throws -> [SKStressWordEntry] {
+        guard let urlStr = Self.wordListUrl(word: word) else {
+            return []
+        }
+        guard let data = await URLSession.skarnikDownload(urlStr: urlStr) else {
+            throw SKStressError.networkError
+        }
+        return try Self.parseWordList(data: data)
+    }
+
+    func stressTable(_ wordId: Int) async throws -> [SKStressRow] {
+        let urlStr = "\(Self.baseUrl)/pravapis/\(wordId)"
+        guard let data = await URLSession.skarnikDownload(urlStr: urlStr) else {
+            throw SKStressError.networkError
+        }
+        return try Self.parseHtml(data: data)
+    }
+
+    static func wordListUrl(word: String) -> String? {
+        guard let escapedWord = word.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed) else {
             return nil
         }
-        
-        let data = await URLSession.skarnikDownload(urlStr: urlStr)
-        guard let data = data else {
-            return nil
-        }
-
-        let words = self.spellingWordSuggestions(data: data, matching: belWord)
-
-        return words
+        return "\(Self.baseUrl)/api/wordList?lemma=\(escapedWord)"
     }
 
-    // The API also returns fuzzy/related lemmas (e.g. "муха" -> "мухавецкі"), not just
-    // homonyms of the queried word. Keep only exact lemma matches so the picker only ever
-    // offers candidates for the word the user actually tapped.
-    class func spellingWordSuggestions(data: Data, matching belWord: String) -> [SKStarnikSpellingWord]? {
-        guard let wordList = try? JSONDecoder().decode(WordList.self, from: data) else {
-            return nil
+    static func parseWordList(data: Data) throws -> [SKStressWordEntry] {
+        let wordList = try JSONDecoder().decode(WordList.self, from: data)
+        return wordList.word_list.map {
+            SKStressWordEntry(id: $0.id, lemma: $0.lemma, word: $0.word, tableName: $0.table_name, source: .api)
         }
-        let query = belWord.lowercased()
-        let exactMatches = wordList.word_list.filter { $0.lemma.lowercased() == query }
-        let candidates = exactMatches.isEmpty ? wordList.word_list : exactMatches
-        let words: [SKStarnikSpellingWord] = candidates.compactMap { word in
-            // `word.word` carries the stress mark (combining U+0301); `word.lemma` is the
-            // plain form used only for matching above. Homonyms share a lemma but differ in
-            // where the stress falls, so the picker must display the stressed form.
-            SKStarnikSpellingWord(word: word.word, wordIdStr: String(word.id), wordType: word.table_name, unknownParam1: word.meaning)
-        }
-        return words.count > 0 ? words : nil
     }
 
-    class private func spellingWordUrlStr(belWord: String) -> String? {
-        guard let escapedBelWord = belWord.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed) else {
-            return nil
-        }
-
-        let strUrl = "https://starnik.by/api/wordList?lemma=\(escapedBelWord)"
-        return strUrl
-    }
-}
-
-import SwiftSoup
-
-class SKStarnikParserByController {
-    
-    
-    struct StarnikTableElement: Identifiable {
-        let id = UUID()
-        let titleHtml: String
-        let contentHtml: String
-    }
-    
-    class func wordContent(url: String) async -> [StarnikTableElement]? {
-        let data = await URLSession.skarnikDownload(urlStr: url)
-        guard let data = data else {
-            return nil
-        }
-        
-        let starnikTable = try? Self.parseHtml(data: data)
-        return starnikTable
-    }
-    
-    class func parseHtml(data: Data) throws -> [StarnikTableElement] {
-        var starnikTable: [StarnikTableElement] = []
+    static func parseHtml(data: Data) throws -> [SKStressRow] {
+        var rows: [SKStressRow] = []
 
         let html = String(data: data, encoding: .utf8) ?? ""
         let doc = try SwiftSoup.parse(html)
@@ -142,13 +71,12 @@ class SKStarnikParserByController {
             if elementColumns.count != 2 {
                 continue
             }
-            guard let elementTitleHtml = try elementColumns.first()?.html(),
-                  let elementValueHtml = try elementColumns.last()?.html() else {
+            guard let titleHtml = try elementColumns.first()?.html(),
+                  let contentHtml = try elementColumns.last()?.html() else {
                 continue
             }
-            let starnikTableElement = StarnikTableElement(titleHtml: elementTitleHtml, contentHtml: elementValueHtml)
-            starnikTable.append(starnikTableElement)
+            rows.append(SKStressRow(title: titleHtml, content: contentHtml))
         }
-        return starnikTable
+        return rows
     }
 }
