@@ -84,6 +84,7 @@
 		F229B9D12D5134B000B2463E /* SKFirebaseAnalytics.swift in Sources */ = {isa = PBXBuildFile; fileRef = F229B9CD2D5134B000B2463E /* SKFirebaseAnalytics.swift */; };
 		F229B9D22D5134B000B2463E /* SKDebugAnalytics.swift in Sources */ = {isa = PBXBuildFile; fileRef = F229B9CC2D5134B000B2463E /* SKDebugAnalytics.swift */; };
 		F268C3D12D50DD4B004B7BE4 /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = F268C3D02D50DD4B004B7BE4 /* FirebaseAnalytics */; };
+		33599C19DA4044D7AC562A07 /* FirebaseCrashlytics in Frameworks */ = {isa = PBXBuildFile; productRef = 6B3799A98B8245B0B1C749BC /* FirebaseCrashlytics */; };
 		F268C3D32D50DF5F004B7BE4 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = F268C3D22D50DF5F004B7BE4 /* GoogleService-Info.plist */; };
 		F2A652A02F6F658800A8ACBE /* SKWordDetailsViewControllerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F2A6529E2F6F658800A8ACBE /* SKWordDetailsViewControllerTests.swift */; };
 		F2A652A32F7B000000A8ACBE /* SKWordDetailsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F2A652A42F7B000000A8ACBE /* SKWordDetailsView.swift */; };
@@ -227,6 +228,7 @@
 				B20ABAD528EF215400AA2FC9 /* SQLite in Frameworks */,
 				B29000B62AF735780032532D /* UIKit.framework in Frameworks */,
 				F268C3D12D50DD4B004B7BE4 /* FirebaseAnalytics in Frameworks */,
+				33599C19DA4044D7AC562A07 /* FirebaseCrashlytics in Frameworks */,
 				B2FEFEF228F4E7A500675E49 /* SwiftSoup in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -455,6 +457,7 @@
 				B20ABAD428EF215400AA2FC9 /* SQLite */,
 				B2FEFEF128F4E7A500675E49 /* SwiftSoup */,
 				F268C3D02D50DD4B004B7BE4 /* FirebaseAnalytics */,
+				6B3799A98B8245B0B1C749BC /* FirebaseCrashlytics */,
 			);
 			productName = Skarnik;
 			productReference = B20ABAB628EEBF6F00AA2FC9 /* Skarnik.app */;
@@ -1188,6 +1191,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = F268C3CF2D50DD4B004B7BE4 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = FirebaseAnalytics;
+		};
+		6B3799A98B8245B0B1C749BC /* FirebaseCrashlytics */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = F268C3CF2D50DD4B004B7BE4 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseCrashlytics;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
