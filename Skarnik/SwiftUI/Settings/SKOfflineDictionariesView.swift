@@ -27,7 +27,7 @@ struct SKOfflineDictionariesView: View {
         }
         .listStyle(.insetGrouped)
         .background(Color.appBackground.ignoresSafeArea())
-        .onAppear { manager.refreshDownloadedCounts() }
+        .task { await manager.refreshDownloadedCounts() }
         .onReceive(manager.effectSubject) { effect in
             switch effect {
             case .rateLimited:
@@ -47,7 +47,7 @@ struct SKOfflineDictionariesView: View {
             Button(SKLocalization.offlineDeleteConfirmCancel, role: .cancel) { dictionaryPendingDelete = nil }
             Button(SKLocalization.offlineDeleteConfirmConfirm, role: .destructive) {
                 if let dictionary = dictionaryPendingDelete {
-                    manager.delete(dictionary)
+                    Task { await manager.delete(dictionary) }
                 }
                 dictionaryPendingDelete = nil
             }

@@ -57,10 +57,10 @@ final class SKOfflineDictionaryDownloadManager: ObservableObject {
     /// — that would render a checkmark for a partial word count with no way to resume, since a
     /// "Downloaded" row only offers delete. Falling back to `.notDownloaded` keeps it tappable,
     /// and `startDownload` already resumes correctly from the persisted cursor.
-    func refreshDownloadedCounts() {
+    func refreshDownloadedCounts() async {
         for dictionary in Self.downloadableDictionaries {
             guard runningTasks[dictionary] == nil else { continue }
-            let count = store.wordCount(langId: dictionary.rawValue)
+            let count = await store.wordCount(langId: dictionary.rawValue)
             let isInterrupted = storage.cursor(for: dictionary) != nil
             if count > 0 && !isInterrupted {
                 states[dictionary] = .downloaded(count: count)
@@ -89,10 +89,10 @@ final class SKOfflineDictionaryDownloadManager: ObservableObject {
         }
     }
 
-    func delete(_ dictionary: ESKVocabularyType) {
+    func delete(_ dictionary: ESKVocabularyType) async {
         runningTasks[dictionary]?.cancel()
         runningTasks[dictionary] = nil
-        store.deleteAll(langId: dictionary.rawValue)
+        await store.deleteAll(langId: dictionary.rawValue)
         storage.clearCursor(for: dictionary)
         states[dictionary] = .notDownloaded
     }
@@ -103,7 +103,7 @@ final class SKOfflineDictionaryDownloadManager: ObservableObject {
         let langId = dictionary.rawValue
         do {
             let total = try await cloudSource.count(for: dictionary)
-            let localCount = store.wordCount(langId: langId)
+            let localCount = await store.wordCount(langId: langId)
             var startCursor = storage.cursor(for: dictionary) ?? 0
 
             // Stale-cursor guard: a persisted cursor with no local data means local storage was
@@ -129,7 +129,7 @@ final class SKOfflineDictionaryDownloadManager: ObservableObject {
                 let words = rows.map {
                     SKDownloadedWord(externalId: $0.external_id, stress: $0.stress, translation: $0.translation, redirectTo: $0.redirect_to)
                 }
-                try store.upsert(words, langId: langId)
+                try await store.upsert(words, langId: langId)
 
                 done += rows.count
                 cursor = rows.last!.id
@@ -138,7 +138,7 @@ final class SKOfflineDictionaryDownloadManager: ObservableObject {
             }
 
             storage.clearCursor(for: dictionary)
-            states[dictionary] = .downloaded(count: store.wordCount(langId: langId))
+            states[dictionary] = .downloaded(count: await store.wordCount(langId: langId))
         } catch {
             states[dictionary] = .failed(error.localizedDescription)
         }

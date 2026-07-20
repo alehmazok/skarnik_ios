@@ -55,7 +55,15 @@ class SKWordDetailsViewModel: ObservableObject {
         return word?.lang_id.wordDetailsSubtitle?.uppercased()
     }
     
+    /// Bounds how many redirects `updateWord` will chase in a row — guards against a circular
+    /// `redirect_to` chain (e.g. A → B → A) looping forever instead of settling on an error.
+    private static let maxRedirectDepth = 5
+
     func updateWord(_ word: SKWord?) {
+        updateWord(word, redirectDepth: 0)
+    }
+
+    private func updateWord(_ word: SKWord?, redirectDepth: Int) {
         // Cancel any ongoing fetch task for a previous word
         fetchTask?.cancel()
         
@@ -103,13 +111,14 @@ class SKWordDetailsViewModel: ObservableObject {
                 // Task was cancelled, do nothing
             } catch SKSkarnikError.redirect(let fromWord, let redirectPath) {
                 guard !Task.isCancelled else { return }
-                guard let redirectId = redirectPath.trailingWordId,
+                guard redirectDepth < Self.maxRedirectDepth,
+                      let redirectId = redirectPath.trailingWordId,
                       let nextWord = SKVocabularyIndex.shared.word(id: redirectId, vocabularyType: fromWord.lang_id) else {
                     self.state = .error(SKLocalization.errorWordNotFound)
                     return
                 }
                 self.effectSubject.send(.redirection(fromWord.word))
-                self.updateWord(nextWord)
+                self.updateWord(nextWord, redirectDepth: redirectDepth + 1)
             } catch SKSkarnikError.networkError {
                 if !Task.isCancelled {
                     self.state = .error(SKLocalization.errorNetworkErrorTryAgainLater)

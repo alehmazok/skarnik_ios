@@ -8,38 +8,41 @@ final class SKOfflineDictionaryStoreTests: XCTestCase {
     private let testLangId = 9001
     private let otherLangId = 9002
 
-    override func tearDown() {
-        store.deleteAll(langId: testLangId)
-        store.deleteAll(langId: otherLangId)
-        super.tearDown()
+    override func tearDown() async throws {
+        await store.deleteAll(langId: testLangId)
+        await store.deleteAll(langId: otherLangId)
+        try await super.tearDown()
     }
 
-    func testWord_notFound_returnsNil() {
-        XCTAssertNil(store.word(langId: testLangId, externalId: 1))
+    func testWord_notFound_returnsNil() async {
+        let result = await store.word(langId: testLangId, externalId: 1)
+        XCTAssertNil(result)
     }
 
-    func testUpsert_thenWordIsRetrievable() throws {
+    func testUpsert_thenWordIsRetrievable() async throws {
         let word = SKDownloadedWord(externalId: 1, stress: "тэ́ст", translation: "<b>ok</b>", redirectTo: nil)
-        try store.upsert([word], langId: testLangId)
+        try await store.upsert([word], langId: testLangId)
 
-        let fetched = store.word(langId: testLangId, externalId: 1)
+        let fetched = await store.word(langId: testLangId, externalId: 1)
         XCTAssertEqual(fetched?.externalId, 1)
         XCTAssertEqual(fetched?.stress, "тэ́ст")
         XCTAssertEqual(fetched?.translation, "<b>ok</b>")
         XCTAssertNil(fetched?.redirectTo)
     }
 
-    func testUpsert_replacesOnConflict() throws {
-        try store.upsert([SKDownloadedWord(externalId: 1, stress: nil, translation: "first", redirectTo: nil)], langId: testLangId)
-        try store.upsert([SKDownloadedWord(externalId: 1, stress: nil, translation: "second", redirectTo: nil)], langId: testLangId)
+    func testUpsert_replacesOnConflict() async throws {
+        try await store.upsert([SKDownloadedWord(externalId: 1, stress: nil, translation: "first", redirectTo: nil)], langId: testLangId)
+        try await store.upsert([SKDownloadedWord(externalId: 1, stress: nil, translation: "second", redirectTo: nil)], langId: testLangId)
 
-        XCTAssertEqual(store.wordCount(langId: testLangId), 1)
-        XCTAssertEqual(store.word(langId: testLangId, externalId: 1)?.translation, "second")
+        let count = await store.wordCount(langId: testLangId)
+        let fetched = await store.word(langId: testLangId, externalId: 1)
+        XCTAssertEqual(count, 1)
+        XCTAssertEqual(fetched?.translation, "second")
     }
 
-    func testWordCount_isolatedPerLangId() throws {
-        try store.upsert([SKDownloadedWord(externalId: 1, stress: nil, translation: "a", redirectTo: nil)], langId: testLangId)
-        try store.upsert(
+    func testWordCount_isolatedPerLangId() async throws {
+        try await store.upsert([SKDownloadedWord(externalId: 1, stress: nil, translation: "a", redirectTo: nil)], langId: testLangId)
+        try await store.upsert(
             [
                 SKDownloadedWord(externalId: 1, stress: nil, translation: "b", redirectTo: nil),
                 SKDownloadedWord(externalId: 2, stress: nil, translation: "c", redirectTo: nil)
@@ -47,22 +50,27 @@ final class SKOfflineDictionaryStoreTests: XCTestCase {
             langId: otherLangId
         )
 
-        XCTAssertEqual(store.wordCount(langId: testLangId), 1)
-        XCTAssertEqual(store.wordCount(langId: otherLangId), 2)
+        let testCount = await store.wordCount(langId: testLangId)
+        let otherCount = await store.wordCount(langId: otherLangId)
+        XCTAssertEqual(testCount, 1)
+        XCTAssertEqual(otherCount, 2)
     }
 
-    func testDeleteAll_removesOnlyThatLangId() throws {
-        try store.upsert([SKDownloadedWord(externalId: 1, stress: nil, translation: "a", redirectTo: nil)], langId: testLangId)
-        try store.upsert([SKDownloadedWord(externalId: 1, stress: nil, translation: "b", redirectTo: nil)], langId: otherLangId)
+    func testDeleteAll_removesOnlyThatLangId() async throws {
+        try await store.upsert([SKDownloadedWord(externalId: 1, stress: nil, translation: "a", redirectTo: nil)], langId: testLangId)
+        try await store.upsert([SKDownloadedWord(externalId: 1, stress: nil, translation: "b", redirectTo: nil)], langId: otherLangId)
 
-        store.deleteAll(langId: testLangId)
+        await store.deleteAll(langId: testLangId)
 
-        XCTAssertEqual(store.wordCount(langId: testLangId), 0)
-        XCTAssertEqual(store.wordCount(langId: otherLangId), 1)
+        let testCount = await store.wordCount(langId: testLangId)
+        let otherCount = await store.wordCount(langId: otherLangId)
+        XCTAssertEqual(testCount, 0)
+        XCTAssertEqual(otherCount, 1)
     }
 
-    func testWord_withRedirectTo_isPreserved() throws {
-        try store.upsert([SKDownloadedWord(externalId: 1, stress: nil, translation: "", redirectTo: "/belrus/2")], langId: testLangId)
-        XCTAssertEqual(store.word(langId: testLangId, externalId: 1)?.redirectTo, "/belrus/2")
+    func testWord_withRedirectTo_isPreserved() async throws {
+        try await store.upsert([SKDownloadedWord(externalId: 1, stress: nil, translation: "", redirectTo: "/belrus/2")], langId: testLangId)
+        let fetched = await store.word(langId: testLangId, externalId: 1)
+        XCTAssertEqual(fetched?.redirectTo, "/belrus/2")
     }
 }

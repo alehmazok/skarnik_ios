@@ -10,8 +10,8 @@ final class SKOfflineDictionaryDownloadManagerTests: XCTestCase {
     private var cancellables: Set<AnyCancellable> = []
     private var storage: SKOfflineDictionaryStorage!
 
-    override func setUp() {
-        super.setUp()
+    override func setUp() async throws {
+        try await super.setUp()
         // Isolated UserDefaults suite, NOT `.shared`/`.standard` — the XCTest host app shares the
         // real app's UserDefaults domain, so writing rate-limit attempt timestamps to `.standard`
         // here would silently eat into the real app's download-attempt budget on this simulator.
@@ -22,14 +22,14 @@ final class SKOfflineDictionaryDownloadManagerTests: XCTestCase {
         // Defensive: `store` is the real, shared SQLite file (there's no isolated-store DI), so
         // clear this test's langId here too, not just in tearDown — guards against any leftover
         // rows from outside this test run (e.g. manual app usage on the same simulator).
-        SKOfflineDictionaryStore.shared.deleteAll(langId: dictionary.rawValue)
+        await SKOfflineDictionaryStore.shared.deleteAll(langId: dictionary.rawValue)
     }
 
-    override func tearDown() {
-        SKOfflineDictionaryStore.shared.deleteAll(langId: dictionary.rawValue)
+    override func tearDown() async throws {
+        await SKOfflineDictionaryStore.shared.deleteAll(langId: dictionary.rawValue)
         storage = nil
         cancellables = []
-        super.tearDown()
+        try await super.tearDown()
     }
 
     private func makeManager(cloud: MockCloudSource) -> SKOfflineDictionaryDownloadManager {
@@ -56,7 +56,7 @@ final class SKOfflineDictionaryDownloadManagerTests: XCTestCase {
 
     func testFreshDownload_startsDoneAtZeroDespiteStaleLocalData() async throws {
         // Stale local rows from before the cursor feature existed, with no persisted cursor.
-        try SKOfflineDictionaryStore.shared.upsert(
+        try await SKOfflineDictionaryStore.shared.upsert(
             [SKDownloadedWord(externalId: 1, stress: nil, translation: "stale", redirectTo: nil)],
             langId: dictionary.rawValue
         )
@@ -90,7 +90,7 @@ final class SKOfflineDictionaryDownloadManagerTests: XCTestCase {
     }
 
     func testResume_seedsDoneFromLocalCountAndFetchesFromPersistedCursor() async throws {
-        try SKOfflineDictionaryStore.shared.upsert(
+        try await SKOfflineDictionaryStore.shared.upsert(
             [
                 SKDownloadedWord(externalId: 1, stress: nil, translation: "a", redirectTo: nil),
                 SKDownloadedWord(externalId: 2, stress: nil, translation: "b", redirectTo: nil)
@@ -142,32 +142,32 @@ final class SKOfflineDictionaryDownloadManagerTests: XCTestCase {
         XCTAssertEqual(cloud.requestedCursors.first, 0, "A stale cursor with no local data must be discarded")
     }
 
-    func testRefreshDownloadedCounts_interruptedDownloadShowsAsNotDownloaded() throws {
+    func testRefreshDownloadedCounts_interruptedDownloadShowsAsNotDownloaded() async throws {
         // Simulates the app being killed mid-download: partial rows made it to disk, but the
         // cursor was never cleared because the fetch loop never reached the exhausting empty page.
-        try SKOfflineDictionaryStore.shared.upsert(
+        try await SKOfflineDictionaryStore.shared.upsert(
             [SKDownloadedWord(externalId: 1, stress: nil, translation: "a", redirectTo: nil)],
             langId: dictionary.rawValue
         )
         storage.setCursor(50, for: dictionary)
 
         let manager = makeManager(cloud: MockCloudSource())
-        manager.refreshDownloadedCounts()
+        await manager.refreshDownloadedCounts()
 
         guard case .notDownloaded = manager.states[dictionary] else {
             XCTFail("An interrupted download (cursor still persisted) must not show as .downloaded — there'd be no way to resume it"); return
         }
     }
 
-    func testRefreshDownloadedCounts_completedDownloadShowsAsDownloaded() throws {
-        try SKOfflineDictionaryStore.shared.upsert(
+    func testRefreshDownloadedCounts_completedDownloadShowsAsDownloaded() async throws {
+        try await SKOfflineDictionaryStore.shared.upsert(
             [SKDownloadedWord(externalId: 1, stress: nil, translation: "a", redirectTo: nil)],
             langId: dictionary.rawValue
         )
         // No cursor persisted — the stream was fully exhausted (see runDownload's completion path).
 
         let manager = makeManager(cloud: MockCloudSource())
-        manager.refreshDownloadedCounts()
+        await manager.refreshDownloadedCounts()
 
         guard case .downloaded(let count) = manager.states[dictionary] else {
             XCTFail("A completed download (no persisted cursor) must show as .downloaded"); return

@@ -16,7 +16,7 @@ struct SKLocalTranslationSource: SKTranslationSource {
     }
 
     func wordTranslation(_ word: SKWord) async throws -> SKSkarnikTranslation? {
-        guard let downloaded = store.word(langId: word.lang_id.rawValue, externalId: word.word_id) else {
+        guard let downloaded = await store.word(langId: word.lang_id.rawValue, externalId: word.word_id) else {
             return nil
         }
 
