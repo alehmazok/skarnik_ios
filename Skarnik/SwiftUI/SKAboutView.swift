@@ -42,10 +42,24 @@ struct SKAboutView: View {
                         .padding(.horizontal, 4)
                 }
                 .buttonStyle(.borderedProminent)
+
+                if let versionString {
+                    Text(versionString)
+                        .font(.system(size: 12, design: .monospaced))
+                        .foregroundStyle(Color(UIColor.tertiaryLabel))
+                }
             }
             .padding()
         }
         .background(Color.appBackground.ignoresSafeArea())
+    }
+
+    private var versionString: String? {
+        guard
+            let shortVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String,
+            let buildVersion = Bundle.main.infoDictionary?["CFBundleVersion"] as? String
+        else { return nil }
+        return "\(SKLocalization.aboutVersionPrefix) \(shortVersion) (\(buildVersion))"
     }
 
     private var linksSection: some View {
