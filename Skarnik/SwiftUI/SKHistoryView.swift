@@ -58,7 +58,7 @@ private struct SKHistoryContentView: View {
         mainContent
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(Color.appBackground.ignoresSafeArea())
-            .overlay(alignment: .bottom) {
+            .safeAreaInset(edge: .bottom) {
                 if isSearching { belarusianKeyboardRow }
             }
     }
