@@ -1,5 +1,5 @@
 //
-//  SKOfflineDictionariesView.swift
+//  SKSettingsView.swift
 //  Skarnik
 //
 
@@ -7,11 +7,13 @@ import UIKit
 import SwiftUI
 import Combine
 
-struct SKOfflineDictionariesView: View {
+struct SKSettingsView: View {
     @ObservedObject var manager = SKOfflineDictionaryDownloadManager.shared
 
     @State private var dictionaryPendingDelete: ESKVocabularyType?
     @State private var showRateLimitAlert = false
+
+    var onAboutTapped: (() -> Void)?
 
     private static let dictionaries = SKOfflineDictionaryDownloadManager.downloadableDictionaries
 
@@ -23,6 +25,11 @@ struct SKOfflineDictionariesView: View {
                 }
             } header: {
                 Text(SKLocalization.offlineSectionTitle)
+            }
+
+            Section {
+                rateAppRow
+                aboutRow
             }
         }
         .listStyle(.insetGrouped)
@@ -56,6 +63,43 @@ struct SKOfflineDictionariesView: View {
                 Text(SKLocalization.offlineDeleteConfirmMessage(dictName: shortName(for: dictionary)))
             }
         }
+    }
+
+    private var rateAppRow: some View {
+        HStack {
+            Text(SKLocalization.rateAppRowTitle)
+                .font(.system(size: 16, weight: .medium))
+
+            Spacer()
+
+            Image(systemName: "chevron.right")
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundStyle(Color(UIColor.tertiaryLabel))
+        }
+        .contentShape(Rectangle())
+        .onTapGesture {
+            guard let url = URL(string: SKLocalization.rateAppURLString) else { return }
+            UIApplication.shared.open(url)
+        }
+        .padding(.vertical, 4)
+    }
+
+    private var aboutRow: some View {
+        HStack {
+            Text(SKLocalization.aboutRowTitle)
+                .font(.system(size: 16, weight: .medium))
+
+            Spacer()
+
+            Image(systemName: "chevron.right")
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundStyle(Color(UIColor.tertiaryLabel))
+        }
+        .contentShape(Rectangle())
+        .onTapGesture {
+            onAboutTapped?()
+        }
+        .padding(.vertical, 4)
     }
 
     @ViewBuilder
@@ -152,14 +196,20 @@ struct SKOfflineDictionariesView: View {
 
 // MARK: - UIKit host
 
-class SKSettingsViewController: UIHostingController<SKOfflineDictionariesView> {
+class SKSettingsViewController: UIHostingController<SKSettingsView> {
 
     init() {
-        super.init(rootView: SKOfflineDictionariesView())
+        super.init(rootView: SKSettingsView())
+        rootView.onAboutTapped = { [weak self] in
+            self?.navigationController?.pushViewController(SKAboutViewController(), animated: true)
+        }
     }
 
     required init?(coder: NSCoder) {
-        super.init(coder: coder, rootView: SKOfflineDictionariesView())
+        super.init(coder: coder, rootView: SKSettingsView())
+        rootView.onAboutTapped = { [weak self] in
+            self?.navigationController?.pushViewController(SKAboutViewController(), animated: true)
+        }
     }
 
     override func viewDidLoad() {
@@ -172,7 +222,7 @@ class SKSettingsViewController: UIHostingController<SKOfflineDictionariesView> {
 #if DEBUG
 #Preview {
     NavigationView {
-        SKOfflineDictionariesView()
+        SKSettingsView()
     }
 }
 #endif

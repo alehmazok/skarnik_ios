@@ -11,7 +11,7 @@
 		4CBC1449DC5632EA59C93C52 /* SKDamerauLevenshtein.swift in Sources */ = {isa = PBXBuildFile; fileRef = B080BC497B8AC249E588E1F3 /* SKDamerauLevenshtein.swift */; };
 		65607B0CCB528B4D85C913ED /* SKOfflineDictionaryDownloadManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4EFE6AF369792DEC73FB0E57 /* SKOfflineDictionaryDownloadManager.swift */; };
 		99C203129644572974C6BFD1 /* SKOfflineDictionaryStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = C6C88C91F944A417B5665C31 /* SKOfflineDictionaryStore.swift */; };
-		A9AED8B8F0A2E6A9DC15AEBB /* SKOfflineDictionariesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D49C5E9119FCE560844062A3 /* SKOfflineDictionariesView.swift */; };
+		A9AED8B8F0A2E6A9DC15AEBB /* SKSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D49C5E9119FCE560844062A3 /* SKSettingsView.swift */; };
 		B108B8C321BA5B82FC2534B7 /* SKOfflineDictionaryCloudSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA833B19524C50B41DDB7B29 /* SKOfflineDictionaryCloudSource.swift */; };
 		B20ABABA28EEBF6F00AA2FC9 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20ABAB928EEBF6F00AA2FC9 /* AppDelegate.swift */; };
 		B20ABABC28EEBF6F00AA2FC9 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20ABABB28EEBF6F00AA2FC9 /* SceneDelegate.swift */; };
@@ -183,7 +183,7 @@
 		B2FEFEEC28F43DFE00675E49 /* SKStorageController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SKStorageController.swift; sourceTree = "<group>"; };
 		B2FEFEEE28F4E53500675E49 /* SKWordDetailsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SKWordDetailsViewController.swift; sourceTree = "<group>"; };
 		C6C88C91F944A417B5665C31 /* SKOfflineDictionaryStore.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SKOfflineDictionaryStore.swift; sourceTree = "<group>"; };
-		D49C5E9119FCE560844062A3 /* SKOfflineDictionariesView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SKOfflineDictionariesView.swift; sourceTree = "<group>"; };
+		D49C5E9119FCE560844062A3 /* SKSettingsView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SKSettingsView.swift; sourceTree = "<group>"; };
 		DEADC5D2AEEDF862E8EED585 /* SKLocalTranslationSource.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SKLocalTranslationSource.swift; sourceTree = "<group>"; };
 		F2005D242F5CF009003A032C /* SKWordDetailsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SKWordDetailsViewModel.swift; sourceTree = "<group>"; };
 		F229B9CA2D5134B000B2463E /* SKAnalyticsManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SKAnalyticsManager.swift; sourceTree = "<group>"; };
@@ -268,7 +268,7 @@
 		665C7669ACBBB0F813394CEA /* Settings */ = {
 			isa = PBXGroup;
 			children = (
-				D49C5E9119FCE560844062A3 /* SKOfflineDictionariesView.swift */,
+				D49C5E9119FCE560844062A3 /* SKSettingsView.swift */,
 			);
 			path = Settings;
 			sourceTree = "<group>";
@@ -660,7 +660,7 @@
 				0356FC30403576F7856E3723 /* SKOfflineDictionaryStorage.swift in Sources */,
 				65607B0CCB528B4D85C913ED /* SKOfflineDictionaryDownloadManager.swift in Sources */,
 				C95158DD56A01DAB74CDAA79 /* SKLocalTranslationSource.swift in Sources */,
-				A9AED8B8F0A2E6A9DC15AEBB /* SKOfflineDictionariesView.swift in Sources */,
+				A9AED8B8F0A2E6A9DC15AEBB /* SKSettingsView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -864,7 +864,7 @@
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 62;
+				CURRENT_PROJECT_VERSION = 64;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = "";
 				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = EQFFWL4KZF;
@@ -886,7 +886,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 3.4.1;
+				MARKETING_VERSION = 3.4.3;
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_BUNDLE_IDENTIFIER = by.mazokaleh.Skarnik;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -912,7 +912,7 @@
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Distribution";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Distribution";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 62;
+				CURRENT_PROJECT_VERSION = 64;
 				DEVELOPMENT_TEAM = "";
 				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = EQFFWL4KZF;
 				"DEVELOPMENT_TEAM[sdk=macosx*]" = EQFFWL4KZF;
@@ -933,7 +933,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 3.4.1;
+				MARKETING_VERSION = 3.4.3;
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_BUNDLE_IDENTIFIER = by.mazokaleh.Skarnik;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -960,7 +960,7 @@
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Mac Developer";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 62;
+				CURRENT_PROJECT_VERSION = 64;
 				DEVELOPMENT_TEAM = "";
 				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = EQFFWL4KZF;
 				"DEVELOPMENT_TEAM[sdk=macosx*]" = EQFFWL4KZF;
@@ -979,7 +979,7 @@
 					"@executable_path/../../Frameworks",
 				);
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
-				MARKETING_VERSION = 3.4.1;
+				MARKETING_VERSION = 3.4.3;
 				PRODUCT_BUNDLE_IDENTIFIER = by.mazokaleh.Skarnik.WordWidget;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -1007,7 +1007,7 @@
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Distribution";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "3rd Party Mac Developer Application";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 62;
+				CURRENT_PROJECT_VERSION = 64;
 				DEVELOPMENT_TEAM = "";
 				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = EQFFWL4KZF;
 				"DEVELOPMENT_TEAM[sdk=macosx*]" = EQFFWL4KZF;
@@ -1026,7 +1026,7 @@
 					"@executable_path/../../Frameworks",
 				);
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
-				MARKETING_VERSION = 3.4.1;
+				MARKETING_VERSION = 3.4.3;
 				PRODUCT_BUNDLE_IDENTIFIER = by.mazokaleh.Skarnik.WordWidget;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
