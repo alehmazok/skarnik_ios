@@ -11,6 +11,9 @@ import SwiftUI
 
 struct SKAboutView: View {
 
+    /// Toggle to re-enable creators' X links section.
+    private static let showCreditsSection = false
+
     var body: some View {
         ScrollView {
             VStack(alignment: .center, spacing: 20) {
@@ -22,9 +25,11 @@ struct SKAboutView: View {
 
                 linksSection
 
-                Divider()
+                if Self.showCreditsSection {
+                    Divider()
 
-                creditsSection
+                    creditsSection
+                }
 
                 Divider()
 
