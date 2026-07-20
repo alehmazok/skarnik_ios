@@ -50,6 +50,7 @@ class SKLocalization: Any {
     class var aboutSupportButtonTitle: String { "Напісаць распрацоўшчыкам" }
     class var aboutSupportMailto: String { "mailto:belanghelp@gmail.com?bcc=skarnikapp@gmail.com" }
     class var aboutRowTitle: String { "Пра Скарнік" }
+    class var aboutVersionPrefix: String { "Версія" }
     class var rateAppRowTitle: String { "Ацаніць праграму" }
     class var rateAppURLString: String { "https://apps.apple.com/app/id988334682?action=write-review" }
     class var wordStressLoadingLabel: String { "Пачакайце, калі ласка" }
