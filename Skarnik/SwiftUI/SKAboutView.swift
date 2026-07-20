@@ -152,7 +152,7 @@ class SKAboutViewController: UIHostingController<SKAboutView> {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        navigationItem.title = "Skarnik"
+        navigationItem.title = SKLocalization.aboutRowTitle
         navigationItem.largeTitleDisplayMode = .never
     }
 }

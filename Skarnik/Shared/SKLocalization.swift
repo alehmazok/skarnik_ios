@@ -16,7 +16,6 @@ class SKLocalization: Any {
     class var vocabulariesAdvancedSearch: String { "Спецпошук" }
     class var tabHistory: String { "Гісторыя" }
     class var tabVocabularies: String { "Слоўнікі" }
-    class var tabAbout: String { "Інфа" }
     class var tabSettings: String { "Налады" }
     class var segmentHistory: String { "Гісторыя" }
     class var segmentRusBel: String { "Рус-Бел" }
@@ -50,6 +49,7 @@ class SKLocalization: Any {
     class var aboutDescription: String { "Skarnik - электронны руска-беларускі слоўнік. За аснову ўзяты акадэмічны слоўнік, які быў выпушчаны ў 1953 годзе (пад рэдакцыяй Я. Коласа, К. Крапівы і П. Глебкі) і затым некалькі разоў перавыдаваўся з выпраўленнямі і дапаўненнямі.\n\nСайт skarnik.by пачаў працаваць 7 жніўня 2012 года." }
     class var aboutSupportButtonTitle: String { "Напісаць распрацоўшчыкам" }
     class var aboutSupportMailto: String { "mailto:belanghelp@gmail.com?bcc=skarnikapp@gmail.com" }
+    class var aboutRowTitle: String { "Пра Скарнік" }
     class var wordStressLoadingLabel: String { "Пачакайце, калі ласка" }
     class var wordStressTitle: String { "Націск" }
     class var wordStressError: String { "Адбылася памылка падчас загрузкі інфармацыі аб націску." }
