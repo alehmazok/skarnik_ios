@@ -56,4 +56,11 @@ class SKFirebaseAnalytics: SKAnalyticsService {
         ])
     }
 
+    func logOfflineDictionaryDownloadClick(dictName: String, dictPath: String) {
+        Analytics.logEvent(SKAnalyticsEvent.offlineDictionaryDownloadClick.rawValue, parameters: [
+            "dict_name": dictName,
+            "dict_path": dictPath,
+        ])
+    }
+
 }

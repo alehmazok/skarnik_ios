@@ -44,4 +44,8 @@ class SKAnalyticsManager {
     static func logShareClicked(word: SKWord, url: String) {
         shared.service.logShareClicked(word: word, url: url)
     }
+
+    static func logOfflineDictionaryDownloadClick(dictName: String, dictPath: String) {
+        shared.service.logOfflineDictionaryDownloadClick(dictName: dictName, dictPath: dictPath)
+    }
 }

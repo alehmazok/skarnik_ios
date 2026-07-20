@@ -359,6 +359,27 @@ final class SKSkarnikByControllerTests: XCTestCase {
         XCTAssertNil(result)
     }
 
+    func testFallback_redirectIsTerminalAndSkipsLaterSources() async {
+        var laterSourceCalled = false
+
+        let source = SKFallbackTranslationSource(sources: [
+            MockTranslationSource { throw SKSkarnikError.redirect(word: self.sampleWord, redirectTo: "/belrus/2") },
+            MockTranslationSource { laterSourceCalled = true; return self.sampleTranslation(for: self.sampleWord) }
+        ])
+
+        do {
+            _ = try await source.wordTranslation(sampleWord)
+            XCTFail("Expected the redirect to propagate")
+        } catch SKSkarnikError.redirect(let word, let redirectTo) {
+            XCTAssertEqual(word, sampleWord)
+            XCTAssertEqual(redirectTo, "/belrus/2")
+        } catch {
+            XCTFail("Unexpected error type: \(error)")
+        }
+
+        XCTAssertFalse(laterSourceCalled, "A later source must not run once an earlier one hits a terminal redirect")
+    }
+
     func testFallback_usesSourcesInOrder() async throws {
         var callOrder: [Int] = []
 

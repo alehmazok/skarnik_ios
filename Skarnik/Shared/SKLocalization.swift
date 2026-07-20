@@ -17,6 +17,7 @@ class SKLocalization: Any {
     class var tabHistory: String { "Гісторыя" }
     class var tabVocabularies: String { "Слоўнікі" }
     class var tabAbout: String { "Інфа" }
+    class var tabSettings: String { "Налады" }
     class var segmentHistory: String { "Гісторыя" }
     class var segmentRusBel: String { "Рус-Бел" }
     class var segmentBelRus: String { "Бел-Рус" }
@@ -63,6 +64,21 @@ class SKLocalization: Any {
     class var reportIssueTypeOther: String { "Іншая праблема" }
     class var reportIssueDetailsPlaceholder: String { "Апішыце праблему (неабавязкова)" }
 
+
+    class var offlineSectionTitle: String { "Афлайн доступ" }
+    class var offlineNotDownloadedSubtitle: String { "Спампаваць для афлайн доступу" }
+    class var offlineFailedSubtitle: String { "Адбылася памылка падчас спампоўкі слоўніка." }
+    class var offlineDownloadingSubtitle: String { "Спампоўваецца…" }
+    class var offlineRateLimitMessage: String { "Занадта шмат спроб спампоўкі. Паспрабуйце праз некалькі хвілін." }
+    class var offlineDeleteConfirmTitle: String { "Увага" }
+    class var offlineDeleteConfirmCancel: String { "Не" }
+    class var offlineDeleteConfirmConfirm: String { "Так" }
+
+    class func offlineDownloadedSubtitle(count: Int) -> String { "Спампавана: \(count) слоў" }
+    class func offlineProgressLabel(done: Int, total: Int) -> String { "\(done) / \(total) слоў" }
+    class func offlineDeleteConfirmMessage(dictName: String) -> String {
+        "Вы сапраўды жадаеце выдаліць афлайн-копію слоўніка «\(dictName)»?"
+    }
 
     class var widgetWordTitle: String { "Слова дня" }
     class var widgetWordDescriptioon: String { "Выпадковае слова і яго пераклад." }

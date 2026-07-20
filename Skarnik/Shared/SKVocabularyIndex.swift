@@ -62,7 +62,7 @@ extension ESKVocabularyType {
     }
 }
 
-struct SKWord: Codable {
+struct SKWord: Codable, Equatable {
     var id: Int64? = 0
     var word_id: Int64
     let word: String

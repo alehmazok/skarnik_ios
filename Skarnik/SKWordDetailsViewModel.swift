@@ -97,17 +97,19 @@ class SKWordDetailsViewModel: ObservableObject {
                     entry_point: self.entryPoint
                 )
                 
-                if word.word_id == translation.word.word_id && word.lang_id == translation.word.lang_id {
-                    self.state = .success(translation)
-                    SKAppstoreReviewController.requestReview()
-                } else {
-                    let redirectedFrom = word.word
-                    self.word = translation.word
-                    self.state = .success(translation)
-                    self.effectSubject.send(.redirection(redirectedFrom))
-                }
+                self.state = .success(translation)
+                SKAppstoreReviewController.requestReview()
             } catch is CancellationError {
                 // Task was cancelled, do nothing
+            } catch SKSkarnikError.redirect(let fromWord, let redirectPath) {
+                guard !Task.isCancelled else { return }
+                guard let redirectId = redirectPath.trailingWordId,
+                      let nextWord = SKVocabularyIndex.shared.word(id: redirectId, vocabularyType: fromWord.lang_id) else {
+                    self.state = .error(SKLocalization.errorWordNotFound)
+                    return
+                }
+                self.effectSubject.send(.redirection(fromWord.word))
+                self.updateWord(nextWord)
             } catch SKSkarnikError.networkError {
                 if !Task.isCancelled {
                     self.state = .error(SKLocalization.errorNetworkErrorTryAgainLater)

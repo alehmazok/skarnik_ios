@@ -13,7 +13,7 @@ class SKWordDetailsViewController: UIHostingController<SKWordDetailsView> {
     let viewModel: SKWordDetailsViewModel
 
     required init?(coder: NSCoder) {
-        let vm = SKWordDetailsViewModel()
+        let vm = SKWordDetailsViewModel(translationSource: SKFallbackTranslationSource.sharedWithLocalCache)
         self.viewModel = vm
         super.init(coder: coder, rootView: SKWordDetailsView(viewModel: vm))
     }
