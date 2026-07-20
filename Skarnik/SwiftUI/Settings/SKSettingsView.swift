@@ -28,6 +28,7 @@ struct SKSettingsView: View {
             }
 
             Section {
+                rateAppRow
                 aboutRow
             }
         }
@@ -62,6 +63,25 @@ struct SKSettingsView: View {
                 Text(SKLocalization.offlineDeleteConfirmMessage(dictName: shortName(for: dictionary)))
             }
         }
+    }
+
+    private var rateAppRow: some View {
+        HStack {
+            Text(SKLocalization.rateAppRowTitle)
+                .font(.system(size: 16, weight: .medium))
+
+            Spacer()
+
+            Image(systemName: "chevron.right")
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundStyle(Color(UIColor.tertiaryLabel))
+        }
+        .contentShape(Rectangle())
+        .onTapGesture {
+            guard let url = URL(string: SKLocalization.rateAppURLString) else { return }
+            UIApplication.shared.open(url)
+        }
+        .padding(.vertical, 4)
     }
 
     private var aboutRow: some View {
