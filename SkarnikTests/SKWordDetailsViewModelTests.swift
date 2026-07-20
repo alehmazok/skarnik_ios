@@ -159,11 +159,21 @@ final class SKWordDetailsViewModelTests: XCTestCase {
     }
 
     @MainActor
-    func testUpdateWord_redirection() async {
-        let requestedWord = SKWord(word_id: 1, word: "тэст", lang_id: .bel_rus)
-        let redirectedWord = SKWord(word_id: 2, word: "тэсты", lang_id: .bel_rus)
-        let translation = SKSkarnikTranslation(word: redirectedWord, url: "https://example.com", html: "<b>ok</b>")
-        let vm = SKWordDetailsViewModel(translationSource: MockTranslationSource { translation })
+    func testUpdateWord_redirect() async {
+        // Redirect is terminal at the source that detects it (thrown, not returned as a mismatched
+        // success) — the ViewModel must resolve `redirectTo` via the local vocabulary index itself
+        // and re-trigger a fresh top-of-cascade lookup for it.
+        guard let redirectTarget = SKVocabularyIndex.shared.word("мова", vocabularyType: .bel_rus) else {
+            XCTFail("Fixture word \"мова\" not found in vocabulary.db"); return
+        }
+        let requestedWord = SKWord(word_id: 999_999, word: "тэст", lang_id: .bel_rus)
+        let resolvedTranslation = SKSkarnikTranslation(word: redirectTarget, url: "https://example.com", html: "<b>ok</b>")
+        let source = RedirectingMockTranslationSource(
+            redirectFromWordId: requestedWord.word_id,
+            redirectTo: "/belrus/\(redirectTarget.word_id)",
+            resolvedTranslation: resolvedTranslation
+        )
+        let vm = SKWordDetailsViewModel(translationSource: source)
 
         let exp = expectation(description: "redirection effect")
         vm.effectSubject
@@ -178,7 +188,35 @@ final class SKWordDetailsViewModelTests: XCTestCase {
         vm.updateWord(requestedWord)
         await fulfillment(of: [exp], timeout: 1.0)
 
-        XCTAssertEqual(vm.word?.word_id, redirectedWord.word_id)
+        guard case .success(let translation) = vm.state else {
+            XCTFail("Expected .success state after following the redirect"); return
+        }
+        XCTAssertEqual(vm.word?.word_id, redirectTarget.word_id)
+        XCTAssertEqual(translation.word.word_id, redirectTarget.word_id)
+    }
+
+    @MainActor
+    func testUpdateWord_circularRedirect_terminatesWithError() async {
+        // A → B → A forever would hang without a bound — must settle on an error instead.
+        guard let wordA = SKVocabularyIndex.shared.word("мова", vocabularyType: .bel_rus),
+              let wordB = SKVocabularyIndex.shared.word("дом", vocabularyType: .bel_rus) else {
+            XCTFail("Fixture words not found in vocabulary.db"); return
+        }
+        let source = CircularRedirectMockTranslationSource(wordA: wordA, wordB: wordB)
+        let vm = SKWordDetailsViewModel(translationSource: source)
+
+        let exp = expectation(description: "error state after bounded redirects")
+        vm.$state
+            .sink { if case .error = $0 { exp.fulfill() } }
+            .store(in: &cancellables)
+
+        vm.updateWord(wordA)
+        await fulfillment(of: [exp], timeout: 2.0)
+
+        guard case .error = vm.state else {
+            XCTFail("Expected a terminal .error state, not an infinite redirect loop"); return
+        }
+        XCTAssertLessThanOrEqual(source.callCount, 7, "Redirect chasing must be bounded, not unbounded")
     }
 
     @MainActor
@@ -210,5 +248,39 @@ private struct MockTranslationSource: SKTranslationSource {
 
     func wordTranslation(_ word: SKWord) async throws -> SKSkarnikTranslation? {
         try await handler()
+    }
+}
+
+/// Always throws a terminal redirect, bouncing between `wordA`/`wordB` regardless of which was
+/// queried — simulates a circular `redirect_to` chain.
+private final class CircularRedirectMockTranslationSource: SKTranslationSource {
+    let wordA: SKWord
+    let wordB: SKWord
+    private(set) var callCount = 0
+
+    init(wordA: SKWord, wordB: SKWord) {
+        self.wordA = wordA
+        self.wordB = wordB
+    }
+
+    func wordTranslation(_ word: SKWord) async throws -> SKSkarnikTranslation? {
+        callCount += 1
+        let redirectTarget = word.word_id == wordA.word_id ? wordB : wordA
+        throw SKSkarnikError.redirect(word: word, redirectTo: "/belrus/\(redirectTarget.word_id)")
+    }
+}
+
+/// Throws a terminal redirect for one specific word id, resolves any other id (i.e. the
+/// redirect's target, once the ViewModel re-triggers a lookup for it) to a fixed translation.
+private struct RedirectingMockTranslationSource: SKTranslationSource {
+    let redirectFromWordId: Int64
+    let redirectTo: String
+    let resolvedTranslation: SKSkarnikTranslation
+
+    func wordTranslation(_ word: SKWord) async throws -> SKSkarnikTranslation? {
+        if word.word_id == redirectFromWordId {
+            throw SKSkarnikError.redirect(word: word, redirectTo: redirectTo)
+        }
+        return resolvedTranslation
     }
 }

@@ -104,3 +104,5 @@ CLAUDE.md
 # DB backups
 *.db.bak
 
+# Screenshots
+screenshots/

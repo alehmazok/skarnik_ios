@@ -30,4 +30,8 @@ class SKDebugAnalytics: SKAnalyticsService {
     func logShareClicked(word: SKWord, url: String) {
         print("📊 Share clicked: word=\(word.word), word_id=\(word.word_id), lang_id=\(word.lang_id.rawValue), url=\(url)")
     }
+
+    func logOfflineDictionaryDownloadClick(dictName: String, dictPath: String) {
+        print("📊 Offline dictionary download click: dict_name=\(dictName), dict_path=\(dictPath)")
+    }
 }

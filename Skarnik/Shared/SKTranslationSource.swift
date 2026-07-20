@@ -183,17 +183,32 @@ struct SKSkarnikTranslation {
     }
 }
 
-enum SKSkarnikError: Error {
+enum SKSkarnikError: Error, Equatable {
     case nextWordIndexRequired
     case networkError
+    /// A source found a record whose `redirect_to` is set: the word was merged into another entry.
+    /// Terminal at whichever tier detects it — never resolved inline by the source, never treated
+    /// as a miss/fallthrough. The caller re-triggers a fresh top-of-cascade lookup for `redirectTo`.
+    case redirect(word: SKWord, redirectTo: String)
 }
 
-private extension String {
+extension String {
     /// Extracts trailing numeric id from a redirect path like "/tsbm/3528".
     var trailingWordId: Int64? {
         guard let lastComponent = self.split(separator: "/").last else { return nil }
         return Int64(lastComponent)
     }
+}
+
+// MARK: - Supabase Config
+
+enum SKSupabaseConfig {
+    static let projectURL = "https://cxblykicbulwcilncgxd.supabase.co"
+    static let apiKey = "sb_publishable_aJ4mKd11QBgS0A3PG7P1HA_c8JOBqfo"
+    static let headers = [
+        "apikey": apiKey,
+        "Authorization": "Bearer \(apiKey)"
+    ]
 }
 
 // MARK: - Protocol
@@ -294,15 +309,8 @@ struct SKApiTranslationSource: SKTranslationSource {
         let response = try JSONDecoder().decode(APIResponse.self, from: data)
 
         if let redirectPath = response.redirect_to {
-            guard let redirectId = redirectPath.trailingWordId else {
-                skLog("[API] Unparseable redirect path: \(redirectPath)", type: .error)
-                return nil
-            }
-            skLog("[API] Redirect — retrying with word id: \(redirectId)")
-            guard let nextWord = SKVocabularyIndex.shared.word(id: redirectId, vocabularyType: word.lang_id) else {
-                return nil
-            }
-            return try await self.wordTranslation(nextWord)
+            skLog("[API] Redirect — terminal, redirectTo: \(redirectPath)")
+            throw SKSkarnikError.redirect(word: word, redirectTo: redirectPath)
         }
 
         guard let html = response.translation else {
@@ -318,13 +326,6 @@ struct SKApiTranslationSource: SKTranslationSource {
 // MARK: - Supabase Source
 
 struct SKSupabaseTranslationSource: SKTranslationSource {
-    private static let projectURL = "https://cxblykicbulwcilncgxd.supabase.co"
-    private static let apiKey = "sb_publishable_aJ4mKd11QBgS0A3PG7P1HA_c8JOBqfo"
-    private static let headers = [
-        "apikey": apiKey,
-        "Authorization": "Bearer \(apiKey)"
-    ]
-
     private struct SupabaseResponse: Decodable {
         let translation: String?
         let redirect_to: String?
@@ -333,7 +334,7 @@ struct SKSupabaseTranslationSource: SKTranslationSource {
 
     static func url(vocabularyType: ESKVocabularyType, wordId: Int64) -> String? {
         guard let skarnikId = vocabularyType.skarnikId else { return nil }
-        return "\(projectURL)/rest/v1/main_word?external_id=eq.\(wordId)&direction=eq.\(skarnikId)"
+        return "\(SKSupabaseConfig.projectURL)/rest/v1/main_word?external_id=eq.\(wordId)&direction=eq.\(skarnikId)"
     }
 
     func wordTranslation(_ word: SKWord) async throws -> SKSkarnikTranslation? {
@@ -343,7 +344,7 @@ struct SKSupabaseTranslationSource: SKTranslationSource {
 
         skLog("[Supabase] Fetching word: \"\(word.word)\" (id: \(word.word_id), lang: \(word.lang_id.rawValue)) url: \(urlStr)")
 
-        guard let data = await URLSession.skarnikDownload(urlStr: urlStr, headers: Self.headers) else {
+        guard let data = await URLSession.skarnikDownload(urlStr: urlStr, headers: SKSupabaseConfig.headers) else {
             skLog("[Supabase] Network error for url: \(urlStr)", type: .error)
             throw SKSkarnikError.networkError
         }
@@ -354,15 +355,8 @@ struct SKSupabaseTranslationSource: SKTranslationSource {
         }
 
         if let redirectPath = response.redirect_to {
-            guard let redirectId = redirectPath.trailingWordId else {
-                skLog("[Supabase] Unparseable redirect path: \(redirectPath)", type: .error)
-                return nil
-            }
-            skLog("[Supabase] Redirect — retrying with word id: \(redirectId)")
-            guard let nextWord = SKVocabularyIndex.shared.word(id: redirectId, vocabularyType: word.lang_id) else {
-                return nil
-            }
-            return try await self.wordTranslation(nextWord)
+            skLog("[Supabase] Redirect — terminal, redirectTo: \(redirectPath)")
+            throw SKSkarnikError.redirect(word: word, redirectTo: redirectPath)
         }
 
         guard let html = response.translation else {
@@ -392,6 +386,9 @@ struct SKFallbackTranslationSource: SKTranslationSource {
                     return result
                 }
                 skLog("[Fallback] \(sourceName) returned nil, trying next")
+            } catch SKSkarnikError.redirect(let word, let redirectTo) {
+                skLog("[Fallback] \(sourceName) hit a terminal redirect — stopping cascade")
+                throw SKSkarnikError.redirect(word: word, redirectTo: redirectTo)
             } catch {
                 skLog("[Fallback] \(sourceName) failed with error: \(error), trying next", type: .error)
                 lastError = error
