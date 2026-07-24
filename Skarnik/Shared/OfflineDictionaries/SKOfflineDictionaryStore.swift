@@ -4,7 +4,7 @@
 //
 
 import Foundation
-import SQLite
+@preconcurrency import SQLite
 
 struct SKDownloadedWord {
     let externalId: Int64
