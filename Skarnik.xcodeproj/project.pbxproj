@@ -90,6 +90,9 @@
 		F2A652A32F7B000000A8ACBE /* SKWordDetailsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F2A652A42F7B000000A8ACBE /* SKWordDetailsView.swift */; };
 		F2B7CC012F8C000000A8ACBE /* SKHistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F2B7CC002F8C000000A8ACBE /* SKHistoryView.swift */; };
 		F2B7CC032F8C000000A8ACBE /* SKHistoryViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F2B7CC022F8C000000A8ACBE /* SKHistoryViewController.swift */; };
+		F4C0083D50562BE93F803175 /* SKFavoritesController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7D327105C13FF3740B3FA59 /* SKFavoritesController.swift */; };
+		445299E47407B56ED5B0270F /* SKFavoritesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36F38E4235774123327B50FF /* SKFavoritesView.swift */; };
+		6302A30443132D0B19CC4385 /* SKFavoritesViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B9637466CD916D0644FC9E7 /* SKFavoritesViewController.swift */; };
 		F2B7CC052F8C000000A8ACBE /* SKTabBarController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F2B7CC042F8C000000A8ACBE /* SKTabBarController.swift */; };
 		FC2AB0490A4470BD43C00D0F /* SKStressResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A21AA134C9191E3E29173FC /* SKStressResolver.swift */; };
 /* End PBXBuildFile section */
@@ -202,6 +205,9 @@
 		F2B7CC002F8C000000A8ACBE /* SKHistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SKHistoryView.swift; sourceTree = "<group>"; };
 		F2B7CC022F8C000000A8ACBE /* SKHistoryViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SKHistoryViewController.swift; sourceTree = "<group>"; };
 		F2B7CC042F8C000000A8ACBE /* SKTabBarController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SKTabBarController.swift; sourceTree = "<group>"; };
+		F7D327105C13FF3740B3FA59 /* SKFavoritesController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SKFavoritesController.swift; sourceTree = "<group>"; };
+		36F38E4235774123327B50FF /* SKFavoritesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SKFavoritesView.swift; sourceTree = "<group>"; };
+		2B9637466CD916D0644FC9E7 /* SKFavoritesViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SKFavoritesViewController.swift; sourceTree = "<group>"; };
 		F2BB0CF32F7304F7006352AB /* SKDeepLinkTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SKDeepLinkTests.swift; sourceTree = "<group>"; };
 		FA833B19524C50B41DDB7B29 /* SKOfflineDictionaryCloudSource.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SKOfflineDictionaryCloudSource.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -309,6 +315,8 @@
 				B20ABAD128EED10D00AA2FC9 /* SKSplitViewController.swift */,
 				B20ABACD28EEC39D00AA2FC9 /* SKVocabulariesTableViewController.swift */,
 				F2B7CC022F8C000000A8ACBE /* SKHistoryViewController.swift */,
+				2B9637466CD916D0644FC9E7 /* SKFavoritesViewController.swift */,
+				F7D327105C13FF3740B3FA59 /* SKFavoritesController.swift */,
 				F2B7CC042F8C000000A8ACBE /* SKTabBarController.swift */,
 				B2FEFEEA28F3776E00675E49 /* SKSearchWordsTableViewController.swift */,
 				B2FEFEEE28F4E53500675E49 /* SKWordDetailsViewController.swift */,
@@ -370,6 +378,7 @@
 				B2AA11223344556677880001 /* SKReportIssueView.swift */,
 				F2A652A42F7B000000A8ACBE /* SKWordDetailsView.swift */,
 				F2B7CC002F8C000000A8ACBE /* SKHistoryView.swift */,
+				36F38E4235774123327B50FF /* SKFavoritesView.swift */,
 				665C7669ACBBB0F813394CEA /* Settings */,
 			);
 			path = SwiftUI;
@@ -643,6 +652,9 @@
 				F2A652A32F7B000000A8ACBE /* SKWordDetailsView.swift in Sources */,
 				F2B7CC012F8C000000A8ACBE /* SKHistoryView.swift in Sources */,
 				F2B7CC032F8C000000A8ACBE /* SKHistoryViewController.swift in Sources */,
+				F4C0083D50562BE93F803175 /* SKFavoritesController.swift in Sources */,
+				445299E47407B56ED5B0270F /* SKFavoritesView.swift in Sources */,
+				6302A30443132D0B19CC4385 /* SKFavoritesViewController.swift in Sources */,
 				F2B7CC052F8C000000A8ACBE /* SKTabBarController.swift in Sources */,
 				F229B9CF2D5134B000B2463E /* SKAnalyticsService.swift in Sources */,
 				F229B9D02D5134B000B2463E /* SKAnalyticsManager.swift in Sources */,

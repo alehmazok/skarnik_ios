@@ -220,6 +220,43 @@ final class SKWordDetailsViewModelTests: XCTestCase {
     }
 
     @MainActor
+    func testIsFavorite_reflectsControllerStateOnUpdateWord() {
+        let word = SKWord(word_id: 555_001, word: "тэст-закладка", lang_id: .bel_rus)
+        SKFavoritesController.shared.removeFavorite(SKFavoriteWord(word: word, dateAdded: Date()))
+        defer { SKFavoritesController.shared.removeFavorite(SKFavoriteWord(word: word, dateAdded: Date())) }
+
+        viewModel.updateWord(word)
+        XCTAssertFalse(viewModel.isFavorite)
+
+        SKFavoritesController.shared.toggleFavorite(word)
+        viewModel.updateWord(nil)
+        viewModel.updateWord(word)
+        XCTAssertTrue(viewModel.isFavorite)
+    }
+
+    @MainActor
+    func testToggleFavorite_addsThenRemoves() {
+        let word = SKWord(word_id: 555_002, word: "яшчэ-закладка", lang_id: .bel_rus)
+        defer { SKFavoritesController.shared.removeFavorite(SKFavoriteWord(word: word, dateAdded: Date())) }
+        viewModel.updateWord(word)
+
+        viewModel.toggleFavorite()
+        XCTAssertTrue(viewModel.isFavorite)
+        XCTAssertTrue(SKFavoritesController.shared.isFavorite(word))
+
+        viewModel.toggleFavorite()
+        XCTAssertFalse(viewModel.isFavorite)
+        XCTAssertFalse(SKFavoritesController.shared.isFavorite(word))
+    }
+
+    @MainActor
+    func testToggleFavorite_noWord_doesNothing() {
+        viewModel.updateWord(nil)
+        viewModel.toggleFavorite()
+        XCTAssertFalse(viewModel.isFavorite)
+    }
+
+    @MainActor
     func testUpdateWord_sameWordAlreadyLoaded_doesNotRefetch() async {
         let word = SKWord(word_id: 1, word: "тэст", lang_id: .bel_rus)
         let translation = SKSkarnikTranslation(word: word, url: "https://example.com", html: "<b>ok</b>")

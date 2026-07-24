@@ -155,6 +155,12 @@ struct SKWordDetailsView: View {
                     Image(systemName: "square.and.arrow.up")
                 }
                 .disabled(viewModel.translation == nil)
+                Button(action: {
+                    viewModel.toggleFavorite()
+                }) {
+                    Image(systemName: viewModel.isFavorite ? "bookmark.fill" : "bookmark")
+                }
+                .disabled(viewModel.word == nil)
                 Spacer()
                 // TODO: re-enable report button when ready
             }

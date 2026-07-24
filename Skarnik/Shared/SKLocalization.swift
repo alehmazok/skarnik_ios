@@ -15,6 +15,7 @@ class SKLocalization: Any {
 
     class var vocabulariesAdvancedSearch: String { "Спецпошук" }
     class var tabHistory: String { "Гісторыя" }
+    class var tabFavorites: String { "Закладкі" }
     class var tabVocabularies: String { "Слоўнікі" }
     class var tabSettings: String { "Налады" }
     class var segmentHistory: String { "Гісторыя" }
@@ -59,6 +60,10 @@ class SKLocalization: Any {
     class var wordStressNotFound: String { "Інфармацыя аб націску для гэтага слова не знойдзена." }
 
     class var historyEmptyPlaceholder: String { "Тут з'явяцца словы, якія вы адкрывалі.\nПашукайце альбо абярыце слова ў слоўніку." }
+
+    class var favoritesEmptyPlaceholder: String { "Тут з'явяцца словы, дададзеныя ў закладкі.\nАдкрыйце слова і націсніце на значок закладкі." }
+    class var favoritesSortByDate: String { "па даце" }
+    class var favoritesSortByAlphabet: String { "па алфавіце" }
 
     class var reportIssueButtonTitle: String { "Паведаміць пра памылку" }
     class var reportIssueTitle: String { "Паведаміць пра памылку" }
