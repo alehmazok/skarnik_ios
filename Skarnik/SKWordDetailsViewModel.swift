@@ -24,6 +24,7 @@ enum SKWordDetailsEffect {
 class SKWordDetailsViewModel: ObservableObject {
     @Published private(set) var state: SKWordDetailsState = .idle
     @Published var word: SKWord?
+    @Published private(set) var isFavorite: Bool = false
 
     var entryPoint: String = ""
 
@@ -69,6 +70,7 @@ class SKWordDetailsViewModel: ObservableObject {
         
         guard let word = word else {
             self.word = nil
+            self.isFavorite = false
             self.state = .idle
             return
         }
@@ -80,6 +82,7 @@ class SKWordDetailsViewModel: ObservableObject {
         }
 
         self.word = word
+        self.isFavorite = SKFavoritesController.shared.isFavorite(word)
         self.state = .loading
         
         fetchTask = Task {
@@ -131,6 +134,11 @@ class SKWordDetailsViewModel: ObservableObject {
         }
     }
     
+    func toggleFavorite() {
+        guard let word else { return }
+        isFavorite = SKFavoritesController.shared.toggleFavorite(word)
+    }
+
     func handleUrl(_ urlString: String) {
         let regexPattern = #"(https?://(www.)?skarnik.by)?/(?<vocabularyPath>belrus|rusbel|tsbm)/(?<wordId>[0-9]+)"#
         

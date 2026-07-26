@@ -26,12 +26,21 @@ class SKTabBarController: UITabBarController, UITabBarControllerDelegate {
         )
         let historyNav = UINavigationController(rootViewController: historyVC)
 
+        // Favorites tab
+        let favoritesVC = SKFavoritesViewController()
+        favoritesVC.tabBarItem = UITabBarItem(
+            title: SKLocalization.tabFavorites,
+            image: UIImage(systemName: "bookmark"),
+            tag: 1
+        )
+        let favoritesNav = UINavigationController(rootViewController: favoritesVC)
+
         // Vocabularies tab
         let vocabVC = SKVocabulariesTableViewController()
         vocabVC.tabBarItem = UITabBarItem(
             title: SKLocalization.tabVocabularies,
             image: UIImage(systemName: "text.book.closed"),
-            tag: 1
+            tag: 2
         )
         let vocabNav = UINavigationController(rootViewController: vocabVC)
 
@@ -40,7 +49,7 @@ class SKTabBarController: UITabBarController, UITabBarControllerDelegate {
         let settingsTabItem = UITabBarItem(
             title: SKLocalization.tabSettings,
             image: UIImage(systemName: "gearshape"),
-            tag: 2
+            tag: 3
         )
         // Empty-string badge renders as an unread dot (no number) — one-time promo for the
         // offline-dictionaries feature, dismissed for good the first time this tab is opened.
@@ -49,7 +58,7 @@ class SKTabBarController: UITabBarController, UITabBarControllerDelegate {
         let settingsNav = UINavigationController(rootViewController: settingsVC)
         self.settingsNav = settingsNav
 
-        viewControllers = [historyNav, vocabNav, settingsNav]
+        viewControllers = [historyNav, favoritesNav, vocabNav, settingsNav]
         selectedIndex = 0
     }
 
