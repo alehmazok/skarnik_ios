@@ -24,10 +24,18 @@ struct SKHtmlTextView: View {
 }
 
 struct SKHtmlLabelView: UIViewRepresentable {
-    
+
     let html: String
     @Binding var dynamicHeight: CGFloat
-    
+
+    final class Coordinator {
+        var task: Task<Void, Never>?
+    }
+
+    func makeCoordinator() -> Coordinator {
+        Coordinator()
+    }
+
     func makeUIView(context: UIViewRepresentableContext<Self>) -> UILabel {
         let label = UILabel()
         label.numberOfLines = 0
@@ -47,9 +55,16 @@ struct SKHtmlLabelView: UIViewRepresentable {
         // running it synchronously here (during UICollectionView's layout pass, via
         // SwiftUI List cell sizing) reenters UIKit and crashes with
         // NSInternalInconsistencyException. Must build it off the main thread.
-        Task.detached(priority: .userInitiated) {
+        //
+        // updateUIView can be re-invoked before the previous parse finishes (e.g. Dynamic
+        // Type or dark mode changes) — cancel any in-flight task so an older, slower parse
+        // can't overwrite the label after a newer one already applied.
+        context.coordinator.task?.cancel()
+        context.coordinator.task = Task.detached(priority: .userInitiated) {
             let attributedString = try? NSAttributedString(data: data, options: [.documentType: NSAttributedString.DocumentType.html, .characterEncoding: String.Encoding.utf8.rawValue], documentAttributes: nil)
+            guard !Task.isCancelled else { return }
             await MainActor.run {
+                guard !Task.isCancelled else { return }
                 uiView.attributedText = attributedString
                 let newHeight = uiView.sizeThatFits(CGSize(width: uiView.bounds.width, height: .greatestFiniteMagnitude)).height
                 if dynamicHeight != newHeight {
