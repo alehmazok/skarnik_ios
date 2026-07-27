@@ -42,13 +42,19 @@ struct SKHtmlLabelView: UIViewRepresentable {
         let colorHex = UIColor.label.webHexString()
         let html = "<html><body style=\"font-size: \(fontSize); color:\(colorHex); font-family: -apple-system; line-height: 150%;\">" + self.html + "</body></html>"
         let data = html.data(using: .utf8) ?? Data()
-        let attributedString = try? NSAttributedString(data: data, options: [.documentType: NSAttributedString.DocumentType.html, .characterEncoding: String.Encoding.utf8.rawValue], documentAttributes: nil)
 
-        uiView.attributedText = attributedString
-        Task { @MainActor in
-            let newHeight = uiView.sizeThatFits(CGSize(width: uiView.bounds.width, height: .greatestFiniteMagnitude)).height
-            if dynamicHeight != newHeight {
-                dynamicHeight = newHeight
+        // NSAttributedString's HTML importer uses WebKit and spins a nested run loop;
+        // running it synchronously here (during UICollectionView's layout pass, via
+        // SwiftUI List cell sizing) reenters UIKit and crashes with
+        // NSInternalInconsistencyException. Must build it off the main thread.
+        Task.detached(priority: .userInitiated) {
+            let attributedString = try? NSAttributedString(data: data, options: [.documentType: NSAttributedString.DocumentType.html, .characterEncoding: String.Encoding.utf8.rawValue], documentAttributes: nil)
+            await MainActor.run {
+                uiView.attributedText = attributedString
+                let newHeight = uiView.sizeThatFits(CGSize(width: uiView.bounds.width, height: .greatestFiniteMagnitude)).height
+                if dynamicHeight != newHeight {
+                    dynamicHeight = newHeight
+                }
             }
         }
     }
