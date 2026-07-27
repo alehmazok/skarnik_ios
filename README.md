@@ -27,6 +27,7 @@ Skarnik is a comprehensive Russian-Belarusian, Belarusian-Russian, and Belarusia
 - Spelling suggestions for rus-bel vocabulary
 - Offline dictionary download, per vocabulary
 - Search history, with delete support
+- Закладкі (Favorites/Bookmarks): save words from the details screen, sort by date added or alphabetically
 - Belarusian keyboard row with haptic/sound feedback on extra letters
 - "Word of the Day" home screen widget, deep-linking into the word details screen
 - Universal Links support for skarnik.app sharing URLs
@@ -55,6 +56,8 @@ Skarnik/
 │   └── SKTranslationSource.swift      # Translation fetching (API → Supabase → HTML fallback chain)
 ├── SKSearchWordsTableViewController.swift   # Search UI (UIKit)
 ├── SKWordDetailsViewController.swift        # Word entry display (MVVM + Combine)
+├── SKFavoritesController.swift              # Favorites persistence (UserDefaults)
+├── SKFavoritesViewController.swift          # Закладкі tab (SwiftUI)
 ├── SKSplitViewController.swift
 ├── SKVocabulariesTableViewController.swift
 └── vocabulary.db                      # Core search index
