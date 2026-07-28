@@ -63,4 +63,16 @@ class SKFirebaseAnalytics: SKAnalyticsService {
         ])
     }
 
+    func logVocabularyWordClicked(word: SKWord) {
+        Analytics.logEvent(
+            SKAnalyticsEvent.vocabularyWordClicked.rawValue,
+            parameters: [
+                "word_id": word.word_id,
+                "lang_id": word.lang_id.rawValue,
+                "word": word.word,
+                "dict_name": word.lang_id.name ?? "unknown",
+                "dict_path": word.lang_id.skarnikId ?? "unknown",
+            ])
+    }
+
 }

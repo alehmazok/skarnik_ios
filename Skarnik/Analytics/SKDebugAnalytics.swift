@@ -34,4 +34,8 @@ class SKDebugAnalytics: SKAnalyticsService {
     func logOfflineDictionaryDownloadClick(dictName: String, dictPath: String) {
         print("📊 Offline dictionary download click: dict_name=\(dictName), dict_path=\(dictPath)")
     }
+
+    func logVocabularyWordClicked(word: SKWord) {
+        print("📊 Vocabulary word clicked: word=\(word.word), word_id=\(word.word_id), lang_id=\(word.lang_id.rawValue), dict_name=\(word.lang_id.name ?? "unknown"), dict_path=\(word.lang_id.skarnikId ?? "unknown")")
+    }
 }
