@@ -171,6 +171,7 @@ extension SKVocabulariesTableViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
         let word = sections[indexPath.section].words[indexPath.row]
+        SKAnalyticsManager.logVocabularyWordClicked(word: word)
         SKStorageController.shared.addWord(word)
         showWordInDetail(word, entryPoint: "vocabulary")
     }

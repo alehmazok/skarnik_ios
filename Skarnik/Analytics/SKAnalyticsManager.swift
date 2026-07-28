@@ -48,4 +48,8 @@ class SKAnalyticsManager {
     static func logOfflineDictionaryDownloadClick(dictName: String, dictPath: String) {
         shared.service.logOfflineDictionaryDownloadClick(dictName: dictName, dictPath: dictPath)
     }
+
+    static func logVocabularyWordClicked(word: SKWord) {
+        shared.service.logVocabularyWordClicked(word: word)
+    }
 }
