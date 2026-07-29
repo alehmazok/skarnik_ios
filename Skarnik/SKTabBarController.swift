@@ -21,7 +21,7 @@ class SKTabBarController: UITabBarController, UITabBarControllerDelegate {
         let historyVC = SKHistoryViewController()
         historyVC.tabBarItem = UITabBarItem(
             title: SKLocalization.tabHistory,
-            image: UIImage(systemName: "clock"),
+            image: UIImage(systemName: "magnifyingglass"),
             tag: 0
         )
         let historyNav = UINavigationController(rootViewController: historyVC)
