@@ -114,7 +114,7 @@ class SKSearchWordsTableViewController: UITableViewController, UISearchResultsUp
             let myText = text.lowercased()
             var words:[SKWord] = []
             if myText.isEmpty == false {
-                words = SKVocabularyIndex.shared.word(index: 0, query: myText, vocabularyType: .all, limit: 20)
+                words = SKVocabularyIndex.shared.search(query: myText, vocabularyType: .all, limit: 20).words
             }
             DispatchQueue.main.sync {
                 self.searchText = myText

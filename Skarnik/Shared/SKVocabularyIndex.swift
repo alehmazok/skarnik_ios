@@ -92,6 +92,13 @@ class SKVocabularyIndex {
     // be excluded before it's ever considered.
     static let fuzzySearchCandidateLimit = 65000
     static let wordsSearchLimit = 15
+
+    // Glued preposition/conjunction fallback: retries once with the leading letter
+    // stripped when a query like "всмысле" ("в смысле") finds zero results, since the
+    // fuzzy step above buckets by first letter and can't recover from a wrong bucket.
+    // Letter set is data-derived (union of single-letter предлог/союз entries across all
+    // three dictionaries) — see glued_preposition_fallback_spec.md (Flutter app) for parity.
+    static let gluedPrefixLetters: Set<Character> = ["а", "в", "ж", "з", "и", "і", "к", "о", "с", "у", "ў"]
     
     private init() {
         let dbUrl = Bundle.main.url(forResource: "vocabulary", withExtension: "db")
@@ -260,6 +267,34 @@ class SKVocabularyIndex {
         }
 
         return words
+    }
+
+    // Wraps `word(index:query:vocabularyType:limit:)` (the existing exact→mask→fuzzy
+    // pipeline) with a single retry: if the primary query finds nothing and starts with
+    // a glued preposition/conjunction letter, retry once on the query with that leading
+    // letter stripped. No recursion, no loop — at most 2 pipeline calls total.
+    func search(query: String, vocabularyType: ESKVocabularyType, limit: Int = wordsSearchLimit) -> (words: [SKWord], usedFallback: Bool) {
+        let primary = word(index: 0, query: query, vocabularyType: vocabularyType, limit: limit)
+        if !primary.isEmpty {
+            return (primary, false)
+        }
+
+        guard let stripped = SKVocabularyIndex.stripGluedPrefixLetter(query.lowercased()) else {
+            return (primary, false)
+        }
+
+        let retry = word(index: 0, query: stripped, vocabularyType: vocabularyType, limit: limit)
+        return (retry, true)
+    }
+
+    // `query` is expected already-lowercased raw user input, not the preprocessed/
+    // substituted query — the retry runs the full pipeline (which does its own
+    // preprocessing) on this raw stripped substring, per the spec.
+    static func stripGluedPrefixLetter(_ query: String) -> String? {
+        guard query.count >= 2, let first = query.first, gluedPrefixLetters.contains(first) else {
+            return nil
+        }
+        return String(query.dropFirst())
     }
 
     // Step C of the fuzzy search spec: candidates are bucketed by first letter

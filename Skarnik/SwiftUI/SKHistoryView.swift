@@ -37,7 +37,7 @@ final class SKHistoryViewModel: ObservableObject {
         let query = text.lowercased()
         searchTask = Task.detached(priority: .userInitiated) { [weak self] in
             guard !Task.isCancelled else { return }
-            let results = SKVocabularyIndex.shared.word(index: 0, query: query, vocabularyType: .all, limit: 20)
+            let results = SKVocabularyIndex.shared.search(query: query, vocabularyType: .all, limit: 20).words
             guard !Task.isCancelled, let self else { return }
             await MainActor.run { self.searchResults = results }
         }
