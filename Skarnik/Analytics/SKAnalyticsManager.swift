@@ -52,4 +52,16 @@ class SKAnalyticsManager {
     static func logVocabularyWordClicked(word: SKWord) {
         shared.service.logVocabularyWordClicked(word: word)
     }
+
+    static func logSearchPerformed(query: String, resultCount: Int) {
+        shared.service.logSearchPerformed(query: query, resultCount: resultCount)
+    }
+
+    static func logSearchNoResults(query: String) {
+        shared.service.logSearchNoResults(query: query)
+    }
+
+    static func logSearchResultTapped(word: SKWord, position: Int, query: String) {
+        shared.service.logSearchResultTapped(word: word, position: position, query: query)
+    }
 }

@@ -20,6 +20,12 @@ protocol SKAnalyticsService {
     func logOfflineDictionaryDownloadClick(dictName: String, dictPath: String)
 
     func logVocabularyWordClicked(word: SKWord)
+
+    func logSearchPerformed(query: String, resultCount: Int)
+
+    func logSearchNoResults(query: String)
+
+    func logSearchResultTapped(word: SKWord, position: Int, query: String)
 }
 
 enum SKAnalyticsEvent: String {
@@ -30,6 +36,9 @@ enum SKAnalyticsEvent: String {
     case widgetDeepLink = "widget_deep_link"
     case offlineDictionaryDownloadClick = "offline_dictionary_download_click"
     case vocabularyWordClicked = "vocabulary"
+    case searchPerformed = "search_performed"
+    case searchNoResults = "search_no_results"
+    case searchResultTapped = "search_result_tapped"
 }
 
 enum SKWidgetDeepLinkAppState: String {

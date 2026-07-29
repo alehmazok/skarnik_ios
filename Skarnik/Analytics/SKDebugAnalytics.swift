@@ -38,4 +38,16 @@ class SKDebugAnalytics: SKAnalyticsService {
     func logVocabularyWordClicked(word: SKWord) {
         print("📊 Vocabulary word clicked: word=\(word.word), word_id=\(word.word_id), lang_id=\(word.lang_id.rawValue), dict_name=\(word.lang_id.name ?? "unknown"), dict_path=\(word.lang_id.skarnikId ?? "unknown")")
     }
+
+    func logSearchPerformed(query: String, resultCount: Int) {
+        print("📊 Search performed: query=\(query), result_count=\(resultCount)")
+    }
+
+    func logSearchNoResults(query: String) {
+        print("📊 Search no results: query=\(query)")
+    }
+
+    func logSearchResultTapped(word: SKWord, position: Int, query: String) {
+        print("📊 Search result tapped: word=\(word.word), word_id=\(word.word_id), lang_id=\(word.lang_id.rawValue), dict_name=\(word.lang_id.name ?? "unknown"), dict_path=\(word.lang_id.skarnikId ?? "unknown"), position=\(position), query=\(query)")
+    }
 }

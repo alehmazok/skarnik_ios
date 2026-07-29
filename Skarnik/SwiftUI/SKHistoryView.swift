@@ -3,6 +3,7 @@
 //  Skarnik
 //
 
+import Combine
 import SwiftUI
 
 // MARK: - ViewModel
@@ -16,6 +17,37 @@ final class SKHistoryViewModel: ObservableObject {
     @Published private(set) var words: [SKWord] = []
 
     private var searchTask: Task<Void, Never>?
+
+    // Second, independent 500ms debounce layered on top of the search-as-you-type
+    // above: only the last settle in a burst of typing fires a search analytics event.
+    private let searchSettleSubject = PassthroughSubject<(query: String, resultCount: Int), Never>()
+    private var cancellables = Set<AnyCancellable>()
+
+    private let onSearchPerformed: (_ query: String, _ resultCount: Int) -> Void
+    private let onSearchNoResults: (_ query: String) -> Void
+    private let onSearchResultTapped: (_ word: SKWord, _ position: Int, _ query: String) -> Void
+
+    init(
+        onSearchPerformed: @escaping (_ query: String, _ resultCount: Int) -> Void = SKAnalyticsManager.logSearchPerformed,
+        onSearchNoResults: @escaping (_ query: String) -> Void = SKAnalyticsManager.logSearchNoResults,
+        onSearchResultTapped: @escaping (_ word: SKWord, _ position: Int, _ query: String) -> Void = SKAnalyticsManager.logSearchResultTapped
+    ) {
+        self.onSearchPerformed = onSearchPerformed
+        self.onSearchNoResults = onSearchNoResults
+        self.onSearchResultTapped = onSearchResultTapped
+
+        searchSettleSubject
+            .debounce(for: .milliseconds(500), scheduler: DispatchQueue.main)
+            .sink { [weak self] settle in
+                guard let self else { return }
+                if settle.resultCount > 0 {
+                    self.onSearchPerformed(settle.query, settle.resultCount)
+                } else {
+                    self.onSearchNoResults(settle.query)
+                }
+            }
+            .store(in: &cancellables)
+    }
 
     func reload() {
         words = SKStorageController.shared.words
@@ -35,12 +67,27 @@ final class SKHistoryViewModel: ObservableObject {
             return
         }
         let query = text.lowercased()
+        let trimmedText = text.trimmingCharacters(in: .whitespacesAndNewlines)
         searchTask = Task.detached(priority: .userInitiated) { [weak self] in
             guard !Task.isCancelled else { return }
             let results = SKVocabularyIndex.shared.search(query: query, vocabularyType: .all, limit: 20).words
             guard !Task.isCancelled, let self else { return }
-            await MainActor.run { self.searchResults = results }
+            await MainActor.run {
+                self.searchResults = results
+                self.recordSearchSettle(query: trimmedText, resultCount: results.count)
+            }
         }
+    }
+
+    /// Feeds the 500ms analytics debounce (§3 of the search analytics spec). Exposed
+    /// (not private) so tests can drive settle timing without depending on the real
+    /// SQLite-backed search pipeline in `updateSearch`.
+    func recordSearchSettle(query: String, resultCount: Int) {
+        searchSettleSubject.send((query: query, resultCount: resultCount))
+    }
+
+    func resultTapped(_ word: SKWord, position: Int) {
+        onSearchResultTapped(word, position, searchText)
     }
 }
 
@@ -121,8 +168,9 @@ private struct SKHistoryContentView: View {
                 Spacer()
             }
         } else {
-            List(viewModel.searchResults, id: \.uniqueId) { word in
+            List(Array(viewModel.searchResults.enumerated()), id: \.element.uniqueId) { position, word in
                 Button {
+                    viewModel.resultTapped(word, position: position)
                     onWordSelected(word, "search")
                 } label: {
                     wordCell(word)
