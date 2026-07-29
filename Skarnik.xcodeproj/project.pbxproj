@@ -8,7 +8,10 @@
 
 /* Begin PBXBuildFile section */
 		0356FC30403576F7856E3723 /* SKOfflineDictionaryStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EE1CBEBCEB72B509DED307F /* SKOfflineDictionaryStorage.swift */; };
+		33599C19DA4044D7AC562A07 /* FirebaseCrashlytics in Frameworks */ = {isa = PBXBuildFile; productRef = 6B3799A98B8245B0B1C749BC /* FirebaseCrashlytics */; };
+		445299E47407B56ED5B0270F /* SKFavoritesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36F38E4235774123327B50FF /* SKFavoritesView.swift */; };
 		4CBC1449DC5632EA59C93C52 /* SKDamerauLevenshtein.swift in Sources */ = {isa = PBXBuildFile; fileRef = B080BC497B8AC249E588E1F3 /* SKDamerauLevenshtein.swift */; };
+		6302A30443132D0B19CC4385 /* SKFavoritesViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B9637466CD916D0644FC9E7 /* SKFavoritesViewController.swift */; };
 		65607B0CCB528B4D85C913ED /* SKOfflineDictionaryDownloadManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4EFE6AF369792DEC73FB0E57 /* SKOfflineDictionaryDownloadManager.swift */; };
 		99C203129644572974C6BFD1 /* SKOfflineDictionaryStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = C6C88C91F944A417B5665C31 /* SKOfflineDictionaryStore.swift */; };
 		A9AED8B8F0A2E6A9DC15AEBB /* SKSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D49C5E9119FCE560844062A3 /* SKSettingsView.swift */; };
@@ -84,16 +87,13 @@
 		F229B9D12D5134B000B2463E /* SKFirebaseAnalytics.swift in Sources */ = {isa = PBXBuildFile; fileRef = F229B9CD2D5134B000B2463E /* SKFirebaseAnalytics.swift */; };
 		F229B9D22D5134B000B2463E /* SKDebugAnalytics.swift in Sources */ = {isa = PBXBuildFile; fileRef = F229B9CC2D5134B000B2463E /* SKDebugAnalytics.swift */; };
 		F268C3D12D50DD4B004B7BE4 /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = F268C3D02D50DD4B004B7BE4 /* FirebaseAnalytics */; };
-		33599C19DA4044D7AC562A07 /* FirebaseCrashlytics in Frameworks */ = {isa = PBXBuildFile; productRef = 6B3799A98B8245B0B1C749BC /* FirebaseCrashlytics */; };
 		F268C3D32D50DF5F004B7BE4 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = F268C3D22D50DF5F004B7BE4 /* GoogleService-Info.plist */; };
 		F2A652A02F6F658800A8ACBE /* SKWordDetailsViewControllerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F2A6529E2F6F658800A8ACBE /* SKWordDetailsViewControllerTests.swift */; };
 		F2A652A32F7B000000A8ACBE /* SKWordDetailsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F2A652A42F7B000000A8ACBE /* SKWordDetailsView.swift */; };
 		F2B7CC012F8C000000A8ACBE /* SKHistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F2B7CC002F8C000000A8ACBE /* SKHistoryView.swift */; };
 		F2B7CC032F8C000000A8ACBE /* SKHistoryViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F2B7CC022F8C000000A8ACBE /* SKHistoryViewController.swift */; };
-		F4C0083D50562BE93F803175 /* SKFavoritesController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7D327105C13FF3740B3FA59 /* SKFavoritesController.swift */; };
-		445299E47407B56ED5B0270F /* SKFavoritesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36F38E4235774123327B50FF /* SKFavoritesView.swift */; };
-		6302A30443132D0B19CC4385 /* SKFavoritesViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B9637466CD916D0644FC9E7 /* SKFavoritesViewController.swift */; };
 		F2B7CC052F8C000000A8ACBE /* SKTabBarController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F2B7CC042F8C000000A8ACBE /* SKTabBarController.swift */; };
+		F4C0083D50562BE93F803175 /* SKFavoritesController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7D327105C13FF3740B3FA59 /* SKFavoritesController.swift */; };
 		FC2AB0490A4470BD43C00D0F /* SKStressResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A21AA134C9191E3E29173FC /* SKStressResolver.swift */; };
 /* End PBXBuildFile section */
 
@@ -129,6 +129,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		2B9637466CD916D0644FC9E7 /* SKFavoritesViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SKFavoritesViewController.swift; sourceTree = "<group>"; };
+		36F38E4235774123327B50FF /* SKFavoritesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SKFavoritesView.swift; sourceTree = "<group>"; };
 		4EFE6AF369792DEC73FB0E57 /* SKOfflineDictionaryDownloadManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SKOfflineDictionaryDownloadManager.swift; sourceTree = "<group>"; };
 		6A21AA134C9191E3E29173FC /* SKStressResolver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SKStressResolver.swift; sourceTree = "<group>"; };
 		6EE1CBEBCEB72B509DED307F /* SKOfflineDictionaryStorage.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SKOfflineDictionaryStorage.swift; sourceTree = "<group>"; };
@@ -205,10 +207,8 @@
 		F2B7CC002F8C000000A8ACBE /* SKHistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SKHistoryView.swift; sourceTree = "<group>"; };
 		F2B7CC022F8C000000A8ACBE /* SKHistoryViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SKHistoryViewController.swift; sourceTree = "<group>"; };
 		F2B7CC042F8C000000A8ACBE /* SKTabBarController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SKTabBarController.swift; sourceTree = "<group>"; };
-		F7D327105C13FF3740B3FA59 /* SKFavoritesController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SKFavoritesController.swift; sourceTree = "<group>"; };
-		36F38E4235774123327B50FF /* SKFavoritesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SKFavoritesView.swift; sourceTree = "<group>"; };
-		2B9637466CD916D0644FC9E7 /* SKFavoritesViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SKFavoritesViewController.swift; sourceTree = "<group>"; };
 		F2BB0CF32F7304F7006352AB /* SKDeepLinkTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SKDeepLinkTests.swift; sourceTree = "<group>"; };
+		F7D327105C13FF3740B3FA59 /* SKFavoritesController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SKFavoritesController.swift; sourceTree = "<group>"; };
 		FA833B19524C50B41DDB7B29 /* SKOfflineDictionaryCloudSource.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SKOfflineDictionaryCloudSource.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -879,7 +879,7 @@
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 71;
+				CURRENT_PROJECT_VERSION = 72;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = "";
 				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = EQFFWL4KZF;
@@ -901,7 +901,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 3.6.1;
+				MARKETING_VERSION = 3.6.2;
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_BUNDLE_IDENTIFIER = by.mazokaleh.Skarnik;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -927,7 +927,7 @@
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Distribution";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Distribution";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 71;
+				CURRENT_PROJECT_VERSION = 72;
 				DEVELOPMENT_TEAM = "";
 				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = EQFFWL4KZF;
 				"DEVELOPMENT_TEAM[sdk=macosx*]" = EQFFWL4KZF;
@@ -948,7 +948,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 3.6.1;
+				MARKETING_VERSION = 3.6.2;
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_BUNDLE_IDENTIFIER = by.mazokaleh.Skarnik;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -975,7 +975,7 @@
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Mac Developer";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 71;
+				CURRENT_PROJECT_VERSION = 72;
 				DEVELOPMENT_TEAM = "";
 				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = EQFFWL4KZF;
 				"DEVELOPMENT_TEAM[sdk=macosx*]" = EQFFWL4KZF;
@@ -994,7 +994,7 @@
 					"@executable_path/../../Frameworks",
 				);
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
-				MARKETING_VERSION = 3.6.1;
+				MARKETING_VERSION = 3.6.2;
 				PRODUCT_BUNDLE_IDENTIFIER = by.mazokaleh.Skarnik.WordWidget;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -1022,7 +1022,7 @@
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Distribution";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "3rd Party Mac Developer Application";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 71;
+				CURRENT_PROJECT_VERSION = 72;
 				DEVELOPMENT_TEAM = "";
 				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = EQFFWL4KZF;
 				"DEVELOPMENT_TEAM[sdk=macosx*]" = EQFFWL4KZF;
@@ -1041,7 +1041,7 @@
 					"@executable_path/../../Frameworks",
 				);
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
-				MARKETING_VERSION = 3.6.1;
+				MARKETING_VERSION = 3.6.2;
 				PRODUCT_BUNDLE_IDENTIFIER = by.mazokaleh.Skarnik.WordWidget;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -1179,6 +1179,11 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		6B3799A98B8245B0B1C749BC /* FirebaseCrashlytics */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = F268C3CF2D50DD4B004B7BE4 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseCrashlytics;
+		};
 		B20ABAD428EF215400AA2FC9 /* SQLite */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = B20ABAD328EF215200AA2FC9 /* XCRemoteSwiftPackageReference "SQLite.swift" */;
@@ -1203,11 +1208,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = F268C3CF2D50DD4B004B7BE4 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = FirebaseAnalytics;
-		};
-		6B3799A98B8245B0B1C749BC /* FirebaseCrashlytics */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = F268C3CF2D50DD4B004B7BE4 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
-			productName = FirebaseCrashlytics;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
