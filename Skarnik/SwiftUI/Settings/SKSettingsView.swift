@@ -28,6 +28,20 @@ struct SKSettingsView: View {
             }
 
             Section {
+                Toggle(SKLocalization.analyticsConsentSettingsRowTitle, isOn: Binding(
+                    get: { SKAnalyticsConsentController.shared.analyticsConsentGranted },
+                    set: { isGranted in
+                        if isGranted {
+                            SKAnalyticsConsentController.shared.grantConsent()
+                        } else {
+                            SKAnalyticsConsentController.shared.revokeConsent()
+                        }
+                    }
+                ))
+                .font(.system(size: 16, weight: .medium))
+            }
+
+            Section {
                 rateAppRow
                 aboutRow
             }

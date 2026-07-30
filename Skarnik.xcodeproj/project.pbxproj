@@ -86,6 +86,8 @@
 		F229B9D02D5134B000B2463E /* SKAnalyticsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = F229B9CA2D5134B000B2463E /* SKAnalyticsManager.swift */; };
 		F229B9D12D5134B000B2463E /* SKFirebaseAnalytics.swift in Sources */ = {isa = PBXBuildFile; fileRef = F229B9CD2D5134B000B2463E /* SKFirebaseAnalytics.swift */; };
 		F229B9D22D5134B000B2463E /* SKDebugAnalytics.swift in Sources */ = {isa = PBXBuildFile; fileRef = F229B9CC2D5134B000B2463E /* SKDebugAnalytics.swift */; };
+		DF96F3C40DBF4DD1E7BADF2E /* SKAnalyticsConsentController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F2D3467A0E13565699DFA3E2 /* SKAnalyticsConsentController.swift */; };
+		100B83236B965618B65AA1DA /* SKAnalyticsConsentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC4660145EE3A48BEDF34B8B /* SKAnalyticsConsentView.swift */; };
 		F268C3D12D50DD4B004B7BE4 /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = F268C3D02D50DD4B004B7BE4 /* FirebaseAnalytics */; };
 		F268C3D32D50DF5F004B7BE4 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = F268C3D22D50DF5F004B7BE4 /* GoogleService-Info.plist */; };
 		F2A652A02F6F658800A8ACBE /* SKWordDetailsViewControllerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F2A6529E2F6F658800A8ACBE /* SKWordDetailsViewControllerTests.swift */; };
@@ -196,6 +198,8 @@
 		F229B9CB2D5134B000B2463E /* SKAnalyticsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SKAnalyticsService.swift; sourceTree = "<group>"; };
 		F229B9CC2D5134B000B2463E /* SKDebugAnalytics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SKDebugAnalytics.swift; sourceTree = "<group>"; };
 		F229B9CD2D5134B000B2463E /* SKFirebaseAnalytics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SKFirebaseAnalytics.swift; sourceTree = "<group>"; };
+		F2D3467A0E13565699DFA3E2 /* SKAnalyticsConsentController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SKAnalyticsConsentController.swift; sourceTree = "<group>"; };
+		FC4660145EE3A48BEDF34B8B /* SKAnalyticsConsentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SKAnalyticsConsentView.swift; sourceTree = "<group>"; };
 		F26469052F6F5DE600BEBF1F /* SkarnikTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SkarnikTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		F26469122F6F5EB200BEBF1F /* SkarnikTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SkarnikTests.swift; sourceTree = "<group>"; };
 		F26469132F6F5EB200BEBF1F /* SKTranslationSourceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SKTranslationSourceTests.swift; sourceTree = "<group>"; };
@@ -379,6 +383,7 @@
 				F2A652A42F7B000000A8ACBE /* SKWordDetailsView.swift */,
 				F2B7CC002F8C000000A8ACBE /* SKHistoryView.swift */,
 				36F38E4235774123327B50FF /* SKFavoritesView.swift */,
+				FC4660145EE3A48BEDF34B8B /* SKAnalyticsConsentView.swift */,
 				665C7669ACBBB0F813394CEA /* Settings */,
 			);
 			path = SwiftUI;
@@ -426,6 +431,7 @@
 				F229B9CB2D5134B000B2463E /* SKAnalyticsService.swift */,
 				F229B9CC2D5134B000B2463E /* SKDebugAnalytics.swift */,
 				F229B9CD2D5134B000B2463E /* SKFirebaseAnalytics.swift */,
+				F2D3467A0E13565699DFA3E2 /* SKAnalyticsConsentController.swift */,
 			);
 			path = Analytics;
 			sourceTree = "<group>";
@@ -660,6 +666,8 @@
 				F229B9D02D5134B000B2463E /* SKAnalyticsManager.swift in Sources */,
 				F229B9D12D5134B000B2463E /* SKFirebaseAnalytics.swift in Sources */,
 				F229B9D22D5134B000B2463E /* SKDebugAnalytics.swift in Sources */,
+				DF96F3C40DBF4DD1E7BADF2E /* SKAnalyticsConsentController.swift in Sources */,
+				100B83236B965618B65AA1DA /* SKAnalyticsConsentView.swift in Sources */,
 				B251A34B2AE9932800E78923 /* SKLevenshtein.swift in Sources */,
 				B251A3832AF1AFCB00E78923 /* SKSwiftUiViewController.swift in Sources */,
 				B20ABAD228EED10D00AA2FC9 /* SKSplitViewController.swift in Sources */,
@@ -879,7 +887,7 @@
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 72;
+				CURRENT_PROJECT_VERSION = 73;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = "";
 				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = EQFFWL4KZF;
@@ -901,7 +909,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 3.6.2;
+				MARKETING_VERSION = 3.6.3;
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_BUNDLE_IDENTIFIER = by.mazokaleh.Skarnik;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -927,7 +935,7 @@
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Distribution";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Distribution";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 72;
+				CURRENT_PROJECT_VERSION = 73;
 				DEVELOPMENT_TEAM = "";
 				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = EQFFWL4KZF;
 				"DEVELOPMENT_TEAM[sdk=macosx*]" = EQFFWL4KZF;
@@ -948,7 +956,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 3.6.2;
+				MARKETING_VERSION = 3.6.3;
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_BUNDLE_IDENTIFIER = by.mazokaleh.Skarnik;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -975,7 +983,7 @@
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Mac Developer";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 72;
+				CURRENT_PROJECT_VERSION = 73;
 				DEVELOPMENT_TEAM = "";
 				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = EQFFWL4KZF;
 				"DEVELOPMENT_TEAM[sdk=macosx*]" = EQFFWL4KZF;
@@ -994,7 +1002,7 @@
 					"@executable_path/../../Frameworks",
 				);
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
-				MARKETING_VERSION = 3.6.2;
+				MARKETING_VERSION = 3.6.3;
 				PRODUCT_BUNDLE_IDENTIFIER = by.mazokaleh.Skarnik.WordWidget;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -1022,7 +1030,7 @@
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Distribution";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "3rd Party Mac Developer Application";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 72;
+				CURRENT_PROJECT_VERSION = 73;
 				DEVELOPMENT_TEAM = "";
 				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = EQFFWL4KZF;
 				"DEVELOPMENT_TEAM[sdk=macosx*]" = EQFFWL4KZF;
@@ -1041,7 +1049,7 @@
 					"@executable_path/../../Frameworks",
 				);
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
-				MARKETING_VERSION = 3.6.2;
+				MARKETING_VERSION = 3.6.3;
 				PRODUCT_BUNDLE_IDENTIFIER = by.mazokaleh.Skarnik.WordWidget;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";

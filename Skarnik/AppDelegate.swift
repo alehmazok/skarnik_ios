@@ -26,7 +26,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 //        }
         
         FirebaseApp.configure()
-        
+
+        SKAnalyticsConsentController.shared.applyStoredConsent()
+
         SKAnalyticsManager.logAppOpen()
 
         return true

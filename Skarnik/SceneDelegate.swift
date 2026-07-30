@@ -11,6 +11,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
     var window: UIWindow?
     var pendingWord: SKWord?
+    private var didPresentAnalyticsConsentPrompt = false
 
     func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
         guard let _ = (scene as? UIWindowScene) else { return }
@@ -76,6 +77,14 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         return SKVocabularyIndex.shared.word(id: wordId, vocabularyType: lang)
     }
 
+    private func presentAnalyticsConsentIfNeeded() {
+        guard !didPresentAnalyticsConsentPrompt,
+              !SKAnalyticsConsentController.shared.hasRespondedToConsent,
+              let rootViewController = window?.rootViewController else { return }
+        didPresentAnalyticsConsentPrompt = true
+        rootViewController.present(SKAnalyticsConsentViewController(), animated: true)
+    }
+
     private func openWord(_ word: SKWord) {
         guard let splitVC = window?.rootViewController as? SKSplitViewController else { return }
         splitVC.showWordInDetail(word, entryPoint: "widget")
@@ -91,6 +100,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     func sceneDidBecomeActive(_ scene: UIScene) {
         // Called when the scene has moved from an inactive state to an active state.
         // Use this method to restart any tasks that were paused (or not yet started) when the scene was inactive.
+        presentAnalyticsConsentIfNeeded()
     }
 
     func sceneWillResignActive(_ scene: UIScene) {
