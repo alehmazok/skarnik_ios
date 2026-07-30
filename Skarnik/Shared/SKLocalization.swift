@@ -73,6 +73,12 @@ class SKLocalization: Any {
     class var reportIssueDetailsPlaceholder: String { "Апішыце праблему (неабавязкова)" }
 
 
+    class var analyticsConsentTitle: String { "Аналітыка выкарыстання" }
+    class var analyticsConsentMessage: String { "Skarnik выкарыстоўвае Firebase Analytics, каб разумець, як карыстаюцца праграмай, і паляпшаць яе. Гэта ананімная статыстыка выкарыстання. Вы можаце змяніць рашэнне ў любы час у наладах." }
+    class var analyticsConsentAccept: String { "Дазволіць" }
+    class var analyticsConsentDecline: String { "Не дазваляць" }
+    class var analyticsConsentSettingsRowTitle: String { "Аналітыка выкарыстання" }
+
     class var offlineSectionTitle: String { "Афлайн доступ" }
     class var offlineNotDownloadedSubtitle: String { "Спампаваць для афлайн доступу" }
     class var offlineFailedSubtitle: String { "Адбылася памылка падчас спампоўкі слоўніка." }
