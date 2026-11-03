@@ -96,8 +96,8 @@ class SKLocalization: Any {
 
     class var widgetWordTitle: String { "Слова дня" }
     class var widgetWordDescriptioon: String { "Выпадковае слова і яго пераклад." }
-    class var widgetWordSampleWord: String { "халэмус" }
-    class var widgetWordSampleTranslation: String { "гибель, конец" }
+    class var widgetWordSampleWord: String { "удзя́чнасць" }
+    class var widgetWordSampleTranslation: String { "Пачуццё, якое ўзнікае ў адказ за зробленае дабро" }
 
     private static let wordTypeLabels: [String: String] = [
         "Nouns": "назоўнік",
