@@ -31,7 +31,9 @@ env:
 jobs:
   deploy:
     name: Archive and upload
-    runs-on: macos-26
+    # macos-15 has a much larger hosted runner pool than macos-26 (jobs on macos-26 sat queued and were
+    # cancelled); its image also ships Xcode 26, which is all the archive needs.
+    runs-on: macos-15
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@v5
@@ -39,7 +41,7 @@ jobs:
       - name: Select Xcode
         uses: maxim-lobanov/setup-xcode@v1
         with:
-          xcode-version: latest-stable
+          xcode-version: '26'
 
       - name: Check secrets
         env:
