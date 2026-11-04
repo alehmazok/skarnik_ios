@@ -1,0 +1,156 @@
+name: TestFlight
+
+# Archives a Release build with automatic (cloud) signing via the App Store Connect API key
+# and uploads it to TestFlight.
+#   - Run manually: Actions → TestFlight → Run workflow.
+#   - Pull requests that touch this pipeline do a dry run: archive + export, no upload.
+on:
+  workflow_dispatch:
+    inputs:
+      build_number:
+        description: Build number (CFBundleVersion). Empty = CURRENT_PROJECT_VERSION from the project.
+        required: false
+        type: string
+      upload:
+        description: Upload to TestFlight (off = archive and export only)
+        required: false
+        type: boolean
+        default: true
+  pull_request:
+    paths:
+      - .github/workflows/testflight.yml
+      - ci/**
+
+concurrency:
+  group: testflight-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  TEAM_ID: EQFFWL4KZF
+
+jobs:
+  deploy:
+    name: Archive and upload
+    runs-on: macos-26
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Select Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+
+      - name: Check secrets
+        env:
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+          ASC_KEY_P8: ${{ secrets.ASC_KEY_P8 }}
+          GOOGLE_SERVICE_INFO_PLIST: ${{ secrets.GOOGLE_SERVICE_INFO_PLIST }}
+        run: |
+          missing=0
+          for name in ASC_KEY_ID ASC_ISSUER_ID ASC_KEY_P8 GOOGLE_SERVICE_INFO_PLIST; do
+            if [[ -z "${!name}" ]]; then echo "::error::Secret $name is not set"; missing=1; fi
+          done
+          exit $missing
+
+      - name: Write GoogleService-Info.plist
+        env:
+          GOOGLE_SERVICE_INFO_PLIST: ${{ secrets.GOOGLE_SERVICE_INFO_PLIST }}
+        run: ci/write-google-service-info.sh
+
+      - name: Install App Store Connect API key
+        env:
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_KEY_P8: ${{ secrets.ASC_KEY_P8 }}
+        run: |
+          key_path="$RUNNER_TEMP/AuthKey_${ASC_KEY_ID}.p8"
+          # Accept the key either base64-encoded or as the raw .p8 text.
+          if [[ "$ASC_KEY_P8" == *"BEGIN PRIVATE KEY"* ]]; then
+            printf '%s\n' "$ASC_KEY_P8" > "$key_path"
+          else
+            echo "$ASC_KEY_P8" | base64 --decode > "$key_path"
+          fi
+          grep -q "BEGIN PRIVATE KEY" "$key_path" || { echo "::error::ASC_KEY_P8 is not a valid .p8 key"; exit 1; }
+          echo "ASC_KEY_PATH=$key_path" >> "$GITHUB_ENV"
+
+      - name: Resolve build number
+        env:
+          INPUT_BUILD_NUMBER: ${{ inputs.build_number }}
+        run: |
+          if [[ -n "$INPUT_BUILD_NUMBER" ]]; then
+            build="$INPUT_BUILD_NUMBER"
+          else
+            build=$(xcodebuild -project Skarnik.xcodeproj -target Skarnik -configuration Release \
+              -showBuildSettings 2>/dev/null | awk -F' = ' '/ CURRENT_PROJECT_VERSION = /{print $2; exit}')
+          fi
+          version=$(xcodebuild -project Skarnik.xcodeproj -target Skarnik -configuration Release \
+            -showBuildSettings 2>/dev/null | awk -F' = ' '/ MARKETING_VERSION = /{print $2; exit}')
+          echo "Building $version ($build)"
+          echo "BUILD_NUMBER=$build" >> "$GITHUB_ENV"
+          echo "### Skarnik $version ($build)" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Archive
+        run: |
+          set -o pipefail
+          mkdir -p build
+          xcodebuild archive \
+            -project Skarnik.xcodeproj \
+            -scheme Skarnik \
+            -configuration Release \
+            -destination 'generic/platform=iOS' \
+            -archivePath build/Skarnik.xcarchive \
+            -derivedDataPath build/DerivedData \
+            -allowProvisioningUpdates \
+            -authenticationKeyPath "$ASC_KEY_PATH" \
+            -authenticationKeyID "${{ secrets.ASC_KEY_ID }}" \
+            -authenticationKeyIssuerID "${{ secrets.ASC_ISSUER_ID }}" \
+            CODE_SIGN_STYLE=Automatic \
+            DEVELOPMENT_TEAM="$TEAM_ID" \
+            CODE_SIGN_IDENTITY="Apple Development" \
+            PROVISIONING_PROFILE_SPECIFIER= \
+            CURRENT_PROJECT_VERSION="$BUILD_NUMBER" \
+            | tee build/xcodebuild-archive.log
+
+      - name: Export and upload
+        env:
+          UPLOAD: ${{ github.event_name == 'workflow_dispatch' && inputs.upload }}
+        run: |
+          set -o pipefail
+          cp ci/ExportOptions.plist build/ExportOptions.plist
+          if [[ "$UPLOAD" == "true" ]]; then
+            /usr/libexec/PlistBuddy -c "Set :destination upload" build/ExportOptions.plist
+            echo "Exporting and uploading to App Store Connect"
+          else
+            echo "Dry run: exporting the .ipa only"
+          fi
+          xcodebuild -exportArchive \
+            -archivePath build/Skarnik.xcarchive \
+            -exportOptionsPlist build/ExportOptions.plist \
+            -exportPath build/export \
+            -allowProvisioningUpdates \
+            -authenticationKeyPath "$ASC_KEY_PATH" \
+            -authenticationKeyID "${{ secrets.ASC_KEY_ID }}" \
+            -authenticationKeyIssuerID "${{ secrets.ASC_ISSUER_ID }}" \
+            | tee build/xcodebuild-export.log
+          if [[ "$UPLOAD" == "true" ]]; then
+            echo "Uploaded build $BUILD_NUMBER to TestFlight. It shows up in App Store Connect after processing." >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "Dry run: archive and export succeeded, nothing uploaded." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Upload dSYMs and logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: skarnik-${{ env.BUILD_NUMBER }}
+          path: |
+            build/Skarnik.xcarchive/dSYMs
+            build/*.log
+            build/export/*.ipa
+          if-no-files-found: ignore
+          retention-days: 30
+
+      - name: Remove API key
+        if: always()
+        run: rm -f "$ASC_KEY_PATH"
