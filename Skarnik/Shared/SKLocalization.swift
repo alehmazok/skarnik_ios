@@ -36,6 +36,9 @@ class SKLocalization: Any {
     class var wordDetailsSpellingTitle: String { "Націск і арфаграфія" }
     class var wordDetailsSpellingMessage: String { "для прагляду, калі ласка, абярыце слова" }
     class var wordDetailsSpellingCancel: String { "Адмена" }
+    class var wordDetailsShare: String { "Падзяліцца" }
+    class var wordDetailsAddBookmark: String { "Дадаць у закладкі" }
+    class var wordDetailsRemoveBookmark: String { "Выдаліць з закладак" }
 
     class var errorWordNotFound: String { "Слова не знойдзена." }
     class var errorNetworkErrorTryAgainLater: String { "Памылка сеткі. Паспрабуйце пазней." }

@@ -113,7 +113,7 @@ struct SKWordDetailsView: View {
         ZStack {
             ScrollView {
                 VStack(spacing: 0) {
-                    urlVocabularyRow
+                    subtitleRow
                     contentView
                 }
                 .padding(.horizontal, 15)
@@ -128,8 +128,12 @@ struct SKWordDetailsView: View {
                         .padding(.vertical, 10)
                         .background(
                             RoundedRectangle(cornerRadius: 10)
-                                .fill(Color(.secondarySystemBackground))
-                                .shadow(radius: 5)
+                                .fill(Color(.tertiarySystemBackground))
+                                .shadow(color: .black.opacity(0.2), radius: 5)
+                        )
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 10)
+                                .stroke(Color(.separator), lineWidth: 0.5)
                         )
                         .padding(.bottom, 24)
                         .transition(.opacity)
@@ -141,11 +145,15 @@ struct SKWordDetailsView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItemGroup(placement: .navigationBarTrailing) {
-                if !viewModel.spellingWords.isEmpty {
+                if case .loading = viewModel.state {
+                    // Reserve the slot while the translation loads so the title doesn't shift.
+                    spellingPlaceholder
+                } else if !viewModel.spellingWords.isEmpty {
                     spellingControl
                 }
             }
             ToolbarItemGroup(placement: .bottomBar) {
+                // Share on the left, Bookmark on the right: balanced on iOS 26 glass and older bars.
                 Button(action: {
                     if let translation = viewModel.translation {
                         SKAnalyticsManager.logShareClicked(word: translation.word, url: translation.sharingUrl)
@@ -154,15 +162,20 @@ struct SKWordDetailsView: View {
                 }) {
                     Image(systemName: "square.and.arrow.up")
                 }
+                .accessibilityLabel(SKLocalization.wordDetailsShare)
                 .disabled(viewModel.translation == nil)
+                Spacer()
                 Button(action: {
                     viewModel.toggleFavorite()
+                    UIImpactFeedbackGenerator(style: .light).impactOccurred()
                 }) {
                     Image(systemName: viewModel.isFavorite ? "bookmark.fill" : "bookmark")
                 }
+                .accessibilityLabel(viewModel.isFavorite
+                                    ? SKLocalization.wordDetailsRemoveBookmark
+                                    : SKLocalization.wordDetailsAddBookmark)
                 .disabled(viewModel.word == nil)
-                Spacer()
-                // TODO: re-enable report button when ready
+                // TODO: re-enable report button when ready (between Share and Bookmark)
             }
         }
         .sheet(isPresented: $showShareSheet) {
@@ -175,35 +188,14 @@ struct SKWordDetailsView: View {
         }
     }
 
-    // MARK: URL / vocabulary row
+    // MARK: Subtitle row
 
-    @ViewBuilder
-    private var urlVocabularyRow: some View {
-        VStack(spacing: 2) {
-            Text(viewModel.vocabularySubtitle ?? " ")
-                .font(.system(size: 15))
-                .foregroundColor(.secondary)
-                .frame(maxWidth: .infinity, alignment: .center)
-
-            if case .success(let translation) = viewModel.state {
-                Button(action: { openUrl(translation.sharingUrl) }) {
-                    HStack(spacing: 3) {
-                        Text(translation.sharingUrl)
-                            .font(.system(size: 10.5))
-                            .foregroundColor(.secondary)
-                        Image("external-link-icon")
-                            .renderingMode(.template)
-                            .resizable()
-                            .scaledToFit()
-                            .foregroundColor(.secondary)
-                            .frame(width: 10.5, height: 10.5)
-                    }
-                }
-            } else {
-                Text(" ").font(.system(size: 10.5))
-            }
-        }
-        .frame(height: 50)
+    private var subtitleRow: some View {
+        Text(viewModel.vocabularySubtitle ?? " ")
+            .font(.subheadline)
+            .foregroundColor(.secondary)
+            .frame(maxWidth: .infinity, alignment: .center)
+            .padding(.vertical, 12)
     }
 
     // MARK: Content
@@ -255,12 +247,14 @@ struct SKWordDetailsView: View {
         }
     }
 
-    // MARK: Helpers
-
-    private func openUrl(_ urlString: String) {
-        guard let url = URL(string: urlString) else { return }
-        UIApplication.shared.open(url)
+    private var spellingPlaceholder: some View {
+        Button(action: {}) {
+            Text(SKLocalization.wordDetailsSpelling)
+        }
+        .disabled(true)
     }
+
+    // MARK: Helpers
 
     private func handleEffect(_ effect: SKWordDetailsEffect) {
         switch effect {

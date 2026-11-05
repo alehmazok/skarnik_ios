@@ -11,7 +11,7 @@ import Foundation
 extension String {
     func regexSub(pattern: String, template: String, options: NSRegularExpression.Options = []) -> String {
         let regex = try! NSRegularExpression(pattern: pattern, options: options)
-        let range = NSMakeRange(0, self.count)
+        let range = NSMakeRange(0, (self as NSString).length)
         let subString = regex.stringByReplacingMatches(in: self, options: [], range: range, withTemplate: template)
         return subString
     }

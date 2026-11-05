@@ -13,9 +13,11 @@ final class SKSkarnikByControllerTests: XCTestCase {
 
         let recoloredHtml = translation.recoloredHtml
 
-        // 831b03 maps to F44C3E for both light and dark
-        XCTAssertTrue(recoloredHtml.contains("color=\"F44C3E\""))
+        // 831b03 maps to the primary label colour (black in light, white in dark) and is bold
+        XCTAssertTrue(recoloredHtml.contains("color=\"000000\"") || recoloredHtml.contains("color=\"FFFFFF\""))
         XCTAssertFalse(recoloredHtml.contains("color=\"831b03\""))
+        XCTAssertFalse(recoloredHtml.contains("F44C3E"))
+        XCTAssertTrue(recoloredHtml.contains("font-weight: bold"))
     }
 
     func testSKSkarnikTranslation_recoloredHtml_attributeWithHashFormat() {
@@ -25,8 +27,9 @@ final class SKSkarnikByControllerTests: XCTestCase {
 
         let recoloredHtml = translation.recoloredHtml
 
-        XCTAssertTrue(recoloredHtml.contains("color=\"#F44C3E\""))
+        XCTAssertTrue(recoloredHtml.contains("color=\"#000000\"") || recoloredHtml.contains("color=\"#FFFFFF\""))
         XCTAssertFalse(recoloredHtml.contains("color=\"#831b03\""))
+        XCTAssertTrue(recoloredHtml.contains("font-weight: bold"))
     }
 
     func testSKSkarnikTranslation_recoloredHtml_cssStyleFormat() {
@@ -36,8 +39,54 @@ final class SKSkarnikByControllerTests: XCTestCase {
 
         let recoloredHtml = translation.recoloredHtml
 
-        XCTAssertTrue(recoloredHtml.contains("color: #F44C3E"))
+        XCTAssertTrue(recoloredHtml.contains("color: #000000") || recoloredHtml.contains("color: #FFFFFF"))
         XCTAssertFalse(recoloredHtml.contains("color: #831b03"))
+        XCTAssertTrue(recoloredHtml.contains("font-weight: bold"))
+    }
+
+    func testSKSkarnikTranslation_recoloredHtml_headwordColorsNoLongerAccent() {
+        let word = SKWord(word_id: 1, word: "test", lang_id: .bel_definition)
+        let html = "<span style=\"color: #0000a0;\">ка́ра,</span> <span style=\"color: #4863a0;\">Зямная кара</span>"
+        let translation = SKSkarnikTranslation(word: word, url: "http://example.com", html: html)
+
+        let recoloredHtml = translation.recoloredHtml
+
+        XCTAssertFalse(recoloredHtml.contains("F44C3E"))
+        XCTAssertFalse(recoloredHtml.lowercased().contains("0000a0"))
+        XCTAssertFalse(recoloredHtml.lowercased().contains("4863a0"))
+        XCTAssertEqual(recoloredHtml.components(separatedBy: "font-weight: bold").count - 1, 2)
+    }
+
+    func testSKSkarnikTranslation_emphasizedHtml_leavesOtherColorsAlone() {
+        let html = "<span style=\"color: #5f5f5f;\">прыклад</span><font color=\"a52a2a\">ж.</font>"
+        XCTAssertEqual(SKSkarnikTranslation.emphasizedHtml(html), html)
+    }
+
+    func testSKSkarnikTranslation_collapsedSpacesHtml_spanNbspAfterDash() {
+        let html = "благожелательность —<span>&nbsp;</span> добразычлівасць; благожелательный — <span>&nbsp;</span>добразычлівы"
+        XCTAssertEqual(SKSkarnikTranslation.collapsedSpacesHtml(html),
+                       "благожелательность — добразычлівасць; благожелательный — добразычлівы")
+    }
+
+    func testSKSkarnikTranslation_collapsedSpacesHtml_plainNbspEitherOrder() {
+        XCTAssertEqual(SKSkarnikTranslation.collapsedSpacesHtml("а — &nbsp;б"), "а — б")
+        XCTAssertEqual(SKSkarnikTranslation.collapsedSpacesHtml("а —&nbsp; б"), "а — б")
+        XCTAssertEqual(SKSkarnikTranslation.collapsedSpacesHtml("а —\u{00A0} б"), "а — б")
+    }
+
+    func testSKSkarnikTranslation_collapsedSpacesHtml_keepsLoneAndRepeatedNbsp() {
+        // A lone nbsp without a regular space is intentional (non-breaking), keep it.
+        XCTAssertEqual(SKSkarnikTranslation.collapsedSpacesHtml("а —&nbsp;б"), "а —&nbsp;б")
+        // Two or more nbsp are deliberate spacing, keep them.
+        XCTAssertEqual(SKSkarnikTranslation.collapsedSpacesHtml("<br/>&nbsp;&nbsp; тэкст"), "<br/>&nbsp;&nbsp; тэкст")
+    }
+
+    func testSKSkarnikTranslation_recoloredHtml_collapsesDoubleSpace() {
+        let word = SKWord(word_id: 27890, word: "добразычлівасць", lang_id: .bel_rus)
+        let html = "добразычлівасць —<span>&nbsp;</span> благожелательность"
+        let translation = SKSkarnikTranslation(word: word, url: "http://example.com", html: html)
+
+        XCTAssertEqual(translation.recoloredHtml, "добразычлівасць — благожелательность")
     }
 
     func testSKSkarnikTranslation_recoloredHtml_removesFontSizeSmall() {
