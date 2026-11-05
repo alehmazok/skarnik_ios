@@ -38,7 +38,8 @@ final class SkarnikSmokeUITests: XCTestCase {
         searchField.tap()
         searchField.typeText("мова")
 
-        let firstResult = app.buttons.matching(identifier: "search.result").firstMatch
+        // Any element type: before iOS 18, a Button inside a SwiftUI List is exposed as a cell.
+        let firstResult = app.descendants(matching: .any).matching(identifier: "search.result").firstMatch
         XCTAssertTrue(firstResult.waitForExistence(timeout: 10), "No search results for «мова»")
         firstResult.tap()
 

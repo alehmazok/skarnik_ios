@@ -56,7 +56,13 @@ echo "Final build response:"
 jq . <<<"$build_json" || echo "$build_json"
 for session in $(jq -r '[.. | objects | select(has("sessions")) | .sessions[]? | (.id // .session_id // empty)] | unique | .[]' <<<"$build_json" 2>/dev/null); do
   echo "Session $session:"
-  curl -sS -u "$auth" "$api/builds/$build_id/sessions/$session" | jq . || true
+  session_json=$(curl -sS -u "$auth" "$api/builds/$build_id/sessions/$session")
+  jq . <<<"$session_json" || echo "$session_json"
+  # For failed tests, print the assertion lines from the XCTest instrumentation log.
+  for log_url in $(jq -r '.. | objects | select(.status? == "failed" and has("instrumentation_log")) | .instrumentation_log' <<<"$session_json" 2>/dev/null); do
+    echo "Failure details ($log_url):"
+    curl -sS -u "$auth" "$log_url" | grep -E "error:|failed|XCTAssert|Failed to" | head -20 || true
+  done
 done
 
 {
