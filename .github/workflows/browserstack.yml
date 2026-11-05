@@ -1,0 +1,115 @@
+name: BrowserStack
+
+# Builds Skarnik + the SkarnikUITests runner for real devices, unsigned (BrowserStack re-signs every
+# uploaded iOS app with its own profile, so no Apple certificate is used or created here), and runs
+# the UI tests on BrowserStack App Automate.
+#   - Every push to main, and manually: Actions → BrowserStack → Run workflow.
+#   - Pull requests that touch this pipeline run it too (device build only when the secrets are missing).
+# Setup and secrets: docs/browserstack.md.
+on:
+  workflow_dispatch:
+    inputs:
+      devices:
+        description: Comma-separated BrowserStack devices, "<model>-<iOS major>"
+        required: false
+        type: string
+  push:
+    branches: [main]
+  pull_request:
+    paths:
+      - .github/workflows/browserstack.yml
+      - scripts/browserstack-run.sh
+
+concurrency:
+  group: browserstack-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  DEFAULT_DEVICES: iPhone 16-18,iPhone 14-18
+
+jobs:
+  device-tests:
+    name: Real-device UI tests
+    runs-on: macos-26
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Select Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+
+      - name: Check secrets
+        id: secrets
+        env:
+          GOOGLE_SERVICE_INFO_PLIST: ${{ secrets.GOOGLE_SERVICE_INFO_PLIST }}
+          BROWSERSTACK_USERNAME: ${{ secrets.BROWSERSTACK_USERNAME }}
+          BROWSERSTACK_ACCESS_KEY: ${{ secrets.BROWSERSTACK_ACCESS_KEY }}
+        run: |
+          missing=0
+          for name in GOOGLE_SERVICE_INFO_PLIST; do
+            if [[ -z "${!name}" ]]; then echo "::error::Secret $name is not set"; missing=1; fi
+          done
+          if [[ -n "$BROWSERSTACK_USERNAME" && -n "$BROWSERSTACK_ACCESS_KEY" ]]; then
+            echo "browserstack=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "::warning::BROWSERSTACK_USERNAME / BROWSERSTACK_ACCESS_KEY not set: building only, no device run"
+            echo "browserstack=false" >> "$GITHUB_OUTPUT"
+          fi
+          exit $missing
+
+      - name: Write GoogleService-Info.plist
+        env:
+          GOOGLE_SERVICE_INFO_PLIST: ${{ secrets.GOOGLE_SERVICE_INFO_PLIST }}
+        run: ci/write-google-service-info.sh
+
+      - name: Build for testing (device)
+        run: |
+          set -o pipefail
+          mkdir -p build
+          xcodebuild build-for-testing \
+            -project Skarnik.xcodeproj \
+            -scheme SkarnikUITests \
+            -configuration Debug \
+            -destination 'generic/platform=iOS' \
+            -derivedDataPath build/DerivedData \
+            CODE_SIGNING_ALLOWED=NO \
+            | tee build/xcodebuild-device.log
+
+      - name: Package app and test suite
+        run: |
+          set -euo pipefail
+          products=build/DerivedData/Build/Products/Debug-iphoneos
+          staging="$RUNNER_TEMP/bs"
+          mkdir -p "$staging/Payload"
+          cp -R "$products/Skarnik.app" "$staging/Payload/"
+          (cd "$staging" && zip -qry "$GITHUB_WORKSPACE/build/Skarnik.ipa" Payload)
+          (cd "$products" && zip -qry "$GITHUB_WORKSPACE/build/SkarnikUITests.zip" SkarnikUITests-Runner.app)
+          ls -lh build/Skarnik.ipa build/SkarnikUITests.zip
+
+      - name: Run on BrowserStack
+        if: steps.secrets.outputs.browserstack == 'true'
+        env:
+          BROWSERSTACK_USERNAME: ${{ secrets.BROWSERSTACK_USERNAME }}
+          BROWSERSTACK_ACCESS_KEY: ${{ secrets.BROWSERSTACK_ACCESS_KEY }}
+          BROWSERSTACK_DEVICES: ${{ inputs.devices || env.DEFAULT_DEVICES }}
+          BUILD_TAG: ${{ github.ref_name }}@${{ github.sha }}
+        run: scripts/browserstack-run.sh build/Skarnik.ipa build/SkarnikUITests.zip
+
+      - name: Dry run summary
+        if: steps.secrets.outputs.browserstack != 'true'
+        run: echo "Device build and packaging succeeded; nothing sent to BrowserStack." >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload build and logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: browserstack-${{ github.run_number }}
+          path: |
+            build/*.log
+            build/Skarnik.ipa
+            build/SkarnikUITests.zip
+          if-no-files-found: ignore
+          retention-days: 14
+

@@ -64,6 +64,7 @@ Skarnik/
 
 WordWidget/                            # "Word of the Day" widget (SwiftUI + WidgetKit)
 SkarnikTests/                          # Unit tests (translation parsing, etc.)
+SkarnikUITests/                        # XCUITest smoke tests (simulator CI + BrowserStack devices)
 ```
 
 ## Getting Started
@@ -97,7 +98,8 @@ xcodebuild test -project Skarnik.xcodeproj -scheme Skarnik -destination 'platfor
 
 GitHub Actions workflows live in `.github/workflows/`:
 
-- **CI** (`ci.yml`) runs the unit tests on an iOS Simulator for every pull request and every push to `main`.
+- **CI** (`ci.yml`) runs the unit tests and the `SkarnikUITests` UI tests on an iOS Simulator for every pull request and every push to `main`.
+- **BrowserStack** (`browserstack.yml`) runs the UI tests on real devices in BrowserStack App Automate on every push to `main` (setup in [docs/browserstack.md](docs/browserstack.md)).
 - **TestFlight** (`testflight.yml`) archives a Release build and uploads it to TestFlight. Start it from
   Actions → TestFlight → Run workflow. The build number is picked automatically: the highest build already on
   App Store Connect + 1 (never below `CURRENT_PROJECT_VERSION` in the project). Pass `build_number` to override it.
@@ -118,6 +120,8 @@ create a new development certificate (runners start with an empty keychain) unti
 | `GOOGLE_SERVICE_INFO_PLIST` | `GoogleService-Info.plist`, base64-encoded |
 | `DEV_CERT_P12` | One Apple Development certificate with its private key, exported as `.p12`, base64-encoded |
 | `DEV_CERT_PASSWORD` | Password of that `.p12` (empty if none) |
+| `BROWSERSTACK_USERNAME` | BrowserStack username (BrowserStack workflow only) |
+| `BROWSERSTACK_ACCESS_KEY` | BrowserStack access key (BrowserStack workflow only) |
 
 To set up or rotate the certificate: revoke the old development certificates created by CI at
 developer.apple.com → Certificates, then on a Mac open Xcode → Settings → Accounts → Manage Certificates,

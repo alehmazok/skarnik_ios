@@ -29,6 +29,7 @@ struct SKAnalyticsConsentView: View {
                         .frame(maxWidth: .infinity)
                 }
                 .buttonStyle(.borderedProminent)
+                .accessibilityIdentifier("analyticsConsent.accept")
 
                 Button {
                     SKAnalyticsConsentController.shared.revokeConsent()
@@ -38,6 +39,7 @@ struct SKAnalyticsConsentView: View {
                         .frame(maxWidth: .infinity)
                 }
                 .buttonStyle(.bordered)
+                .accessibilityIdentifier("analyticsConsent.decline")
             }
         }
         .padding(24)

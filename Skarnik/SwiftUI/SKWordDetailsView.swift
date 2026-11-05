@@ -136,6 +136,7 @@ struct SKWordDetailsView: View {
                     isHeaderScrolledAway = scrolledAway
                 }
             }
+            .accessibilityIdentifier("wordDetails")
 
             if let message = toastMessage {
                 VStack {

@@ -114,6 +114,13 @@
 			remoteGlobalIDString = B20ABAB528EEBF6F00AA2FC9;
 			remoteInfo = Skarnik;
 		};
+		C0DEBA642F8D000000A8ACBE /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = B20ABAAE28EEBF6F00AA2FC9 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = B20ABAB528EEBF6F00AA2FC9;
+			remoteInfo = Skarnik;
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -214,6 +221,7 @@
 		F2BB0CF32F7304F7006352AB /* SKDeepLinkTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SKDeepLinkTests.swift; sourceTree = "<group>"; };
 		F7D327105C13FF3740B3FA59 /* SKFavoritesController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SKFavoritesController.swift; sourceTree = "<group>"; };
 		FA833B19524C50B41DDB7B29 /* SKOfflineDictionaryCloudSource.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SKOfflineDictionaryCloudSource.swift; sourceTree = "<group>"; };
+		C0DEBA5F2F8D000000A8ACBE /* SkarnikUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SkarnikUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -228,6 +236,7 @@
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		F26469062F6F5DE600BEBF1F /* SkarnikTests */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (F2FE25562F7140D8009126F4 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = SkarnikTests; sourceTree = "<group>"; };
+		C0DEBA602F8D000000A8ACBE /* SkarnikUITests */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = SkarnikUITests; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -256,6 +265,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		F26469022F6F5DE600BEBF1F /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C0DEBA622F8D000000A8ACBE /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -292,6 +308,7 @@
 				B20ABAB828EEBF6F00AA2FC9 /* Skarnik */,
 				B284FE5B2AE0A455009CA21D /* WordWidget */,
 				F26469062F6F5DE600BEBF1F /* SkarnikTests */,
+				C0DEBA602F8D000000A8ACBE /* SkarnikUITests */,
 				B284FE562AE0A455009CA21D /* Frameworks */,
 				B20ABAB728EEBF6F00AA2FC9 /* Products */,
 				F268C3D22D50DF5F004B7BE4 /* GoogleService-Info.plist */,
@@ -304,6 +321,7 @@
 				B20ABAB628EEBF6F00AA2FC9 /* Skarnik.app */,
 				B284FE552AE0A455009CA21D /* WordWidgetExtension.appex */,
 				F26469052F6F5DE600BEBF1F /* SkarnikTests.xctest */,
+				C0DEBA5F2F8D000000A8ACBE /* SkarnikUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -520,6 +538,27 @@
 			productReference = F26469052F6F5DE600BEBF1F /* SkarnikTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
+		C0DEBA5E2F8D000000A8ACBE /* SkarnikUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = C0DEBA662F8D000000A8ACBE /* Build configuration list for PBXNativeTarget "SkarnikUITests" */;
+			buildPhases = (
+				C0DEBA612F8D000000A8ACBE /* Sources */,
+				C0DEBA622F8D000000A8ACBE /* Frameworks */,
+				C0DEBA632F8D000000A8ACBE /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				C0DEBA652F8D000000A8ACBE /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				C0DEBA602F8D000000A8ACBE /* SkarnikUITests */,
+			);
+			name = SkarnikUITests;
+			productName = SkarnikUITests;
+			productReference = C0DEBA5F2F8D000000A8ACBE /* SkarnikUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -539,6 +578,10 @@
 						CreatedOnToolsVersion = 15.0;
 					};
 					F26469042F6F5DE600BEBF1F = {
+						CreatedOnToolsVersion = 26.3;
+						TestTargetID = B20ABAB528EEBF6F00AA2FC9;
+					};
+					C0DEBA5E2F8D000000A8ACBE = {
 						CreatedOnToolsVersion = 26.3;
 						TestTargetID = B20ABAB528EEBF6F00AA2FC9;
 					};
@@ -565,6 +608,7 @@
 				B20ABAB528EEBF6F00AA2FC9 /* Skarnik */,
 				B284FE542AE0A455009CA21D /* WordWidgetExtension */,
 				F26469042F6F5DE600BEBF1F /* SkarnikTests */,
+				C0DEBA5E2F8D000000A8ACBE /* SkarnikUITests */,
 			);
 		};
 /* End PBXProject section */
@@ -592,6 +636,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		F26469032F6F5DE600BEBF1F /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C0DEBA632F8D000000A8ACBE /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -720,6 +771,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		C0DEBA612F8D000000A8ACBE /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -732,6 +790,11 @@
 			isa = PBXTargetDependency;
 			target = B20ABAB528EEBF6F00AA2FC9 /* Skarnik */;
 			targetProxy = F26469092F6F5DE600BEBF1F /* PBXContainerItemProxy */;
+		};
+		C0DEBA652F8D000000A8ACBE /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = B20ABAB528EEBF6F00AA2FC9 /* Skarnik */;
+			targetProxy = C0DEBA642F8D000000A8ACBE /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -1118,6 +1181,47 @@
 			};
 			name = Release;
 		};
+		C0DEBA672F8D000000A8ACBE /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = EQFFWL4KZF;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = by.skarnik.SkarnikUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = Skarnik;
+			};
+			name = Debug;
+		};
+		C0DEBA682F8D000000A8ACBE /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = EQFFWL4KZF;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = by.skarnik.SkarnikUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = Skarnik;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -1153,6 +1257,15 @@
 			buildConfigurations = (
 				F264690C2F6F5DE600BEBF1F /* Debug */,
 				F264690D2F6F5DE600BEBF1F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		C0DEBA662F8D000000A8ACBE /* Build configuration list for PBXNativeTarget "SkarnikUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C0DEBA672F8D000000A8ACBE /* Debug */,
+				C0DEBA682F8D000000A8ACBE /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
