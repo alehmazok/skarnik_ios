@@ -50,6 +50,15 @@ for _ in $(seq 1 120); do
   esac
 done
 
+# Per-device results, so a failure is readable from the job log without opening the dashboard.
+build_json=$(curl -sS -u "$auth" "$api/builds/$build_id")
+echo "Final build response:"
+jq . <<<"$build_json" || echo "$build_json"
+for session in $(jq -r '[.. | objects | select(has("sessions")) | .sessions[]? | (.id // .session_id // empty)] | unique | .[]' <<<"$build_json" 2>/dev/null); do
+  echo "Session $session:"
+  curl -sS -u "$auth" "$api/builds/$build_id/sessions/$session" | jq . || true
+done
+
 {
   echo "### BrowserStack: ${status:-timed out}"
   echo "Devices: $BROWSERSTACK_DEVICES"
