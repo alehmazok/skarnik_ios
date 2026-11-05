@@ -15,6 +15,9 @@ final class SKHistoryViewModel: ObservableObject {
     }
     @Published private(set) var searchResults: [SKWord] = []
     @Published private(set) var words: [SKWord] = []
+    /// Bound to `.searchable(isPresented:)` on iOS 17+. SwiftUI sets it back to `false`
+    /// when the user cancels search.
+    @Published var isSearchPresented = false
 
     private var searchTask: Task<Void, Never>?
 
@@ -84,6 +87,11 @@ final class SKHistoryViewModel: ObservableObject {
     /// SQLite-backed search pipeline in `updateSearch`.
     func recordSearchSettle(query: String, resultCount: Int) {
         searchSettleSubject.send((query: query, resultCount: resultCount))
+    }
+
+    /// Enters search mode: focuses the field and shows the keyboard (Search tab re-tap).
+    func activateSearch() {
+        isSearchPresented = true
     }
 
     func resultTapped(_ word: SKWord, position: Int) {
@@ -246,11 +254,31 @@ struct SKHistoryView: View {
     var body: some View {
         SKHistoryContentView(viewModel: viewModel, onWordSelected: onWordSelected)
             .navigationBarTitleDisplayMode(.inline)
-            .searchable(
+            .modifier(HistorySearchableModifier(viewModel: viewModel))
+            .modifier(OpaqueTabBarModifier())
+    }
+}
+
+/// `.searchable` with the `isPresented` binding where it exists (iOS 17+), so the
+/// view model can open search. Older systems fall back to the UIKit search bar
+/// (see `SKHistoryViewController.activateSearch()`).
+private struct HistorySearchableModifier: ViewModifier {
+    @ObservedObject var viewModel: SKHistoryViewModel
+
+    func body(content: Content) -> some View {
+        if #available(iOS 17, *) {
+            content.searchable(
+                text: $viewModel.searchText,
+                isPresented: $viewModel.isSearchPresented,
+                placement: .navigationBarDrawer(displayMode: .always),
+                prompt: SKLocalization.searchbarSearchWords
+            )
+        } else {
+            content.searchable(
                 text: $viewModel.searchText,
                 placement: .navigationBarDrawer(displayMode: .always),
                 prompt: SKLocalization.searchbarSearchWords
             )
-            .modifier(OpaqueTabBarModifier())
+        }
     }
 }
