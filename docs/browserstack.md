@@ -33,6 +33,14 @@ BrowserStack dashboard, where each device has a video, device logs and per-test 
 
 Until the two secrets exist, the workflow still builds and packages, and skips the device run with a warning.
 
+## iOS versions
+
+The test runner is built with the latest Xcode (26.x). On BrowserStack's iOS 16 and 17 devices it crashes
+before any test starts: `Symbol not found: _OBJC_CLASS_$_XCTCommandLineToolHelper` (iOS 17) and
+`Library not loaded: @rpath/lib_TestingInterop.dylib` (iOS 16). That is the Xcode 26 test runtime missing
+on those systems, not an app bug. The default device list is therefore iOS 18+ only. Covering iOS 15–17
+would need a second build of the runner with an older Xcode (e.g. Xcode 16 on a `macos-15` runner).
+
 ## Signing notes
 
 The device build is unsigned (`CODE_SIGNING_ALLOWED=NO`). BrowserStack re-signs every uploaded iOS app

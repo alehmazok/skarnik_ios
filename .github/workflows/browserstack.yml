@@ -25,7 +25,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  DEFAULT_DEVICES: iPhone 16-18,iPhone 15-17,iPhone 14-16
+  DEFAULT_DEVICES: iPhone 16-18,iPhone 14-18
 
 jobs:
   device-tests:
