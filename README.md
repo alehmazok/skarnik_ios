@@ -99,8 +99,9 @@ GitHub Actions workflows live in `.github/workflows/`:
 
 - **CI** (`ci.yml`) runs the unit tests on an iOS Simulator for every pull request and every push to `main`.
 - **TestFlight** (`testflight.yml`) archives a Release build and uploads it to TestFlight. Start it from
-  Actions → TestFlight → Run workflow. The build number defaults to `CURRENT_PROJECT_VERSION` in the project, so
-  bump the version as usual first, or pass `build_number`. Pull requests that change the pipeline run it as a dry
+  Actions → TestFlight → Run workflow. The build number is picked automatically: the highest build already on
+  App Store Connect + 1 (never below `CURRENT_PROJECT_VERSION` in the project). Pass `build_number` to override it.
+  The project file is not changed, so `MARKETING_VERSION` is still bumped by hand for a new release. Pull requests that change the pipeline run it as a dry
   run (archive and export only, nothing uploaded).
 
 Signing is automatic (cloud-managed) through an App Store Connect API key, so no certificates or profiles are

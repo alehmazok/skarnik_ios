@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
     inputs:
       build_number:
-        description: Build number (CFBundleVersion). Empty = CURRENT_PROJECT_VERSION from the project.
+        description: Build number (CFBundleVersion). Empty = next free number on App Store Connect.
         required: false
         type: string
       upload:
@@ -78,15 +78,19 @@ jobs:
       - name: Resolve build number
         env:
           INPUT_BUILD_NUMBER: ${{ inputs.build_number }}
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
         run: |
+          settings=$(xcodebuild -project Skarnik.xcodeproj -target Skarnik -configuration Release -showBuildSettings 2>/dev/null)
+          version=$(awk -F' = ' '/ MARKETING_VERSION = /{print $2; exit}' <<<"$settings")
+          project_build=$(awk -F' = ' '/ CURRENT_PROJECT_VERSION = /{print $2; exit}' <<<"$settings")
+          bundle_id=$(awk -F' = ' '/ PRODUCT_BUNDLE_IDENTIFIER = /{print $2; exit}' <<<"$settings")
           if [[ -n "$INPUT_BUILD_NUMBER" ]]; then
             build="$INPUT_BUILD_NUMBER"
           else
-            build=$(xcodebuild -project Skarnik.xcodeproj -target Skarnik -configuration Release \
-              -showBuildSettings 2>/dev/null | awk -F' = ' '/ CURRENT_PROJECT_VERSION = /{print $2; exit}')
+            # Next free number on App Store Connect, never below the project's own build number.
+            build=$(ruby ci/next-build-number.rb "$bundle_id" "$project_build")
           fi
-          version=$(xcodebuild -project Skarnik.xcodeproj -target Skarnik -configuration Release \
-            -showBuildSettings 2>/dev/null | awk -F' = ' '/ MARKETING_VERSION = /{print $2; exit}')
           echo "Building $version ($build)"
           echo "BUILD_NUMBER=$build" >> "$GITHUB_ENV"
           echo "### Skarnik $version ($build)" >> "$GITHUB_STEP_SUMMARY"
