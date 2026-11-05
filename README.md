@@ -104,8 +104,11 @@ GitHub Actions workflows live in `.github/workflows/`:
   The project file is not changed, so `MARKETING_VERSION` is still bumped by hand for a new release. Pull requests that change the pipeline run it as a dry
   run (archive and export only, nothing uploaded).
 
-Signing is automatic (cloud-managed) through an App Store Connect API key, so no certificates or profiles are
-stored in the repo or in secrets. Required repository secrets:
+Signing is automatic through an App Store Connect API key: profiles are managed by Xcode and the App Store
+export uses a cloud-managed distribution certificate. The archive step needs one Apple Development certificate,
+stored once as a `.p12` secret and imported into a temporary keychain on each run. Without it, every run would
+create a new development certificate (runners start with an empty keychain) until the team hits Apple's limit
+("Choose a certificate to revoke"). Required repository secrets:
 
 | Secret | Value |
 |--------|-------|
@@ -113,6 +116,13 @@ stored in the repo or in secrets. Required repository secrets:
 | `ASC_ISSUER_ID` | API key issuer ID |
 | `ASC_KEY_P8` | The `.p8` key, base64-encoded (raw text also works) |
 | `GOOGLE_SERVICE_INFO_PLIST` | `GoogleService-Info.plist`, base64-encoded |
+| `DEV_CERT_P12` | One Apple Development certificate with its private key, exported as `.p12`, base64-encoded |
+| `DEV_CERT_PASSWORD` | Password of that `.p12` (empty if none) |
+
+To set up or rotate the certificate: revoke the old development certificates created by CI at
+developer.apple.com → Certificates, then on a Mac open Xcode → Settings → Accounts → Manage Certificates,
+add an **Apple Development** certificate, right-click it → Export Certificate, set a password, and store
+`base64 -i cert.p12 | pbcopy` as `DEV_CERT_P12` and the password as `DEV_CERT_PASSWORD`.
 
 ## Data Sources
 
