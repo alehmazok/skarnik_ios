@@ -47,9 +47,19 @@ class SKWordDetailsViewModel: ObservableObject {
         return translation?.belWords ?? []
     }
     
-    var navigationTitle: String? {
+    /// The word the screen is about: the stressed form once the translation brings one,
+    /// otherwise the plain word. Shown as the large heading above the translation.
+    var headword: String? {
         guard let word = word else { return nil }
-        return "«‎\(word.word)»"
+        if let stress = translation?.stress, !stress.isEmpty {
+            return stress
+        }
+        return word.word
+    }
+
+    /// Compact title for the navigation bar, shown once the large heading scrolls out of view.
+    var navigationTitle: String? {
+        headword.map { "«\($0)»" }
     }
     
     var vocabularySubtitle: String? {
