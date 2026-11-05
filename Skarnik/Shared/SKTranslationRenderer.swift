@@ -17,8 +17,9 @@ extension NSAttributedString.Key {
 
 /// How the rendered text is laid out.
 enum SKTranslationLayout {
-    /// The translation screen: spacing between `<br>`-separated entries and a hanging indent,
-    /// so each entry starts at the margin and its wrapped lines sit under it.
+    /// The translation screen: spacing between `<br>`-separated entries. No hanging indent: the
+    /// source already indents definitions with `&nbsp;`, and both together push every line but
+    /// the headwords to the right.
     case article
     /// Small fragments such as stress table cells: no extra spacing.
     case compact
@@ -355,7 +356,6 @@ enum SKTranslationRenderer {
             case .article:
                 paragraph.lineHeightMultiple = 1.15
                 paragraph.paragraphSpacing = metrics.scaledValue(for: 8, compatibleWith: traits)
-                paragraph.headIndent = metrics.scaledValue(for: 16, compatibleWith: traits)
             case .compact:
                 break
             }
