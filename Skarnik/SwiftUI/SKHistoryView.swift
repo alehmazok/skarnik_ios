@@ -100,6 +100,7 @@ private struct SKHistoryContentView: View {
 
     private static let rusKeyboardChars = ["и", "щ", "ъ"]
     private static let belKeyboardChars = ["і", "ў", "'"]
+    private static let keyboardKeySpacing: CGFloat = 8
 
     var body: some View {
         mainContent
@@ -186,9 +187,13 @@ private struct SKHistoryContentView: View {
 
     private var belarusianKeyboardRow: some View {
         HStack(spacing: 0) {
-            ForEach(Self.rusKeyboardChars, id: \.self) { keyboardKey($0, tint: .secondary) }
+            HStack(spacing: Self.keyboardKeySpacing) {
+                ForEach(Self.rusKeyboardChars, id: \.self) { keyboardKey($0, tint: .secondary) }
+            }
             Spacer()
-            ForEach(Self.belKeyboardChars, id: \.self) { keyboardKey($0, tint: .accentColor) }
+            HStack(spacing: Self.keyboardKeySpacing) {
+                ForEach(Self.belKeyboardChars, id: \.self) { keyboardKey($0, tint: .accentColor) }
+            }
         }
         .padding(.horizontal, 6)
         .frame(height: 52)
