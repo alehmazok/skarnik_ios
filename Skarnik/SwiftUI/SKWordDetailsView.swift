@@ -119,6 +119,7 @@ struct SKWordDetailsView: View {
                 }
                 .padding(.horizontal, 15)
             }
+            .accessibilityIdentifier("wordDetails")
 
             if let message = toastMessage {
                 VStack {

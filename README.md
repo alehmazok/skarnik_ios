@@ -64,6 +64,7 @@ Skarnik/
 
 WordWidget/                            # "Word of the Day" widget (SwiftUI + WidgetKit)
 SkarnikTests/                          # Unit tests (translation parsing, etc.)
+SkarnikUITests/                        # XCUITest smoke tests (simulator CI + BrowserStack devices)
 ```
 
 ## Getting Started
@@ -97,7 +98,8 @@ xcodebuild test -project Skarnik.xcodeproj -scheme Skarnik -destination 'platfor
 
 GitHub Actions workflows live in `.github/workflows/`:
 
-- **CI** (`ci.yml`) runs the unit tests on an iOS Simulator for every pull request and every push to `main`.
+- **CI** (`ci.yml`) runs the unit tests and the `SkarnikUITests` UI tests on an iOS Simulator for every pull request and every push to `main`.
+- **BrowserStack** (`browserstack.yml`) runs the UI tests on real devices in BrowserStack App Automate on every push to `main` (setup in [docs/browserstack.md](docs/browserstack.md)).
 - **TestFlight** (`testflight.yml`) archives a Release build and uploads it to TestFlight. Start it from
   Actions → TestFlight → Run workflow. The build number is picked automatically: the highest build already on
   App Store Connect + 1 (never below `CURRENT_PROJECT_VERSION` in the project). Pass `build_number` to override it.
@@ -113,6 +115,8 @@ stored in the repo or in secrets. Required repository secrets:
 | `ASC_ISSUER_ID` | API key issuer ID |
 | `ASC_KEY_P8` | The `.p8` key, base64-encoded (raw text also works) |
 | `GOOGLE_SERVICE_INFO_PLIST` | `GoogleService-Info.plist`, base64-encoded |
+| `BROWSERSTACK_USERNAME` | BrowserStack username (BrowserStack workflow only) |
+| `BROWSERSTACK_ACCESS_KEY` | BrowserStack access key (BrowserStack workflow only) |
 
 ## Data Sources
 

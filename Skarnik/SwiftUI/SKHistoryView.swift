@@ -184,6 +184,7 @@ private struct SKHistoryContentView: View {
                 } label: {
                     wordCell(word)
                 }
+                .accessibilityIdentifier("search.result")
                 .listRowBackground(Color.appBackground)
             }
             .listStyle(.plain)
