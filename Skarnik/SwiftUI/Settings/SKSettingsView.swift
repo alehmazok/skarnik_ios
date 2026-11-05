@@ -13,6 +13,8 @@ struct SKSettingsView: View {
     @State private var dictionaryPendingDelete: ESKVocabularyType?
     @State private var showRateLimitAlert = false
     @AppStorage(SKArticleColorTheme.userDefaultsKey) private var articleColorTheme = SKArticleColorTheme.system.rawValue
+    /// Mirrors the consent controller, which is not observable, so the toggle redraws when flipped.
+    @State private var analyticsGranted = SKAnalyticsConsentController.shared.analyticsConsentGranted
 
     var onAboutTapped: (() -> Void)?
 
@@ -44,8 +46,9 @@ struct SKSettingsView: View {
 
             Section {
                 Toggle(SKLocalization.analyticsConsentSettingsRowTitle, isOn: Binding(
-                    get: { SKAnalyticsConsentController.shared.analyticsConsentGranted },
+                    get: { analyticsGranted },
                     set: { isGranted in
+                        analyticsGranted = isGranted
                         if isGranted {
                             SKAnalyticsConsentController.shared.grantConsent()
                         } else {

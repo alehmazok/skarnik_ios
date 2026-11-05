@@ -182,7 +182,10 @@ class SkarnikUITestCase: XCTestCase {
                           file: StaticString = #filePath, line: UInt = #line) {
         waitFor(element("wordDetails"), "Word screen did not open", file: file, line: line)
         let headword = waitFor(element("wordDetails.headword"), "No headword", file: file, line: line)
-        XCTAssertEqual(plain(headword.label), word, "Headword", file: file, line: line)
+        // Homographs carry every stressed form: «ка́ра | кара́».
+        let forms = plain(headword.label).components(separatedBy: " | ")
+        XCTAssertTrue(forms.allSatisfy { $0 == word }, "Headword is «\(headword.label)», expected «\(word)»",
+                      file: file, line: line)
         let subtitle = waitFor(element("wordDetails.subtitle"), "No dictionary subtitle", file: file, line: line)
         XCTAssertEqual(subtitle.label.lowercased(), dictionary.subtitle.lowercased(), "Subtitle", file: file, line: line)
     }

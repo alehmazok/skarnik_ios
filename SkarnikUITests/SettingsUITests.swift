@@ -22,9 +22,9 @@ final class SettingsUITests: SkarnikUITestCase {
         let analytics = waitFor(app.switches["settings.analytics"], "No analytics toggle")
         XCTAssertEqual(analytics.value as? String, "0")
         flip(analytics)
-        XCTAssertEqual(analytics.value as? String, "1")
+        XCTAssertTrue(waitForValue(analytics, "1"), "Analytics toggle did not switch on")
         flip(analytics)
-        XCTAssertEqual(analytics.value as? String, "0")
+        XCTAssertTrue(waitForValue(analytics, "0"), "Analytics toggle did not switch off")
 
         // Article colours: switch to Skarnik red, and it stays after leaving the screen.
         let colors = waitFor(element("settings.articleColors"), "No article colours picker")
@@ -43,14 +43,15 @@ final class SettingsUITests: SkarnikUITestCase {
         waitFor(element("settings.articleColors"), "Did not return to Settings")
     }
 
-    /// SwiftUI Toggle: tapping the row's centre may miss the switch, so tap the switch itself.
+    /// A SwiftUI Toggle's element spans the whole row; tapping its centre hits the label, not the
+    /// switch, so tap near the trailing edge where the switch is.
     private func flip(_ toggle: XCUIElement) {
-        let inner = toggle.switches.firstMatch
-        if inner.exists {
-            inner.tap()
-        } else {
-            toggle.coordinate(withNormalizedOffset: CGVector(dx: 0.95, dy: 0.5)).tap()
-        }
+        toggle.coordinate(withNormalizedOffset: CGVector(dx: 0.93, dy: 0.5)).tap()
+    }
+
+    private func waitForValue(_ element: XCUIElement, _ value: String) -> Bool {
+        let changed = XCTNSPredicateExpectation(predicate: NSPredicate(format: "value == %@", value), object: element)
+        return XCTWaiter().wait(for: [changed], timeout: 5) == .completed
     }
 
     private func describe(_ element: XCUIElement) -> String {
