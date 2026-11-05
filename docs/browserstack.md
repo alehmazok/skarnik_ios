@@ -15,8 +15,8 @@ with BrowserStack" to stay in `README.md` on `main`.
   packages `Skarnik.ipa` and
   `SkarnikUITests.zip`, uploads both to App Automate and runs the suite on the device list, then waits for
   the result. It runs on every push to `main` and from Actions → BrowserStack → Run workflow (with an
-  optional `devices` input, e.g. `iPhone 16-18,iPhone 13-15`). Pull requests that change the pipeline do a
-  dry run: device build and packaging only.
+  optional `devices` input, e.g. `iPhone 16-18,iPhone 13-15`). Pull requests that change the pipeline run it
+  as well.
 
 The upload, run and polling logic is in `scripts/browserstack-run.sh` (BrowserStack REST API,
 `api-cloud.browserstack.com/app-automate/xcuitest/v2`). The job summary links to the build in the

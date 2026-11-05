@@ -4,7 +4,7 @@ name: BrowserStack
 # uploaded iOS app with its own profile, so no Apple certificate is used or created here), and runs
 # the UI tests on BrowserStack App Automate.
 #   - Every push to main, and manually: Actions → BrowserStack → Run workflow.
-#   - Pull requests that touch this pipeline do a dry run: device build and packaging, no upload.
+#   - Pull requests that touch this pipeline run it too (device build only when the secrets are missing).
 # Setup and secrets: docs/browserstack.md.
 on:
   workflow_dispatch:
@@ -89,7 +89,7 @@ jobs:
           ls -lh build/Skarnik.ipa build/SkarnikUITests.zip
 
       - name: Run on BrowserStack
-        if: github.event_name != 'pull_request' && steps.secrets.outputs.browserstack == 'true'
+        if: steps.secrets.outputs.browserstack == 'true'
         env:
           BROWSERSTACK_USERNAME: ${{ secrets.BROWSERSTACK_USERNAME }}
           BROWSERSTACK_ACCESS_KEY: ${{ secrets.BROWSERSTACK_ACCESS_KEY }}
@@ -98,7 +98,7 @@ jobs:
         run: scripts/browserstack-run.sh build/Skarnik.ipa build/SkarnikUITests.zip
 
       - name: Dry run summary
-        if: github.event_name == 'pull_request' || steps.secrets.outputs.browserstack != 'true'
+        if: steps.secrets.outputs.browserstack != 'true'
         run: echo "Device build and packaging succeeded; nothing sent to BrowserStack." >> "$GITHUB_STEP_SUMMARY"
 
       - name: Upload build and logs
