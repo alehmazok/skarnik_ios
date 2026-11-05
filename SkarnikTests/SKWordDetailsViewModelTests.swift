@@ -27,7 +27,7 @@ final class SKWordDetailsViewModelTests: XCTestCase {
         let word = SKWord(word_id: 1, word: "тэст", lang_id: .bel_rus)
         viewModel.word = word
         
-        XCTAssertEqual(viewModel.navigationTitle, "«‎тэст»")
+        XCTAssertEqual(viewModel.navigationTitle, "«тэст»")
     }
     
     @MainActor
@@ -36,6 +36,54 @@ final class SKWordDetailsViewModelTests: XCTestCase {
         XCTAssertNil(viewModel.navigationTitle)
     }
     
+    @MainActor
+    func testHeadword_PlainWordWhileLoading() {
+        viewModel.word = SKWord(word_id: 1, word: "тэст", lang_id: .bel_rus)
+        XCTAssertEqual(viewModel.headword, "тэст")
+    }
+
+    @MainActor
+    func testHeadword_NilWord() {
+        viewModel.word = nil
+        XCTAssertNil(viewModel.headword)
+    }
+
+    @MainActor
+    func testHeadword_UsesStressFormOnceLoaded() async {
+        let word = SKWord(word_id: 1, word: "слова", lang_id: .bel_rus)
+        let translation = SKSkarnikTranslation(word: word, url: "https://example.com", html: "<b>ok</b>", stress: "сло\u{301}ва")
+        let vm = SKWordDetailsViewModel(translationSource: MockTranslationSource { translation })
+
+        let exp = expectation(description: "success state")
+        vm.$state
+            .sink { if case .success = $0 { exp.fulfill() } }
+            .store(in: &cancellables)
+
+        vm.updateWord(word)
+        XCTAssertEqual(vm.headword, "слова")
+        await fulfillment(of: [exp], timeout: 1.0)
+
+        XCTAssertEqual(vm.headword, "сло\u{301}ва")
+        XCTAssertEqual(vm.navigationTitle, "«сло\u{301}ва»")
+    }
+
+    @MainActor
+    func testHeadword_EmptyStressFallsBackToWord() async {
+        let word = SKWord(word_id: 1, word: "слова", lang_id: .bel_rus)
+        let translation = SKSkarnikTranslation(word: word, url: "https://example.com", html: "<b>ok</b>", stress: "")
+        let vm = SKWordDetailsViewModel(translationSource: MockTranslationSource { translation })
+
+        let exp = expectation(description: "success state")
+        vm.$state
+            .sink { if case .success = $0 { exp.fulfill() } }
+            .store(in: &cancellables)
+
+        vm.updateWord(word)
+        await fulfillment(of: [exp], timeout: 1.0)
+
+        XCTAssertEqual(vm.headword, "слова")
+    }
+
     @MainActor
     func testVocabularySubtitle_BelRus() {
         let word = SKWord(word_id: 1, word: "тэст", lang_id: .bel_rus)

@@ -93,6 +93,18 @@ private struct ShareSheet: UIViewControllerRepresentable {
     func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
 }
 
+// MARK: - Header scroll tracking
+
+/// Bottom edge of the word header in the scroll view's coordinate space. Negative once the
+/// header has scrolled under the navigation bar.
+private struct SKHeaderBottomPreferenceKey: PreferenceKey {
+    static let defaultValue: CGFloat = .greatestFiniteMagnitude
+
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+        value = min(value, nextValue())
+    }
+}
+
 // MARK: - Main view
 
 struct SKWordDetailsView: View {
@@ -102,22 +114,27 @@ struct SKWordDetailsView: View {
 
     @State private var toastMessage: String?
     @State private var showShareSheet = false
+    /// True once the large headword has scrolled out of view; only then does the nav bar show it.
+    @State private var isHeaderScrolledAway = false
 
-    private var displayTitle: String {
-        if case .success(let translation) = viewModel.state, let stress = translation.stress {
-            return "«\u{200E}\(stress)»"
-        }
-        return viewModel.navigationTitle ?? ""
-    }
+    private static let scrollSpace = "SKWordDetailsScroll"
 
     var body: some View {
         ZStack {
             ScrollView {
                 VStack(spacing: 0) {
-                    subtitleRow
+                    header
                     contentView
                 }
                 .padding(.horizontal, 15)
+            }
+            .coordinateSpace(name: Self.scrollSpace)
+            .onPreferenceChange(SKHeaderBottomPreferenceKey.self) { bottom in
+                let scrolledAway = bottom <= 0
+                guard scrolledAway != isHeaderScrolledAway else { return }
+                withAnimation(.easeInOut(duration: 0.2)) {
+                    isHeaderScrolledAway = scrolledAway
+                }
             }
 
             if let message = toastMessage {
@@ -142,12 +159,12 @@ struct SKWordDetailsView: View {
             }
         }
         .background(Color.appBackground.ignoresSafeArea())
-        .navigationTitle(displayTitle)
+        .navigationTitle(isHeaderScrolledAway ? (viewModel.navigationTitle ?? "") : "")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItemGroup(placement: .navigationBarTrailing) {
                 if case .loading = viewModel.state {
-                    // Reserve the slot while the translation loads so the title doesn't shift.
+                    // Reserve the slot while the translation loads so the bar doesn't shift.
                     spellingPlaceholder
                 } else if !viewModel.spellingWords.isEmpty {
                     spellingControl
@@ -189,14 +206,41 @@ struct SKWordDetailsView: View {
         }
     }
 
-    // MARK: Subtitle row
+    // MARK: Header
 
-    private var subtitleRow: some View {
-        Text(viewModel.vocabularySubtitle ?? " ")
-            .font(.subheadline)
-            .foregroundColor(.secondary)
-            .frame(maxWidth: .infinity, alignment: .center)
-            .padding(.vertical, 12)
+    /// Large headword (stressed form when known) with the dictionary name under it. Both come
+    /// from the word itself, so they are ready before the translation loads; the stress form only
+    /// adds a combining accent, which keeps the line metrics and avoids a jump when it arrives.
+    /// With no word (empty iPad detail pane) the header is hidden instead of holding placeholder text.
+    @ViewBuilder
+    private var header: some View {
+        if let headword = viewModel.headword {
+            VStack(alignment: .leading, spacing: 4) {
+                Text(headword)
+                    .font(.largeTitle.weight(.bold))
+                    .foregroundColor(.primary)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .textSelection(.enabled)
+                    .accessibilityAddTraits(.isHeader)
+                if let subtitle = viewModel.vocabularySubtitle {
+                    Text(subtitle)
+                        .font(.footnote)
+                        .foregroundColor(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.top, 8)
+            .padding(.bottom, 16)
+            .background(
+                GeometryReader { proxy in
+                    Color.clear.preference(
+                        key: SKHeaderBottomPreferenceKey.self,
+                        value: proxy.frame(in: .named(Self.scrollSpace)).maxY
+                    )
+                }
+            )
+        }
     }
 
     // MARK: Content
@@ -260,7 +304,7 @@ struct SKWordDetailsView: View {
     private func handleEffect(_ effect: SKWordDetailsEffect) {
         switch effect {
         case .redirection(let originalWord):
-            showToast("Перанакіравана з «‎\(originalWord)»")
+            showToast("Перанакіравана з «\(originalWord)»")
         }
     }
 
