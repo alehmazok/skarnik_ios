@@ -30,14 +30,13 @@ struct SKLocalTranslationSource: SKTranslationSource {
 }
 
 extension SKFallbackTranslationSource {
-    /// Same cascade as `shared` (Supabase → API → HTML), with a local-cache tier prepended. Used by
+    /// Same cascade as `shared` (Supabase → API), with a local-cache tier prepended. Used by
     /// the main app's word-details flow so downloaded dictionaries are preferred over any network
     /// call; left separate from `shared` since that default is also used by the WordWidget
     /// extension, which has no App Group access to this app's local offline-dictionary store.
     static let sharedWithLocalCache = SKFallbackTranslationSource(sources: [
         SKLocalTranslationSource(),
         SKSupabaseTranslationSource(),
-        SKApiTranslationSource(),
-        SKHtmlTranslationSource()
+        SKApiTranslationSource()
     ])
 }

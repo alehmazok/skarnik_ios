@@ -22,7 +22,7 @@ Skarnik is a comprehensive Russian-Belarusian, Belarusian-Russian, and Belarusia
 ## Features
 
 - Fast offline word search via local SQLite index, with fuzzy fallback for misspelled queries
-- Word translation and detail lookup, fetched on-demand from skarnik.by and parsed with SwiftSoup
+- Word translation and detail lookup: downloaded offline dictionary first, then Supabase, then the Skarnik admin API
 - Word stress (nacisk) lookup from starnik.by, with dual-source fallback (aligned with the Flutter app)
 - Spelling suggestions for rus-bel vocabulary
 - Offline dictionary download, per vocabulary
@@ -41,7 +41,7 @@ Skarnik is a comprehensive Russian-Belarusian, Belarusian-Russian, and Belarusia
 - **Reactive:** Combine (MVVM for word details / word stress)
 - **Local storage:** [SQLite.swift](https://github.com/stephencelis/SQLite.swift)
 - **HTML parsing:** [SwiftSoup](https://github.com/scinfu/SwiftSoup)
-- **Backend:** skarnik.by (HTML) / starnik.by, with API and Supabase sources stubbed behind a fallback chain
+- **Backend:** Supabase `main_word` and the Skarnik admin API for translations (fallback chain), starnik.by for stress
 - **Analytics:** Firebase
 - **Dependency management:** Swift Package Manager
 
@@ -53,7 +53,7 @@ Hybrid UIKit + SwiftUI, MVVM + Combine for the reactive pieces.
 Skarnik/
 ├── Shared/
 │   ├── SKVocabularyIndex.swift        # Local SQLite queries
-│   └── SKTranslationSource.swift      # Translation fetching (API → Supabase → HTML fallback chain)
+│   └── SKTranslationSource.swift      # Translation fetching (local → Supabase → API fallback chain)
 ├── SKSearchWordsTableViewController.swift   # Search UI (UIKit)
 ├── SKWordDetailsViewController.swift        # Word entry display (MVVM + Combine)
 ├── SKFavoritesController.swift              # Favorites persistence (UserDefaults)

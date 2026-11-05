@@ -28,7 +28,7 @@ the widget deep-links into the app, opening that word's detail page.
   SELECT word_id, word FROM vocabulary WHERE lang_id=? ORDER BY random() LIMIT 1
   ```
 - Translation text is fetched via whatever translation lookup path the platform has
-  (iOS: API → Supabase → HTML-scrape fallback chain). Android should use its own
+  (iOS: Supabase → admin API fallback chain; every app uses offline db → Supabase → API). Android should use its own
   equivalent remote/local lookup — only the resulting `(word, translation)` pair matters
   to the rest of this spec.
 
