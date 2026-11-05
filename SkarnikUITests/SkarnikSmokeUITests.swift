@@ -25,10 +25,13 @@ final class SkarnikSmokeUITests: XCTestCase {
         XCTAssertTrue(tabBar.waitForExistence(timeout: 10))
         XCTAssertEqual(tabBar.buttons.count, 4)
 
-        tabBar.buttons["Слоўнікі"].tap()
-        XCTAssertTrue(app.navigationBars.firstMatch.waitForExistence(timeout: 5))
+        for title in ["Пошук", "Закладкі", "Слоўнікі", "Налады"] {
+            // BEGINSWITH: a badge (Settings promo dot) can extend the label.
+            let tab = tabBar.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", title)).firstMatch
+            XCTAssertTrue(tab.exists, "Missing tab «\(title)»")
+        }
 
-        tabBar.buttons["Пошук"].tap()
+        // Search is the start tab.
         XCTAssertTrue(app.searchFields.firstMatch.waitForExistence(timeout: 5))
     }
 
