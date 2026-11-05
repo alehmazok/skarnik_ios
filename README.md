@@ -125,6 +125,12 @@ stored in the repo or in secrets. Required repository secrets:
 
 This is a personal project. Issues and pull requests are welcome — please open an issue to discuss significant changes before submitting a PR.
 
+## Acknowledgements
+
+This project is tested with BrowserStack.
+
+[BrowserStack](https://www.browserstack.com) supports the project through its open source sponsorship program.
+
 ## License
 
 Source code licensed under the [MIT License](LICENSE). Dictionary content is © its respective rights holders and is not covered by this license.
