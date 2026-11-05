@@ -61,7 +61,7 @@ for session in $(jq -r '[.. | objects | select(has("sessions")) | .sessions[]? |
   # For failed tests, print the assertion lines from the XCTest instrumentation log.
   for log_url in $(jq -r '.. | objects | select(.status? == "failed" and has("instrumentation_log")) | .instrumentation_log' <<<"$session_json" 2>/dev/null); do
     echo "Failure details ($log_url):"
-    curl -sS -u "$auth" "$log_url" | grep -E "error:|failed|XCTAssert|Failed to" | head -20 || true
+    curl -sS -u "$auth" "$log_url" | grep -v "^\s*$" | tail -60 || true
   done
 done
 
