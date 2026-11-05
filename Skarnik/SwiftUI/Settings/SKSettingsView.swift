@@ -12,6 +12,7 @@ struct SKSettingsView: View {
 
     @State private var dictionaryPendingDelete: ESKVocabularyType?
     @State private var showRateLimitAlert = false
+    @AppStorage(SKArticleColorTheme.userDefaultsKey) private var articleColorTheme = SKArticleColorTheme.system.rawValue
 
     var onAboutTapped: (() -> Void)?
 
@@ -25,6 +26,19 @@ struct SKSettingsView: View {
                 }
             } header: {
                 Text(SKLocalization.offlineSectionTitle)
+            }
+
+            Section {
+                Picker(selection: $articleColorTheme) {
+                    Text(SKLocalization.articleColorsSystem).tag(SKArticleColorTheme.system.rawValue)
+                    Text(SKLocalization.articleColorsSkarnikRed).tag(SKArticleColorTheme.skarnikRed.rawValue)
+                } label: {
+                    Text(SKLocalization.articleColorsTitle)
+                        .font(.system(size: 16, weight: .medium))
+                }
+                .pickerStyle(.menu)
+            } footer: {
+                Text(SKLocalization.articleColorsFooter)
             }
 
             Section {

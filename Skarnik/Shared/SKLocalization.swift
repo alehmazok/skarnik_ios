@@ -36,6 +36,13 @@ class SKLocalization: Any {
     class var wordDetailsSpellingTitle: String { "Націск і арфаграфія" }
     class var wordDetailsSpellingMessage: String { "для прагляду, калі ласка, абярыце слова" }
     class var wordDetailsSpellingCancel: String { "Адмена" }
+    class var wordDetailsShare: String { "Падзяліцца" }
+    class var articleColorsTitle: String { "Колеры артыкула" }
+    class var articleColorsSystem: String { "Сістэмныя" }
+    class var articleColorsSkarnikRed: String { "Чырвоныя Скарніка" }
+    class var articleColorsFooter: String { "Як вылучаць словы ў перакладзе: тлустым шрыфтам колеру тэксту або чырвоным колерам Скарніка." }
+    class var wordDetailsAddBookmark: String { "Дадаць у закладкі" }
+    class var wordDetailsRemoveBookmark: String { "Выдаліць з закладак" }
 
     class var errorWordNotFound: String { "Слова не знойдзена." }
     class var errorNetworkErrorTryAgainLater: String { "Памылка сеткі. Паспрабуйце пазней." }

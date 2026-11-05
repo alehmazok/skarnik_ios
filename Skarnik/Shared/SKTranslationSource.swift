@@ -17,6 +17,23 @@ private func skLog(_ message: @autoclosure () -> String, type: OSLogType = .debu
     #endif
 }
 
+// MARK: - Article colours
+
+/// How headwords and translated words are highlighted in a translation article (Settings).
+/// Same choice as the Android app: system colours, or the Skarnik red.
+enum SKArticleColorTheme: String, CaseIterable {
+    /// Bold text in the primary label colour; red stays for interactive elements only (default).
+    case system
+    /// The Skarnik red accent, as on skarnik.by and in earlier app versions.
+    case skarnikRed
+
+    static let userDefaultsKey = "articleColorTheme"
+
+    static var current: SKArticleColorTheme {
+        UserDefaults.standard.string(forKey: userDefaultsKey).flatMap(SKArticleColorTheme.init(rawValue:)) ?? .system
+    }
+}
+
 // MARK: - Domain Types
 
 struct SKSkarnikTranslation {
@@ -31,12 +48,22 @@ struct SKSkarnikTranslation {
         return "https://skarnik.app/r/\(path)/\(word.word_id)"
     }
 
-    static let colorConversions = [
-        ["initial": "FFFFFF", "light": "F2F2F7", "dark": "1C1C1E"],
+    /// Legacy colours that mark translated words / headwords. With the `.system` article theme
+    /// they are rendered as bold primary-colour text; with `.skarnikRed` in the accent red.
+    static let emphasisColors = ["831b03", "0000A0", "4863A0"]
 
-        ["initial": "831b03", "light": "F44C3E", "dark": "F44C3E"],
-        ["initial": "0000A0", "light": "F44C3E", "dark": "F44C3E"],
-        ["initial": "4863A0", "light": "F44C3E", "dark": "F44C3E"],
+    static func colorConversions(for theme: SKArticleColorTheme) -> [[String: String]] {
+        let emphasis: (light: String, dark: String)
+        switch theme {
+        case .system: emphasis = ("000000", "FFFFFF")
+        case .skarnikRed: emphasis = ("F44C3E", "F44C3E")
+        }
+        return [["initial": "FFFFFF", "light": "F2F2F7", "dark": "1C1C1E"]]
+            + emphasisColors.map { ["initial": $0, "light": emphasis.light, "dark": emphasis.dark] }
+            + baseColorConversions
+    }
+
+    private static let baseColorConversions = [
 
         ["initial": "008000", "light": "5856D6", "dark": "5E5CE6"],
         ["initial": "A52A2A", "light": "5856D6", "dark": "5E5CE6"],
@@ -49,7 +76,7 @@ struct SKSkarnikTranslation {
     ]
 
     var labelColorHex: String {
-        let filteredColors = Self.colorConversions.filter {$0["initial"] == "000000"}
+        let filteredColors = Self.baseColorConversions.filter {$0["initial"] == "000000"}
         guard let colorLight = filteredColors.first?["light"],
               let colorDark = filteredColors.first?["dark"] else {
             return UIColor.label.webHexString()
@@ -64,31 +91,85 @@ struct SKSkarnikTranslation {
         return color
     }
 
-    var recoloredHtml: String {
-        get {
-            var html = self.html
-
-            for colorPair in Self.colorConversions {
-                guard let colorInitial = colorPair["initial"],
-                      let colorLight = colorPair["light"],
-                      let colorDark = colorPair["dark"] else {
-                    continue
-                }
-
-                var color = colorLight
-                if #available(iOS 13.0, macCatalyst 13.0, *) {
-                    if UITraitCollection.current.userInterfaceStyle == .dark {
-                        color = colorDark
-                    }
-                }
-
-                html = html.regexSub(pattern: "color=\"\(colorInitial)\"", template: "color=\"\(color)\"", options: [.caseInsensitive])
-                html = html.regexSub(pattern: "color=\"#\(colorInitial)\"", template: "color=\"#\(color)\"", options: [.caseInsensitive])
-                html = html.regexSub(pattern: "color:\\s*#\(colorInitial)(?=[\\s;\"'])", template: "color: #\(color)", options: [.caseInsensitive])
-            }
-            html = html.regexSub(pattern: "font-size:\\s*small;?\\s*", template: "", options: [.caseInsensitive])
-            return html
+    /// Adds `font-weight: bold` to `font`/`span` elements coloured with one of `emphasisColors`.
+    static func emphasizedHtml(_ html: String) -> String {
+        let pattern = emphasisColors.joined(separator: "|")
+        guard html.range(of: pattern, options: [.regularExpression, .caseInsensitive]) != nil,
+              let doc = try? SwiftSoup.parseBodyFragment(html),
+              let body = doc.body(),
+              let elements = try? body.select("font, span") else { return html }
+        var changed = false
+        for element in elements {
+            let colorAttr = ((try? element.attr("color")) ?? "")
+                .trimmingCharacters(in: CharacterSet(charactersIn: "#"))
+            let style = (try? element.attr("style")) ?? ""
+            let attrMatch = emphasisColors.contains { $0.caseInsensitiveCompare(colorAttr) == .orderedSame }
+            let styleMatch = style.range(of: "color:\\s*#?(\(pattern))\\b",
+                                         options: [.regularExpression, .caseInsensitive]) != nil
+            guard attrMatch || styleMatch else { continue }
+            var newStyle = style.trimmingCharacters(in: .whitespaces)
+            if !newStyle.isEmpty && !newStyle.hasSuffix(";") { newStyle += ";" }
+            newStyle += (newStyle.isEmpty ? "" : " ") + "font-weight: bold;"
+            _ = try? element.attr("style", newStyle)
+            changed = true
         }
+        guard changed else { return html }
+        _ = doc.outputSettings().prettyPrint(pretty: false)
+        return (try? body.html()) ?? html
+    }
+
+    /// Collapses a regular space next to a single non-breaking space (`&nbsp;`, `&#160;`, U+00A0,
+    /// or `<span>&nbsp;</span>` as written by the admin's `remove_nbsps`) into one regular space,
+    /// so «слова —  пераклад» doesn't render with a double-width gap. Runs of two or more
+    /// non-breaking spaces are deliberate spacing and stay as they are.
+    static func collapsedSpacesHtml(_ html: String) -> String {
+        let nbsp = "(?:<span>(?:&nbsp;|&#160;|\u{00A0})</span>|&nbsp;|&#160;|\u{00A0})"
+        guard let runRegex = try? NSRegularExpression(pattern: "(?:[ \\t\\r\\n]|\(nbsp))+", options: [.caseInsensitive]),
+              let nbspRegex = try? NSRegularExpression(pattern: nbsp, options: [.caseInsensitive]) else { return html }
+        let source = html as NSString
+        let result = NSMutableString(string: html)
+        let matches = runRegex.matches(in: html, range: NSRange(location: 0, length: source.length))
+        for match in matches.reversed() {
+            let run = source.substring(with: match.range)
+            let runLength = (run as NSString).length
+            let nbspMatches = nbspRegex.matches(in: run, range: NSRange(location: 0, length: runLength))
+            guard nbspMatches.count == 1 else { continue }
+            let nbspLength = nbspMatches[0].range.length
+            guard runLength > nbspLength else { continue } // no regular space in the run
+            result.replaceCharacters(in: match.range, with: " ")
+        }
+        return result as String
+    }
+
+    var recoloredHtml: String {
+        recoloredHtml(theme: .current)
+    }
+
+    func recoloredHtml(theme: SKArticleColorTheme) -> String {
+        // Primary-colour words need bold to stand out from body text; red ones keep the source weight.
+        let emphasized = theme == .system ? Self.emphasizedHtml(self.html) : self.html
+        var html = Self.collapsedSpacesHtml(emphasized)
+
+        for colorPair in Self.colorConversions(for: theme) {
+            guard let colorInitial = colorPair["initial"],
+                  let colorLight = colorPair["light"],
+                  let colorDark = colorPair["dark"] else {
+                continue
+            }
+
+            var color = colorLight
+            if #available(iOS 13.0, macCatalyst 13.0, *) {
+                if UITraitCollection.current.userInterfaceStyle == .dark {
+                    color = colorDark
+                }
+            }
+
+            html = html.regexSub(pattern: "color=\"\(colorInitial)\"", template: "color=\"\(color)\"", options: [.caseInsensitive])
+            html = html.regexSub(pattern: "color=\"#\(colorInitial)\"", template: "color=\"#\(color)\"", options: [.caseInsensitive])
+            html = html.regexSub(pattern: "color:\\s*#\(colorInitial)(?=[\\s;\"'])", template: "color: #\(color)", options: [.caseInsensitive])
+        }
+        html = html.regexSub(pattern: "font-size:\\s*small;?\\s*", template: "", options: [.caseInsensitive])
+        return html
     }
 
     var attributedString: NSAttributedString? {
