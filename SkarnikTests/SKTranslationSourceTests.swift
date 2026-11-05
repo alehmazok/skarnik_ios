@@ -11,7 +11,7 @@ final class SKSkarnikByControllerTests: XCTestCase {
         let html = "<font color=\"831b03\">Беларускае слова</font>"
         let translation = SKSkarnikTranslation(word: word, url: "http://example.com", html: html)
 
-        let recoloredHtml = translation.recoloredHtml
+        let recoloredHtml = translation.recoloredHtml(theme: .system)
 
         // 831b03 maps to the primary label colour (black in light, white in dark) and is bold
         XCTAssertTrue(recoloredHtml.contains("color=\"000000\"") || recoloredHtml.contains("color=\"FFFFFF\""))
@@ -25,7 +25,7 @@ final class SKSkarnikByControllerTests: XCTestCase {
         let html = "<font color=\"#831b03\">Беларускае слова</font>"
         let translation = SKSkarnikTranslation(word: word, url: "http://example.com", html: html)
 
-        let recoloredHtml = translation.recoloredHtml
+        let recoloredHtml = translation.recoloredHtml(theme: .system)
 
         XCTAssertTrue(recoloredHtml.contains("color=\"#000000\"") || recoloredHtml.contains("color=\"#FFFFFF\""))
         XCTAssertFalse(recoloredHtml.contains("color=\"#831b03\""))
@@ -37,7 +37,7 @@ final class SKSkarnikByControllerTests: XCTestCase {
         let html = "<span style=\"color: #831b03;\">Беларускае слова</span>"
         let translation = SKSkarnikTranslation(word: word, url: "http://example.com", html: html)
 
-        let recoloredHtml = translation.recoloredHtml
+        let recoloredHtml = translation.recoloredHtml(theme: .system)
 
         XCTAssertTrue(recoloredHtml.contains("color: #000000") || recoloredHtml.contains("color: #FFFFFF"))
         XCTAssertFalse(recoloredHtml.contains("color: #831b03"))
@@ -49,12 +49,30 @@ final class SKSkarnikByControllerTests: XCTestCase {
         let html = "<span style=\"color: #0000a0;\">ка́ра,</span> <span style=\"color: #4863a0;\">Зямная кара</span>"
         let translation = SKSkarnikTranslation(word: word, url: "http://example.com", html: html)
 
-        let recoloredHtml = translation.recoloredHtml
+        let recoloredHtml = translation.recoloredHtml(theme: .system)
 
         XCTAssertFalse(recoloredHtml.contains("F44C3E"))
         XCTAssertFalse(recoloredHtml.lowercased().contains("0000a0"))
         XCTAssertFalse(recoloredHtml.lowercased().contains("4863a0"))
         XCTAssertEqual(recoloredHtml.components(separatedBy: "font-weight: bold").count - 1, 2)
+    }
+
+    func testSKSkarnikTranslation_recoloredHtml_skarnikRedTheme() {
+        let word = SKWord(word_id: 1, word: "test", lang_id: .rus_bel)
+        let html = "<font color=\"831b03\">слова</font> <span style=\"color: #0000a0;\">кара</span>"
+        let translation = SKSkarnikTranslation(word: word, url: "http://example.com", html: html)
+
+        let recoloredHtml = translation.recoloredHtml(theme: .skarnikRed)
+
+        // Red theme: the accent red as before, and no forced bold.
+        XCTAssertTrue(recoloredHtml.contains("color=\"F44C3E\""))
+        XCTAssertTrue(recoloredHtml.contains("color: #F44C3E"))
+        XCTAssertFalse(recoloredHtml.contains("font-weight: bold"))
+    }
+
+    func testSKArticleColorTheme_defaultsToSystem() {
+        XCTAssertEqual(SKArticleColorTheme(rawValue: "unknown") ?? .system, .system)
+        XCTAssertEqual(SKArticleColorTheme(rawValue: "skarnikRed"), .skarnikRed)
     }
 
     func testSKSkarnikTranslation_emphasizedHtml_leavesOtherColorsAlone() {
@@ -86,7 +104,7 @@ final class SKSkarnikByControllerTests: XCTestCase {
         let html = "добразычлівасць —<span>&nbsp;</span> благожелательность"
         let translation = SKSkarnikTranslation(word: word, url: "http://example.com", html: html)
 
-        XCTAssertEqual(translation.recoloredHtml, "добразычлівасць — благожелательность")
+        XCTAssertEqual(translation.recoloredHtml(theme: .system), "добразычлівасць — благожелательность")
     }
 
     func testSKSkarnikTranslation_recoloredHtml_removesFontSizeSmall() {
@@ -94,7 +112,7 @@ final class SKSkarnikByControllerTests: XCTestCase {
         let html = "<span style=\"font-size: small; color: red;\">Тэкст</span>"
         let translation = SKSkarnikTranslation(word: word, url: "http://example.com", html: html)
 
-        let recoloredHtml = translation.recoloredHtml
+        let recoloredHtml = translation.recoloredHtml(theme: .system)
 
         XCTAssertFalse(recoloredHtml.contains("font-size: small"))
         XCTAssertTrue(recoloredHtml.contains("color: red"))
@@ -105,7 +123,7 @@ final class SKSkarnikByControllerTests: XCTestCase {
         let html = "<font color=\"123456\">Тэкст</font>"
         let translation = SKSkarnikTranslation(word: word, url: "http://example.com", html: html)
 
-        let recoloredHtml = translation.recoloredHtml
+        let recoloredHtml = translation.recoloredHtml(theme: .system)
 
         XCTAssertTrue(recoloredHtml.contains("color=\"123456\""))
     }

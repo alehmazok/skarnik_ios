@@ -67,12 +67,13 @@ private struct SKWordDetailsTranslationView: View {
     let translation: SKSkarnikTranslation
     let onLinkTap: (URL) -> Void
     @Environment(\.colorScheme) private var colorScheme
+    @AppStorage(SKArticleColorTheme.userDefaultsKey) private var articleColorTheme = SKArticleColorTheme.system.rawValue
     @State private var attributedText: NSAttributedString?
 
     var body: some View {
         SKAttributedTextView(attributedText: attributedText, onLinkTap: onLinkTap)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .task(id: "\(translation.url)-\(colorScheme)") {
+            .task(id: "\(translation.url)-\(colorScheme)-\(articleColorTheme)") {
                 translation.attributedString { text in
                     attributedText = text
                 }

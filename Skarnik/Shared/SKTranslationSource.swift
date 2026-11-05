@@ -17,6 +17,23 @@ private func skLog(_ message: @autoclosure () -> String, type: OSLogType = .debu
     #endif
 }
 
+// MARK: - Article colours
+
+/// How headwords and translated words are highlighted in a translation article (Settings).
+/// Same choice as the Android app: system colours, or the Skarnik red.
+enum SKArticleColorTheme: String, CaseIterable {
+    /// Bold text in the primary label colour; red stays for interactive elements only (default).
+    case system
+    /// The Skarnik red accent, as on skarnik.by and in earlier app versions.
+    case skarnikRed
+
+    static let userDefaultsKey = "articleColorTheme"
+
+    static var current: SKArticleColorTheme {
+        UserDefaults.standard.string(forKey: userDefaultsKey).flatMap(SKArticleColorTheme.init(rawValue:)) ?? .system
+    }
+}
+
 // MARK: - Domain Types
 
 struct SKSkarnikTranslation {
@@ -31,16 +48,22 @@ struct SKSkarnikTranslation {
         return "https://skarnik.app/r/\(path)/\(word.word_id)"
     }
 
-    /// Legacy colours that mark translated words / headwords. They are not links, so they are
-    /// rendered as bold primary-colour text; the accent red is kept for interactive elements only.
+    /// Legacy colours that mark translated words / headwords. With the `.system` article theme
+    /// they are rendered as bold primary-colour text; with `.skarnikRed` in the accent red.
     static let emphasisColors = ["831b03", "0000A0", "4863A0"]
 
-    static let colorConversions = [
-        ["initial": "FFFFFF", "light": "F2F2F7", "dark": "1C1C1E"],
+    static func colorConversions(for theme: SKArticleColorTheme) -> [[String: String]] {
+        let emphasis: (light: String, dark: String)
+        switch theme {
+        case .system: emphasis = ("000000", "FFFFFF")
+        case .skarnikRed: emphasis = ("F44C3E", "F44C3E")
+        }
+        return [["initial": "FFFFFF", "light": "F2F2F7", "dark": "1C1C1E"]]
+            + emphasisColors.map { ["initial": $0, "light": emphasis.light, "dark": emphasis.dark] }
+            + baseColorConversions
+    }
 
-        ["initial": "831b03", "light": "000000", "dark": "FFFFFF"],
-        ["initial": "0000A0", "light": "000000", "dark": "FFFFFF"],
-        ["initial": "4863A0", "light": "000000", "dark": "FFFFFF"],
+    private static let baseColorConversions = [
 
         ["initial": "008000", "light": "5856D6", "dark": "5E5CE6"],
         ["initial": "A52A2A", "light": "5856D6", "dark": "5E5CE6"],
@@ -53,7 +76,7 @@ struct SKSkarnikTranslation {
     ]
 
     var labelColorHex: String {
-        let filteredColors = Self.colorConversions.filter {$0["initial"] == "000000"}
+        let filteredColors = Self.baseColorConversions.filter {$0["initial"] == "000000"}
         guard let colorLight = filteredColors.first?["light"],
               let colorDark = filteredColors.first?["dark"] else {
             return UIColor.label.webHexString()
@@ -119,30 +142,34 @@ struct SKSkarnikTranslation {
     }
 
     var recoloredHtml: String {
-        get {
-            var html = Self.collapsedSpacesHtml(Self.emphasizedHtml(self.html))
+        recoloredHtml(theme: .current)
+    }
 
-            for colorPair in Self.colorConversions {
-                guard let colorInitial = colorPair["initial"],
-                      let colorLight = colorPair["light"],
-                      let colorDark = colorPair["dark"] else {
-                    continue
-                }
+    func recoloredHtml(theme: SKArticleColorTheme) -> String {
+        // Primary-colour words need bold to stand out from body text; red ones keep the source weight.
+        let emphasized = theme == .system ? Self.emphasizedHtml(self.html) : self.html
+        var html = Self.collapsedSpacesHtml(emphasized)
 
-                var color = colorLight
-                if #available(iOS 13.0, macCatalyst 13.0, *) {
-                    if UITraitCollection.current.userInterfaceStyle == .dark {
-                        color = colorDark
-                    }
-                }
-
-                html = html.regexSub(pattern: "color=\"\(colorInitial)\"", template: "color=\"\(color)\"", options: [.caseInsensitive])
-                html = html.regexSub(pattern: "color=\"#\(colorInitial)\"", template: "color=\"#\(color)\"", options: [.caseInsensitive])
-                html = html.regexSub(pattern: "color:\\s*#\(colorInitial)(?=[\\s;\"'])", template: "color: #\(color)", options: [.caseInsensitive])
+        for colorPair in Self.colorConversions(for: theme) {
+            guard let colorInitial = colorPair["initial"],
+                  let colorLight = colorPair["light"],
+                  let colorDark = colorPair["dark"] else {
+                continue
             }
-            html = html.regexSub(pattern: "font-size:\\s*small;?\\s*", template: "", options: [.caseInsensitive])
-            return html
+
+            var color = colorLight
+            if #available(iOS 13.0, macCatalyst 13.0, *) {
+                if UITraitCollection.current.userInterfaceStyle == .dark {
+                    color = colorDark
+                }
+            }
+
+            html = html.regexSub(pattern: "color=\"\(colorInitial)\"", template: "color=\"\(color)\"", options: [.caseInsensitive])
+            html = html.regexSub(pattern: "color=\"#\(colorInitial)\"", template: "color=\"#\(color)\"", options: [.caseInsensitive])
+            html = html.regexSub(pattern: "color:\\s*#\(colorInitial)(?=[\\s;\"'])", template: "color: #\(color)", options: [.caseInsensitive])
         }
+        html = html.regexSub(pattern: "font-size:\\s*small;?\\s*", template: "", options: [.caseInsensitive])
+        return html
     }
 
     var attributedString: NSAttributedString? {
