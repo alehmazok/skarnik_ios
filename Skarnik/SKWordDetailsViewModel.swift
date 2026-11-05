@@ -144,6 +144,13 @@ class SKWordDetailsViewModel: ObservableObject {
         }
     }
     
+    /// Loads the current word again after an error («Паспрабаваць яшчэ»). Does nothing in any
+    /// other state, so a double tap can't restart a load that is already running.
+    func retry() {
+        guard case .error = state, let word else { return }
+        updateWord(word)
+    }
+
     func toggleFavorite() {
         guard let word else { return }
         isFavorite = SKFavoritesController.shared.toggleFavorite(word)

@@ -324,6 +324,68 @@ final class SKWordDetailsViewModelTests: XCTestCase {
 
         XCTAssertEqual(fetchCount, 1, "Should not refetch when same word is already loaded")
     }
+
+    @MainActor
+    func testRetry_afterError_reloadsAndSucceeds() async {
+        let word = SKWord(word_id: 1, word: "тэст", lang_id: .bel_rus)
+        let translation = SKSkarnikTranslation(word: word, url: "https://example.com", html: "<b>ok</b>")
+        var fetchCount = 0
+        let vm = SKWordDetailsViewModel(translationSource: MockTranslationSource {
+            fetchCount += 1
+            if fetchCount == 1 { throw SKSkarnikError.networkError }
+            return translation
+        })
+
+        let errorExp = expectation(description: "error state")
+        let successExp = expectation(description: "success after retry")
+        vm.$state
+            .sink { state in
+                switch state {
+                case .error: errorExp.fulfill()
+                case .success: successExp.fulfill()
+                default: break
+                }
+            }
+            .store(in: &cancellables)
+
+        vm.updateWord(word)
+        await fulfillment(of: [errorExp], timeout: 1.0)
+
+        vm.retry()
+        await fulfillment(of: [successExp], timeout: 1.0)
+
+        XCTAssertEqual(fetchCount, 2)
+    }
+
+    @MainActor
+    func testRetry_whenLoaded_doesNotRefetch() async {
+        let word = SKWord(word_id: 1, word: "тэст", lang_id: .bel_rus)
+        let translation = SKSkarnikTranslation(word: word, url: "https://example.com", html: "<b>ok</b>")
+        var fetchCount = 0
+        let vm = SKWordDetailsViewModel(translationSource: MockTranslationSource { fetchCount += 1; return translation })
+
+        let exp = expectation(description: "success")
+        vm.$state
+            .sink { if case .success = $0 { exp.fulfill() } }
+            .store(in: &cancellables)
+
+        vm.updateWord(word)
+        await fulfillment(of: [exp], timeout: 1.0)
+
+        vm.retry()
+        try? await Task.sleep(nanoseconds: 100_000_000)
+
+        XCTAssertEqual(fetchCount, 1, "Retry only reloads from the error state")
+    }
+
+    @MainActor
+    func testRetry_noWord_staysIdle() {
+        viewModel.updateWord(nil)
+        viewModel.retry()
+        guard case .idle = viewModel.state else {
+            XCTFail("Expected .idle state"); return
+        }
+    }
 }
 
 // MARK: - Mock
