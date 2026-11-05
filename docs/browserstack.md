@@ -11,14 +11,14 @@ with BrowserStack" to stay in `README.md` on `main`.
   open the word screen. The tests avoid asserting on network-fetched translation text so they stay stable.
   It has its own `SkarnikUITests` scheme, so the unit-test scheme and its CI job are unchanged.
 - **CI → UI tests** (`ci.yml`) runs the same suite on a simulator for every pull request and push to `main`.
-- **BrowserStack** (`browserstack.yml`) builds the app and the test runner for real devices with
-  development signing (same App Store Connect API key as TestFlight), packages `Skarnik.ipa` and
+- **BrowserStack** (`browserstack.yml`) builds the app and the test runner for real devices, unsigned,
+  packages `Skarnik.ipa` and
   `SkarnikUITests.zip`, uploads both to App Automate and runs the suite on the device list, then waits for
   the result. It runs on every push to `main` and from Actions → BrowserStack → Run workflow (with an
   optional `devices` input, e.g. `iPhone 16-18,iPhone 13-15`). Pull requests that change the pipeline do a
   dry run: device build and packaging only.
 
-The upload, run and polling logic is in `ci/browserstack-run.sh` (BrowserStack REST API,
+The upload, run and polling logic is in `scripts/browserstack-run.sh` (BrowserStack REST API,
 `api-cloud.browserstack.com/app-automate/xcuitest/v2`). The job summary links to the build in the
 BrowserStack dashboard, where each device has a video, device logs and per-test results.
 
@@ -35,10 +35,12 @@ Until the two secrets exist, the workflow still builds and packages, and skips t
 
 ## Signing notes
 
-Development signing needs at least one device registered on team `EQFFWL4KZF` (BrowserStack re-signs the
-app for its own devices, so their UDIDs never need registering). Automatic signing creates the App IDs
-`by.mazokaleh.Skarnik`, `by.mazokaleh.Skarnik.WordWidget` and `by.skarnik.SkarnikUITests.xctrunner` as
-needed, which requires the API key's Admin role (already the case for TestFlight).
+The device build is unsigned (`CODE_SIGNING_ALLOWED=NO`). BrowserStack re-signs every uploaded iOS app
+with its own provisioning profile, and that strips entitlements anyway (the widget's App Group is not
+available on BrowserStack devices). Signing on CI would also create a new Apple Development certificate
+on every run, since GitHub runners start with an empty keychain, and the team's certificate limit is
+small. If BrowserStack ever rejects the unsigned build, the fallback is a development certificate stored
+once as a `.p12` secret and imported into the runner keychain, never a certificate created per run.
 
 ## Next steps
 

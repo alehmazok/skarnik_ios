@@ -1,7 +1,8 @@
 name: BrowserStack
 
-# Builds Skarnik + the SkarnikUITests runner for real devices (development signing through the
-# App Store Connect API key, same as TestFlight) and runs the UI tests on BrowserStack App Automate.
+# Builds Skarnik + the SkarnikUITests runner for real devices, unsigned (BrowserStack re-signs every
+# uploaded iOS app with its own profile, so no Apple certificate is used or created here), and runs
+# the UI tests on BrowserStack App Automate.
 #   - Every push to main, and manually: Actions → BrowserStack → Run workflow.
 #   - Pull requests that touch this pipeline do a dry run: device build and packaging, no upload.
 # Setup and secrets: docs/browserstack.md.
@@ -17,14 +18,13 @@ on:
   pull_request:
     paths:
       - .github/workflows/browserstack.yml
-      - ci/browserstack-run.sh
+      - scripts/browserstack-run.sh
 
 concurrency:
   group: browserstack-${{ github.ref }}
   cancel-in-progress: true
 
 env:
-  TEAM_ID: EQFFWL4KZF
   DEFAULT_DEVICES: iPhone 16-18,iPhone 15-17,iPhone 14-16
 
 jobs:
@@ -43,15 +43,12 @@ jobs:
       - name: Check secrets
         id: secrets
         env:
-          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
-          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
-          ASC_KEY_P8: ${{ secrets.ASC_KEY_P8 }}
           GOOGLE_SERVICE_INFO_PLIST: ${{ secrets.GOOGLE_SERVICE_INFO_PLIST }}
           BROWSERSTACK_USERNAME: ${{ secrets.BROWSERSTACK_USERNAME }}
           BROWSERSTACK_ACCESS_KEY: ${{ secrets.BROWSERSTACK_ACCESS_KEY }}
         run: |
           missing=0
-          for name in ASC_KEY_ID ASC_ISSUER_ID ASC_KEY_P8 GOOGLE_SERVICE_INFO_PLIST; do
+          for name in GOOGLE_SERVICE_INFO_PLIST; do
             if [[ -z "${!name}" ]]; then echo "::error::Secret $name is not set"; missing=1; fi
           done
           if [[ -n "$BROWSERSTACK_USERNAME" && -n "$BROWSERSTACK_ACCESS_KEY" ]]; then
@@ -67,20 +64,6 @@ jobs:
           GOOGLE_SERVICE_INFO_PLIST: ${{ secrets.GOOGLE_SERVICE_INFO_PLIST }}
         run: ci/write-google-service-info.sh
 
-      - name: Install App Store Connect API key
-        env:
-          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
-          ASC_KEY_P8: ${{ secrets.ASC_KEY_P8 }}
-        run: |
-          key_path="$RUNNER_TEMP/AuthKey_${ASC_KEY_ID}.p8"
-          if [[ "$ASC_KEY_P8" == *"BEGIN PRIVATE KEY"* ]]; then
-            printf '%s\n' "$ASC_KEY_P8" > "$key_path"
-          else
-            echo "$ASC_KEY_P8" | base64 --decode > "$key_path"
-          fi
-          grep -q "BEGIN PRIVATE KEY" "$key_path" || { echo "::error::ASC_KEY_P8 is not a valid .p8 key"; exit 1; }
-          echo "ASC_KEY_PATH=$key_path" >> "$GITHUB_ENV"
-
       - name: Build for testing (device)
         run: |
           set -o pipefail
@@ -91,14 +74,7 @@ jobs:
             -configuration Debug \
             -destination 'generic/platform=iOS' \
             -derivedDataPath build/DerivedData \
-            -allowProvisioningUpdates \
-            -authenticationKeyPath "$ASC_KEY_PATH" \
-            -authenticationKeyID "${{ secrets.ASC_KEY_ID }}" \
-            -authenticationKeyIssuerID "${{ secrets.ASC_ISSUER_ID }}" \
-            CODE_SIGN_STYLE=Automatic \
-            DEVELOPMENT_TEAM="$TEAM_ID" \
-            CODE_SIGN_IDENTITY="Apple Development" \
-            PROVISIONING_PROFILE_SPECIFIER= \
+            CODE_SIGNING_ALLOWED=NO \
             | tee build/xcodebuild-device.log
 
       - name: Package app and test suite
@@ -119,7 +95,7 @@ jobs:
           BROWSERSTACK_ACCESS_KEY: ${{ secrets.BROWSERSTACK_ACCESS_KEY }}
           BROWSERSTACK_DEVICES: ${{ inputs.devices || env.DEFAULT_DEVICES }}
           BUILD_TAG: ${{ github.ref_name }}@${{ github.sha }}
-        run: ci/browserstack-run.sh build/Skarnik.ipa build/SkarnikUITests.zip
+        run: scripts/browserstack-run.sh build/Skarnik.ipa build/SkarnikUITests.zip
 
       - name: Dry run summary
         if: github.event_name == 'pull_request' || steps.secrets.outputs.browserstack != 'true'
@@ -137,6 +113,3 @@ jobs:
           if-no-files-found: ignore
           retention-days: 14
 
-      - name: Remove API key
-        if: always()
-        run: rm -f "$ASC_KEY_PATH"
