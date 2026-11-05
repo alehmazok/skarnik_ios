@@ -62,7 +62,7 @@ This is the non-obvious part — port the logic, not just "pick a random word."
 4. **Persist every fetched entry** (even rejected/similar ones) to history storage
    regardless of outcome, so future picks can compare against it.
 5. If all 30 attempts are exhausted, or the translation fetch fails outright: fall back
-   to a hardcoded sample word/translation pair (iOS: `"халэмус"` → `"гибель, конец"`).
+   to a hardcoded sample word/translation pair (iOS: `"удзя́чнасць"` → `"Пачуццё, якое ўзнікае ў адказ за зробленае дабро"`).
 
 ## 4. History storage
 
