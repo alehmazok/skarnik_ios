@@ -19,9 +19,9 @@ The app relies on external HTML from `skarnik.by`, which is brittle and prone to
 - **Target:** `SKTranslationSource.swift` (contains `SKTranslationSource`, `SKHtmlTranslationSource`, `SKFallbackTranslationSource`, stubs)
 - **Key Focus Areas:**
     - **Complex Word Extraction:** The `belWords` property uses `SwiftSoup` to extract reverse translations from HTML. This is complex and requires rigorous testing with various HTML samples.
-    - **Dynamic Recoloring:** Validate that `recoloredHtml` correctly applies theme-aware colors (via regex) for Dark Mode compatibility.
+    - **Rendering:** `SKTranslationRenderer` (SwiftSoup → `NSAttributedString`, no WebKit) maps legacy colours to semantic roles, keeps links and `data-word`, collapses whitespace and follows Dynamic Type. Covered in `SKTranslationRendererTests.swift`, incl. entries from all three dictionaries.
     - **Error Handling:** Ensure `parseHtml` correctly identifies "Redirect" (`rdr`) blocks and triggers the `nextWordIndexRequired` error.
-    - **Async Fetching:** Test the `attributedString` generation for UI responsiveness.
+    - **Async Rendering:** `renderedText` builds the text off the main thread.
     - **Fallback Chain:** `SKFallbackTranslationSource` must try sources in order, fall through on `nil` results or errors, rethrow the last error if all sources fail, and return `nil` if all return `nil`.
     - **Stub Sources:** `SKApiTranslationSource` and `SKSupabaseTranslationSource` return `nil` until implemented.
 - **Status:** Fallback chain and stub sources fully covered in `SKTranslationSourceTests.swift`. HTML parsing tests exist; needs more robust `rus_bel` extraction scenarios.
@@ -59,7 +59,7 @@ The application's transitions between loading, loaded, and error states are hand
 ## 6. Utilities & Extensions (Low)
 Lower priority but essential for codebase health.
 
-- **Target:** `String+Skarnik.swift`, `UIColor+Skarnik.swift`, `NSAttributedString+Skarnik.swift`
+- **Target:** `String+Skarnik.swift`, `UIColor+Skarnik.swift`, `SKTranslationRenderer.swift`
 - **Key Focus Areas:**
     - Hex color conversion stability.
     - Regex substitution helpers.
