@@ -1,0 +1,163 @@
+# Bitrise CI for Skarnik iOS (public open-source app on bitrise.io).
+# The build logic lives in ci/*.sh and scripts/browserstack-run.sh; this file only wires triggers,
+# caching, secrets and artifacts. Setup and secrets: docs/bitrise.md.
+#
+#   pull request  → pipeline "pr":   unit tests + UI tests (no secrets: placeholder Firebase config)
+#   push to main  → pipeline "main": unit tests + UI tests + BrowserStack real-device tests
+#   manual        → workflow "testflight" (upload) or "testflight-dry-run" (archive + export only)
+format_version: "13"
+default_step_lib_source: https://github.com/bitrise-io/bitrise-steplib.git
+project_type: ios
+
+meta:
+  bitrise.io:
+    # Newest Xcode 26 stack; bump when Bitrise publishes a newer stable one (see docs/bitrise.md).
+    stack: osx-xcode-26.0.x
+
+app:
+  envs:
+  - TEAM_ID: EQFFWL4KZF
+  - DEFAULT_DEVICES: iPhone 16-18,iPhone 14-18
+
+trigger_map:
+- push_branch: main
+  pipeline: main
+- pull_request_source_branch: "*"
+  pipeline: pr
+
+pipelines:
+  pr:
+    workflows:
+      unit-tests: {}
+      ui-tests: {}
+  main:
+    workflows:
+      unit-tests: {}
+      ui-tests: {}
+      browserstack: {}
+
+step_bundles:
+  checkout:
+    steps:
+    - git-clone@8: {}
+    - restore-cache@2:
+        title: Restore Swift packages
+        inputs:
+        - key: |-
+            spm-{{ checksum "Skarnik.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved" }}
+            spm-
+    - script@1:
+        title: Write GoogleService-Info.plist
+        inputs:
+        - content: ci/write-google-service-info.sh
+  finish:
+    steps:
+    - save-cache@1:
+        title: Save Swift packages
+        is_always_run: true
+        inputs:
+        - key: spm-{{ checksum "Skarnik.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved" }}
+        - paths: build/SourcePackages
+    - deploy-to-bitrise-io@2:
+        is_always_run: true
+        inputs:
+        - deploy_path: build/artifacts
+        - is_compress: "true"
+
+workflows:
+  unit-tests:
+    envs:
+    - ALLOW_PLACEHOLDER_PLIST: "1"
+    steps:
+    - bundle::checkout: {}
+    - script@1:
+        title: Unit tests
+        timeout: 2400
+        inputs:
+        - content: ci/run-tests.sh Skarnik TestResults
+    - script@1:
+        title: Collect results
+        is_always_run: true
+        inputs:
+        - content: mkdir -p build/artifacts && cp -R build/TestResults.xcresult build/*.log build/artifacts/ 2>/dev/null || true
+    - bundle::finish: {}
+
+  ui-tests:
+    envs:
+    - ALLOW_PLACEHOLDER_PLIST: "1"
+    steps:
+    - bundle::checkout: {}
+    - script@1:
+        title: UI tests
+        timeout: 2400
+        inputs:
+        - content: ci/run-tests.sh SkarnikUITests UITestResults
+    - script@1:
+        title: Collect results
+        is_always_run: true
+        inputs:
+        - content: mkdir -p build/artifacts && cp -R build/UITestResults.xcresult build/*.log build/artifacts/ 2>/dev/null || true
+    - bundle::finish: {}
+
+  browserstack:
+    # Real-device UI tests on BrowserStack App Automate. Start manually with BROWSERSTACK_DEVICES set
+    # (e.g. "iPhone 16-18,iPhone 13-15") to pick other devices.
+    steps:
+    - bundle::checkout: {}
+    - script@1:
+        title: Build for testing (device)
+        inputs:
+        - content: ci/browserstack-build.sh
+    - script@1:
+        title: Run on BrowserStack
+        inputs:
+        - content: |-
+            set -euo pipefail
+            export BROWSERSTACK_DEVICES="${BROWSERSTACK_DEVICES:-$DEFAULT_DEVICES}"
+            export BUILD_TAG="${BITRISE_GIT_BRANCH:-main}@${BITRISE_GIT_COMMIT:-unknown}"
+            scripts/browserstack-run.sh build/Skarnik.ipa build/SkarnikUITests.zip
+    - script@1:
+        title: Collect results
+        is_always_run: true
+        inputs:
+        - content: mkdir -p build/artifacts && cp build/*.log build/Skarnik.ipa build/SkarnikUITests.zip build/artifacts/ 2>/dev/null || true
+    - bundle::finish: {}
+
+  testflight:
+    # Archive, export and upload to TestFlight. Start manually on main; set BUILD_NUMBER to force a
+    # build number (empty = next free number on App Store Connect).
+    envs:
+    - UPLOAD: "true"
+    steps:
+    - bundle::checkout: {}
+    - certificate-and-profile-installer@1:
+        title: Install the stored development certificate
+    - script@1:
+        title: Archive, export and upload
+        inputs:
+        - content: ci/testflight.sh
+    - script@1:
+        title: Collect results
+        is_always_run: true
+        inputs:
+        - content: mkdir -p build/artifacts && cp build/*.log build/dSYMs.zip build/export/*.ipa build/artifacts/ 2>/dev/null || true
+    - bundle::finish: {}
+
+  testflight-dry-run:
+    # Same as testflight without the upload: run it after changing ci/testflight.sh or signing.
+    envs:
+    - UPLOAD: "false"
+    steps:
+    - bundle::checkout: {}
+    - certificate-and-profile-installer@1:
+        title: Install the stored development certificate
+    - script@1:
+        title: Archive and export
+        inputs:
+        - content: ci/testflight.sh
+    - script@1:
+        title: Collect results
+        is_always_run: true
+        inputs:
+        - content: mkdir -p build/artifacts && cp build/*.log build/dSYMs.zip build/export/*.ipa build/artifacts/ 2>/dev/null || true
+    - bundle::finish: {}
