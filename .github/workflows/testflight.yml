@@ -1,7 +1,10 @@
 name: TestFlight
 
-# Archives a Release build with automatic (cloud) signing via the App Store Connect API key
-# and uploads it to TestFlight.
+# Archives a Release build with automatic signing via the App Store Connect API key and uploads
+# it to TestFlight. The archive is signed with one stored Apple Development certificate
+# (DEV_CERT_P12) imported into a temporary keychain: without it, every run on a fresh runner asks
+# Apple for a new development certificate and the team soon hits Apple's certificate limit.
+# Export for App Store Connect uses cloud-managed distribution signing.
 #   - Run manually: Actions → TestFlight → Run workflow.
 #   - Pull requests that touch this pipeline do a dry run: archive + export, no upload.
 on:
@@ -48,9 +51,10 @@ jobs:
           ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
           ASC_KEY_P8: ${{ secrets.ASC_KEY_P8 }}
           GOOGLE_SERVICE_INFO_PLIST: ${{ secrets.GOOGLE_SERVICE_INFO_PLIST }}
+          DEV_CERT_P12: ${{ secrets.DEV_CERT_P12 }}
         run: |
           missing=0
-          for name in ASC_KEY_ID ASC_ISSUER_ID ASC_KEY_P8 GOOGLE_SERVICE_INFO_PLIST; do
+          for name in ASC_KEY_ID ASC_ISSUER_ID ASC_KEY_P8 GOOGLE_SERVICE_INFO_PLIST DEV_CERT_P12; do
             if [[ -z "${!name}" ]]; then echo "::error::Secret $name is not set"; missing=1; fi
           done
           exit $missing
@@ -74,6 +78,29 @@ jobs:
           fi
           grep -q "BEGIN PRIVATE KEY" "$key_path" || { echo "::error::ASC_KEY_P8 is not a valid .p8 key"; exit 1; }
           echo "ASC_KEY_PATH=$key_path" >> "$GITHUB_ENV"
+
+      - name: Install development certificate
+        env:
+          DEV_CERT_P12: ${{ secrets.DEV_CERT_P12 }}
+          DEV_CERT_PASSWORD: ${{ secrets.DEV_CERT_PASSWORD }}
+        run: |
+          keychain="$RUNNER_TEMP/signing.keychain-db"
+          keychain_password=$(uuidgen)
+          cert_path="$RUNNER_TEMP/dev-cert.p12"
+          echo "$DEV_CERT_P12" | base64 --decode > "$cert_path"
+          security create-keychain -p "$keychain_password" "$keychain"
+          security set-keychain-settings -lut 21600 "$keychain"
+          security unlock-keychain -p "$keychain_password" "$keychain"
+          security import "$cert_path" -k "$keychain" -f pkcs12 -P "$DEV_CERT_PASSWORD" -A
+          security set-key-partition-list -S apple-tool:,apple: -s -k "$keychain_password" "$keychain" > /dev/null
+          # Put the temporary keychain first in the search list so Xcode finds the identity there.
+          security list-keychains -d user -s "$keychain" $(security list-keychains -d user | tr -d '"')
+          rm -f "$cert_path"
+          echo "SIGNING_KEYCHAIN=$keychain" >> "$GITHUB_ENV"
+          identities=$(security find-identity -v -p codesigning "$keychain")
+          echo "$identities"
+          grep -q '"Apple Development' <<<"$identities" \
+            || { echo "::error::DEV_CERT_P12 has no valid Apple Development identity with its private key"; exit 1; }
 
       - name: Resolve build number
         env:
@@ -156,6 +183,8 @@ jobs:
           if-no-files-found: ignore
           retention-days: 30
 
-      - name: Remove API key
+      - name: Remove API key and keychain
         if: always()
-        run: rm -f "$ASC_KEY_PATH"
+        run: |
+          rm -f "$ASC_KEY_PATH"
+          if [[ -n "${SIGNING_KEYCHAIN:-}" ]]; then security delete-keychain "$SIGNING_KEYCHAIN" || true; fi
