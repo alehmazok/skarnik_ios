@@ -8,6 +8,7 @@ import SwiftUI
 
 class SKTabBarController: UITabBarController, UITabBarControllerDelegate {
 
+    private weak var historyNav: UINavigationController?
     private weak var settingsNav: UINavigationController?
 
     override func viewDidLoad() {
@@ -25,6 +26,7 @@ class SKTabBarController: UITabBarController, UITabBarControllerDelegate {
             tag: 0
         )
         let historyNav = UINavigationController(rootViewController: historyVC)
+        self.historyNav = historyNav
 
         // Favorites tab
         let favoritesVC = SKFavoritesViewController()
@@ -60,6 +62,20 @@ class SKTabBarController: UITabBarController, UITabBarControllerDelegate {
 
         viewControllers = [historyNav, favoritesNav, vocabNav, settingsNav]
         selectedIndex = 0
+    }
+
+    func tabBarController(_ tabBarController: UITabBarController, shouldSelect viewController: UIViewController) -> Bool {
+        // A re-tap on the active Search tab is its primary action: focus the search field.
+        // Checked here, before the switch, because didSelect fires for first and repeat taps alike.
+        // With a word open, the re-tap keeps UIKit's default pop-to-root and does nothing else;
+        // the next re-tap (now at the root) opens search.
+        if viewController === selectedViewController,
+           let historyNav, viewController === historyNav,
+           historyNav.viewControllers.count == 1,
+           let historyVC = historyNav.viewControllers.first as? SKHistoryViewController {
+            historyVC.activateSearch()
+        }
+        return true
     }
 
     func tabBarController(_ tabBarController: UITabBarController, didSelect viewController: UIViewController) {

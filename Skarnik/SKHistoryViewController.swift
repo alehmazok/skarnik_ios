@@ -46,7 +46,25 @@ class SKHistoryViewController: UIHostingController<SKHistoryView> {
         }
     }
 
+    /// Focuses the search field and shows the keyboard (Search tab re-tap).
+    func activateSearch() {
+        if #available(iOS 17, *), !viewModel.isSearchPresented {
+            // SwiftUI drives the field through `.searchable(isPresented:)`.
+            viewModel.activateSearch()
+        } else {
+            // iOS 15–16 have no `isPresented` binding; on iOS 17+ this also re-focuses a field
+            // that is still presented but whose keyboard was dismissed.
+            searchBar?.becomeFirstResponder()
+        }
+    }
+
     // MARK: - Private
+
+    /// The `UISearchBar` SwiftUI installs for `.searchable(placement: .navigationBarDrawer)`.
+    private var searchBar: UISearchBar? {
+        if let bar = navigationItem.searchController?.searchBar { return bar }
+        return navigationController?.navigationBar.firstDescendant(of: UISearchBar.self)
+    }
 
     private func openWord(_ word: SKWord, entryPoint: String) {
         if entryPoint != "history" {
@@ -54,5 +72,14 @@ class SKHistoryViewController: UIHostingController<SKHistoryView> {
             viewModel.reload()
         }
         showWordInDetail(word, entryPoint: entryPoint)
+    }
+}
+
+private extension UIView {
+    func firstDescendant<T: UIView>(of type: T.Type) -> T? {
+        for subview in subviews {
+            if let match = subview as? T ?? subview.firstDescendant(of: type) { return match }
+        }
+        return nil
     }
 }
