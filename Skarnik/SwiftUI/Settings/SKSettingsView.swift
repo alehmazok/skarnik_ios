@@ -37,6 +37,7 @@ struct SKSettingsView: View {
                         .font(.system(size: 16, weight: .medium))
                 }
                 .pickerStyle(.menu)
+                .accessibilityIdentifier("settings.articleColors")
             } footer: {
                 Text(SKLocalization.articleColorsFooter)
             }
@@ -53,6 +54,7 @@ struct SKSettingsView: View {
                     }
                 ))
                 .font(.system(size: 16, weight: .medium))
+                .accessibilityIdentifier("settings.analytics")
             }
 
             Section {
@@ -141,8 +143,10 @@ struct SKSettingsView: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text(shortName(for: dictionary))
                     .font(.system(size: 16, weight: .medium))
+                    .accessibilityIdentifier("settings.offline.\(dictionary.skarnikId ?? "").name")
 
                 subtitle(for: state)
+                    .accessibilityIdentifier("settings.offline.\(dictionary.skarnikId ?? "").status")
 
                 if case .downloading(let done, let total) = state {
                     ProgressView(value: total > 0 ? Double(done) / Double(total) : 0)
@@ -162,6 +166,7 @@ struct SKSettingsView: View {
                         .foregroundStyle(.red)
                 }
                 .buttonStyle(.plain)
+                .accessibilityIdentifier("settings.offline.\(dictionary.skarnikId ?? "").delete")
             }
         }
         .contentShape(Rectangle())

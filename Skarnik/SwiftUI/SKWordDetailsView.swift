@@ -28,6 +28,7 @@ struct SKAttributedTextView: UIViewRepresentable {
         textView.font = .systemFont(ofSize: 17)
         textView.textContainerInset = UIEdgeInsets(top: 0, left: 0, bottom: 16, right: 0)
         textView.textContainer.lineFragmentPadding = 0
+        textView.accessibilityIdentifier = "wordDetails.translation"
         return textView
     }
 
@@ -76,6 +77,15 @@ private struct SKWordDetailsTranslationView: View {
     var body: some View {
         SKAttributedTextView(attributedText: attributedText, onLinkTap: onLinkTap)
             .frame(maxWidth: .infinity, alignment: .leading)
+            .overlay(alignment: .topTrailing) {
+                if SKUITesting.isActive {
+                    // Lets UI tests check which source answered (local, supabase, api).
+                    Text(translation.sourceName)
+                        .font(.system(size: 1))
+                        .foregroundColor(.clear)
+                        .accessibilityIdentifier("wordDetails.source")
+                }
+            }
             .task(id: "\(translation.url)-\(dynamicTypeSize)-\(legibilityWeight == .bold)-\(articleColorTheme)") {
                 let theme = SKArticleColorTheme(rawValue: articleColorTheme) ?? .system
                 let traits = SKTranslationRenderer.traits(contentSize: dynamicTypeSize.skContentSizeCategory,
@@ -147,6 +157,7 @@ struct SKWordDetailsView: View {
                     isHeaderScrolledAway = scrolledAway
                 }
             }
+            .accessibilityElement(children: .contain)
             .accessibilityIdentifier("wordDetails")
 
             if let message = toastMessage {
@@ -167,6 +178,7 @@ struct SKWordDetailsView: View {
                         )
                         .padding(.bottom, 24)
                         .transition(.opacity)
+                        .accessibilityIdentifier("wordDetails.toast")
                 }
             }
         }
@@ -193,6 +205,7 @@ struct SKWordDetailsView: View {
                     Image(systemName: "square.and.arrow.up")
                 }
                 .accessibilityLabel(SKLocalization.wordDetailsShare)
+                .accessibilityIdentifier("wordDetails.share")
                 .disabled(viewModel.translation == nil)
                 Spacer()
                 Button(action: {
@@ -204,6 +217,7 @@ struct SKWordDetailsView: View {
                 .accessibilityLabel(viewModel.isFavorite
                                     ? SKLocalization.wordDetailsRemoveBookmark
                                     : SKLocalization.wordDetailsAddBookmark)
+                .accessibilityIdentifier("wordDetails.bookmark")
                 .disabled(viewModel.word == nil)
                 // TODO: re-enable report button when ready (between Share and Bookmark)
             }
@@ -234,11 +248,13 @@ struct SKWordDetailsView: View {
                     .fixedSize(horizontal: false, vertical: true)
                     .textSelection(.enabled)
                     .accessibilityAddTraits(.isHeader)
+                    .accessibilityIdentifier("wordDetails.headword")
                 if let subtitle = viewModel.vocabularySubtitle {
                     Text(subtitle)
                         .font(.footnote)
                         .foregroundColor(.secondary)
                         .fixedSize(horizontal: false, vertical: true)
+                        .accessibilityIdentifier("wordDetails.subtitle")
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -274,6 +290,7 @@ struct SKWordDetailsView: View {
         case .error(let message):
             errorView(message: message)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .accessibilityElement(children: .contain)
                 .accessibilityIdentifier("wordDetailsError")
         }
     }
@@ -316,6 +333,7 @@ struct SKWordDetailsView: View {
                 Text(SKLocalization.wordDetailsSpelling)
                     .foregroundColor(Color.accentColor)
             }
+            .accessibilityIdentifier("wordDetails.stress")
         } else {
             Menu {
                 ForEach(words, id: \.self) { word in
@@ -325,6 +343,7 @@ struct SKWordDetailsView: View {
                 Text(SKLocalization.wordDetailsSpelling)
                     .foregroundColor(Color.accentColor)
             }
+            .accessibilityIdentifier("wordDetails.stress")
         }
     }
 

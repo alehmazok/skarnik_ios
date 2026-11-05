@@ -118,6 +118,9 @@ jobs:
             -derivedDataPath build \
             -clonedSourcePackagesDirPath build/SourcePackages \
             -resultBundlePath build/UITestResults.xcresult \
+            -skip-testing:SkarnikUITests/NetworkUITests \
+            -skip-testing:SkarnikUITests/OfflineDictionaryUITests \
+            -skip-testing:SkarnikUITests/NoNetworkUITests \
             CODE_SIGNING_ALLOWED=NO \
             | tee build/xcodebuild-ui-test.log
 

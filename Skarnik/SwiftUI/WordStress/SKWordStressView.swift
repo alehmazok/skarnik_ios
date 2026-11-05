@@ -25,6 +25,7 @@ struct SKWordStressView: View {
                     if let error = self.viewModel.error {
                         Text(error)
                             .font(.body)
+                            .accessibilityIdentifier("wordStress.error")
                             .frame(maxWidth: 300)
                             .padding()
                     } else {
@@ -33,6 +34,8 @@ struct SKWordStressView: View {
                 }
             }
         }
+        .accessibilityElement(children: .contain)
+        .accessibilityIdentifier("wordStress")
         .combinedNavigationTitle(self.viewModel.presentTitle)
     }
     
@@ -62,6 +65,7 @@ struct SKWordStressView: View {
     func row(_ element: SKStressRow) -> some View {
         HStack(content: {
             SKHtmlTextView(html: element.title)
+                .accessibilityIdentifier("wordStress.cell")
                 .frame(minWidth: 0, maxWidth: .infinity)
 
             SKHtmlTextView(html: element.content)

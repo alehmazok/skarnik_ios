@@ -148,6 +148,7 @@ extension SKVocabulariesTableViewController: UITableViewDataSource {
         config.text = sections[indexPath.section].words[indexPath.row].word
         cell.contentConfiguration = config
         cell.backgroundColor = tableView.backgroundColor
+        cell.accessibilityIdentifier = "vocabulary.word"
         return cell
     }
 
