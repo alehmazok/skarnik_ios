@@ -12,11 +12,11 @@ The project uses a hybrid architecture combining established UIKit patterns with
     - **MVVM + Combine:** The `SKWordDetailsViewController` and `SKWordStressView` follow the Model-View-ViewModel pattern, using Combine for reactive state management.
 - **Data Layer:**
     - **Local Indexing:** A local SQLite database (`vocabulary.db`) stores the word list, allowing for fast, offline-capable searching and indexing.
-    - **Remote Fetching:** Detailed word translations are fetched on-demand from `skarnik.by` and parsed using `SwiftSoup`.
+    - **Remote Fetching:** Detailed word translations come from a downloaded offline dictionary, then Supabase `main_word`, then the skarnik_admin API. The order is the same in every Skarnik app (db → Supabase → API, Aleh 2026-11-05).
     - **Supplementary Data:** Pronunciation (word stress) and spelling suggestions are retrieved from `starnik.by`.
 - **Services & Managers:**
     - **SKVocabularyIndex:** The primary interface for querying the local SQLite database.
-    - **SKTranslationSource (protocol):** Defines the interface for all translation data sources. Concrete implementations: `SKHtmlTranslationSource` (HTML scraping via SwiftSoup), `SKApiTranslationSource` (JSON API, stub), `SKSupabaseTranslationSource` (Supabase, stub). `SKFallbackTranslationSource` composes them into a priority chain (API → Supabase → HTML). All defined in `SKTranslationSource.swift`. `SKSkarnikByController` is kept as a `typealias` for `SKHtmlTranslationSource` for backward compatibility.
+    - **SKTranslationSource (protocol):** Defines the interface for all translation data sources. Concrete implementations: `SKLocalTranslationSource` (downloaded offline dictionaries), `SKSupabaseTranslationSource` (Supabase `main_word`), `SKApiTranslationSource` (skarnik_admin JSON API) and `SKHtmlTranslationSource` (skarnik.by scrape, no longer in any chain; its `url` is still the displayed address). `SKFallbackTranslationSource.shared` is Supabase → API (used by the widget, which cannot read the offline store); `sharedWithLocalCache` puts the local store first (word details). All defined in `SKTranslationSource.swift`. `SKSkarnikByController` is kept as a `typealias` for `SKHtmlTranslationSource` for backward compatibility.
     - **SKStarnikByController:** Handles word stress/spelling data fetching and parsing.
     - **SKStorageController:** Manages user search history using `UserDefaults`.
     - **SKAnalyticsManager:** A wrapper for Firebase and debug analytics.

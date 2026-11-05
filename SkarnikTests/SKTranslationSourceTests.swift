@@ -242,6 +242,16 @@ final class SKSkarnikByControllerTests: XCTestCase {
         SKSkarnikTranslation(word: word, url: "https://example.com", html: "<b>тэст</b>")
     }
 
+    func testFallback_sharedOrder_isSupabaseThenApi() {
+        let names = SKFallbackTranslationSource.shared.sources.map { String(describing: type(of: $0)) }
+        XCTAssertEqual(names, ["SKSupabaseTranslationSource", "SKApiTranslationSource"])
+    }
+
+    func testFallback_sharedWithLocalCacheOrder_isLocalThenSupabaseThenApi() {
+        let names = SKFallbackTranslationSource.sharedWithLocalCache.sources.map { String(describing: type(of: $0)) }
+        XCTAssertEqual(names, ["SKLocalTranslationSource", "SKSupabaseTranslationSource", "SKApiTranslationSource"])
+    }
+
     func testFallback_returnsFirstSuccessfulResult() async throws {
         let translation = sampleTranslation(for: sampleWord)
         var secondSourceCalled = false

@@ -169,6 +169,8 @@ protocol SKTranslationSource {
 
 // MARK: - HTML Source
 
+/// skarnik.by page scrape. Not in any fallback chain any more (see `SKFallbackTranslationSource.shared`).
+
 struct SKHtmlTranslationSource: SKTranslationSource {
 
     func wordTranslation(_ word: SKWord) async throws -> SKSkarnikTranslation? {
@@ -349,10 +351,12 @@ struct SKFallbackTranslationSource: SKTranslationSource {
         return nil
     }
 
+    /// Supabase, then the skarnik_admin API: the order every Skarnik app uses after the local store
+    /// (Aleh, 2026-11-05). The skarnik.by HTML scrape is no longer part of the chain;
+    /// `SKHtmlTranslationSource.url` still gives the skarnik.by address shown for an entry.
     static let shared = SKFallbackTranslationSource(sources: [
         SKSupabaseTranslationSource(),
-        SKApiTranslationSource(),
-        SKHtmlTranslationSource()
+        SKApiTranslationSource()
     ])
 }
 
