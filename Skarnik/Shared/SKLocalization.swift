@@ -45,7 +45,8 @@ class SKLocalization: Any {
     class var wordDetailsRemoveBookmark: String { "Выдаліць з закладак" }
 
     class var errorWordNotFound: String { "Слова не знойдзена." }
-    class var errorNetworkErrorTryAgainLater: String { "Памылка сеткі. Паспрабуйце пазней." }
+    class var errorNetworkErrorTryAgainLater: String { "Памылка сеткі. Праверце злучэнне з інтэрнэтам." }
+    class var wordDetailsRetry: String { "Паспрабаваць яшчэ" }
     
     class var aboutUsefulLinks: String { "Карысныя спасылкі" }
     class var aboutStarnikByDescription: String { "Спецпошук — спецыяльны пошук па базе слоў. Адваротны слоўнік беларускай мовы — падабраць рыфму або скласці крыжаванку." }

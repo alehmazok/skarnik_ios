@@ -108,9 +108,15 @@ from the screen background in dark mode too.
 
 ### Loading and error states
 
-- Loading: a spinner under the header.
-- Error: the message under the header («not found», «network error, try later», or the error's
-  description).
+Both states fill the space under the header and sit centred in it (#22). The scroll content is
+at least as tall as the screen, so this works without a second scroll view; a long translation
+scrolls as before.
+
+- Loading: a centred spinner.
+- Error: a centred message («Слова не знойдзена.», «Памылка сеткі. Праверце злучэнне з
+  інтэрнэтам.», or the error's description) with a «Паспрабаваць яшчэ» button. The button calls
+  `retry()`, which reloads the current word only from `.error`. iOS 17+ uses
+  `ContentUnavailableView`; iOS 15–16 a look-alike stack (icon, message, bordered button).
 
 ---
 
@@ -149,11 +155,10 @@ Never hard-code hex colours in the view: use system colours or the renderer's ro
 | #20 | SwiftSoup renderer instead of the WebKit HTML importer; semantic colours; Dynamic Type live. |
 | #24 | The `skarnik.app/r/...` URL line under the subtitle is removed entirely (Aleh, 2026-11-05): it duplicated Share, was below the minimum font size, and could route back into the app. Attribution to skarnik.by stays on the About screen. |
 | #25 | «На́ціск» slot reserved while loading; be→ru menu of headword + synonyms kept (Aleh, 2026-11-05). |
+| #22 | Loading and error states centred; error has a «Паспрабаваць яшчэ» retry; nested error `ScrollView` removed; network error text no longer says «try later». |
 
 Still open at the time of writing:
 
-- #22: centred loading state, and an error state with a «Паспрабаваць яшчэ» retry button
-  instead of the plain message.
 - #23: Share as a popover on iPad, and the word included in the shared text
   («добразычлівасць — https://skarnik.app/r/belrus/27890»).
 

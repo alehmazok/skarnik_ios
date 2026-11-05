@@ -127,12 +127,17 @@ struct SKWordDetailsView: View {
 
     var body: some View {
         ZStack {
-            ScrollView {
-                VStack(spacing: 0) {
-                    header
-                    contentView
+            GeometryReader { viewport in
+                ScrollView {
+                    VStack(spacing: 0) {
+                        header
+                        contentView
+                    }
+                    .padding(.horizontal, 15)
+                    // At least a screen tall, so the loading and error states can centre in the
+                    // space under the header; a long translation still scrolls as before.
+                    .frame(minHeight: viewport.size.height, alignment: .top)
                 }
-                .padding(.horizontal, 15)
             }
             .coordinateSpace(name: Self.scrollSpace)
             .onPreferenceChange(SKHeaderBottomPreferenceKey.self) { bottom in
@@ -258,22 +263,46 @@ struct SKWordDetailsView: View {
         case .idle:
             EmptyView()
         case .loading:
-            HStack {
-                ProgressView()
-                Spacer()
-            }
-            .padding(.top, 8)
+            ProgressView()
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .accessibilityIdentifier("wordDetailsLoading")
         case .success(let translation):
             SKWordDetailsTranslationView(
                 translation: translation,
                 onLinkTap: { url in viewModel.handleUrl(url.absoluteString) }
             )
         case .error(let message):
-            ScrollView {
-                Text(message)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.top, 8)
+            errorView(message: message)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .accessibilityIdentifier("wordDetailsError")
+        }
+    }
+
+    /// Centred message with a retry button. `ContentUnavailableView` on iOS 17+, a look-alike before.
+    @ViewBuilder
+    private func errorView(message: String) -> some View {
+        let retryButton = Button(SKLocalization.wordDetailsRetry) { viewModel.retry() }
+            .buttonStyle(.bordered)
+            .accessibilityIdentifier("wordDetailsRetry")
+        if #available(iOS 17, *) {
+            ContentUnavailableView {
+                Label(message, systemImage: "exclamationmark.triangle")
+            } actions: {
+                retryButton
             }
+        } else {
+            VStack(spacing: 16) {
+                Image(systemName: "exclamationmark.triangle")
+                    .font(.system(size: 48))
+                    .foregroundColor(.secondary)
+                    .accessibilityHidden(true)
+                Text(message)
+                    .font(.title3.weight(.semibold))
+                    .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
+                retryButton
+            }
+            .padding(.vertical, 24)
         }
     }
 
