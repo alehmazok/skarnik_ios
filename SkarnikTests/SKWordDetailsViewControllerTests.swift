@@ -50,7 +50,7 @@ final class SKWordDetailsViewControllerTests: XCTestCase {
     func testNavigationTitle_ShowsOnFirstWord() {
         let word = SKWord(word_id: 1, word: "тэст", lang_id: .bel_rus)
         sut.word = word
-        XCTAssertEqual(sut.viewModel.navigationTitle, "«\u{200E}тэст»")
+        XCTAssertEqual(sut.viewModel.navigationTitle, "«тэст»")
     }
 
     @MainActor
@@ -61,7 +61,7 @@ final class SKWordDetailsViewControllerTests: XCTestCase {
         sut.word = word1
         sut.word = word2
 
-        XCTAssertEqual(sut.viewModel.navigationTitle, "«\u{200E}другі»")
+        XCTAssertEqual(sut.viewModel.navigationTitle, "«другі»")
     }
 
     @MainActor
