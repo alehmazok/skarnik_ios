@@ -66,17 +66,23 @@ struct SKAttributedTextView: UIViewRepresentable {
 private struct SKWordDetailsTranslationView: View {
     let translation: SKSkarnikTranslation
     let onLinkTap: (URL) -> Void
-    @Environment(\.colorScheme) private var colorScheme
+    // Colours are dynamic (dark mode, Increase Contrast resolve in the text view); fonts are not,
+    // so the text is rebuilt when Dynamic Type or Bold Text changes.
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    @Environment(\.legibilityWeight) private var legibilityWeight
     @AppStorage(SKArticleColorTheme.userDefaultsKey) private var articleColorTheme = SKArticleColorTheme.system.rawValue
     @State private var attributedText: NSAttributedString?
 
     var body: some View {
         SKAttributedTextView(attributedText: attributedText, onLinkTap: onLinkTap)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .task(id: "\(translation.url)-\(colorScheme)-\(articleColorTheme)") {
-                translation.attributedString { text in
-                    attributedText = text
-                }
+            .task(id: "\(translation.url)-\(dynamicTypeSize)-\(legibilityWeight == .bold)-\(articleColorTheme)") {
+                let theme = SKArticleColorTheme(rawValue: articleColorTheme) ?? .system
+                let traits = SKTranslationRenderer.traits(contentSize: dynamicTypeSize.skContentSizeCategory,
+                                                          boldText: legibilityWeight == .bold)
+                let text = await translation.renderedText(theme: theme, traits: traits)
+                guard !Task.isCancelled else { return }
+                attributedText = text
             }
     }
 }
@@ -336,10 +342,9 @@ private struct ErrorTranslationSource: SKTranslationSource {
 
 private let previewWord = SKWord(word_id: 1, word: "слова", lang_id: .bel_definition)
 
-private let previewTranslation = SKSkarnikTranslation(
-    word: previewWord,
-    url: "https://skarnik.app/r/rusbel/1",
-    html: """
+/// Sample translation HTML for previews and SKTranslationRendererTests (ТСБМ «кара»).
+enum SKTranslationSamples {
+    static let tsbmKara = """
     <p>
      <strong>
       <span style="color: #0000a0;">
@@ -470,7 +475,13 @@ private let previewTranslation = SKSkarnikTranslation(
      </strong>
      глядзі абрасці.
     </p>
-    """,
+    """
+}
+
+private let previewTranslation = SKSkarnikTranslation(
+    word: previewWord,
+    url: "https://skarnik.app/r/rusbel/1",
+    html: SKTranslationSamples.tsbmKara,
 //    stress: "сло́ва",
     stress: "добразычлівасць",
     sourceName: "mock"

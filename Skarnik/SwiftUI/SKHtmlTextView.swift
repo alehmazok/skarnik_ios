@@ -11,11 +11,16 @@ import SwiftUI
 
 struct SKHtmlTextView: View {
     var html: String
-    
+
     @MainActor @State private var height: CGFloat = .zero
-    
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    @Environment(\.legibilityWeight) private var legibilityWeight
+
     var body: some View {
-        SKHtmlLabelView(html: html, dynamicHeight: $height)
+        SKHtmlLabelView(html: html,
+                        dynamicTypeSize: dynamicTypeSize,
+                        boldText: legibilityWeight == .bold,
+                        dynamicHeight: $height)
             .combinedBackground(.clear)
             .frame(minHeight: height)
             .combinedBackground(.clear)
@@ -26,6 +31,8 @@ struct SKHtmlTextView: View {
 struct SKHtmlLabelView: UIViewRepresentable {
 
     let html: String
+    let dynamicTypeSize: DynamicTypeSize
+    let boldText: Bool
     @Binding var dynamicHeight: CGFloat
 
     final class Coordinator {
@@ -46,22 +53,16 @@ struct SKHtmlLabelView: UIViewRepresentable {
     }
 
     func updateUIView(_ uiView: UILabel, context: Context) {
-        let fontSize = UIFont.preferredFont(forTextStyle: .body).pointSize
-        let colorHex = UIColor.label.webHexString()
-        let html = "<html><body style=\"font-size: \(fontSize); color:\(colorHex); font-family: -apple-system; line-height: 150%;\">" + self.html + "</body></html>"
-        let data = html.data(using: .utf8) ?? Data()
+        let html = self.html
+        let traits = SKTranslationRenderer.traits(contentSize: dynamicTypeSize.skContentSizeCategory,
+                                                  boldText: boldText)
 
-        // NSAttributedString's HTML importer uses WebKit and spins a nested run loop;
-        // running it synchronously here (during UICollectionView's layout pass, via
-        // SwiftUI List cell sizing) reenters UIKit and crashes with
-        // NSInternalInconsistencyException. Must build it off the main thread.
-        //
-        // updateUIView can be re-invoked before the previous parse finishes (e.g. Dynamic
-        // Type or dark mode changes) — cancel any in-flight task so an older, slower parse
-        // can't overwrite the label after a newer one already applied.
+        // Rendering is SwiftSoup only (no WebKit), but still keep it off the layout pass.
+        // updateUIView can be re-invoked before the previous render finishes (e.g. a Dynamic
+        // Type change): cancel any in-flight task so an older render can't overwrite a newer one.
         context.coordinator.task?.cancel()
         context.coordinator.task = Task.detached(priority: .userInitiated) {
-            let attributedString = try? NSAttributedString(data: data, options: [.documentType: NSAttributedString.DocumentType.html, .characterEncoding: String.Encoding.utf8.rawValue], documentAttributes: nil)
+            let attributedString = SKTranslationRenderer.render(html: html, traits: traits, layout: .compact)
             guard !Task.isCancelled else { return }
             await MainActor.run {
                 guard !Task.isCancelled else { return }
@@ -71,6 +72,27 @@ struct SKHtmlLabelView: UIViewRepresentable {
                     dynamicHeight = newHeight
                 }
             }
+        }
+    }
+}
+
+extension DynamicTypeSize {
+    /// UIKit content size for this SwiftUI size (`UIContentSizeCategory(_:)` needs iOS 17).
+    var skContentSizeCategory: UIContentSizeCategory {
+        switch self {
+        case .xSmall: return .extraSmall
+        case .small: return .small
+        case .medium: return .medium
+        case .large: return .large
+        case .xLarge: return .extraLarge
+        case .xxLarge: return .extraExtraLarge
+        case .xxxLarge: return .extraExtraExtraLarge
+        case .accessibility1: return .accessibilityMedium
+        case .accessibility2: return .accessibilityLarge
+        case .accessibility3: return .accessibilityExtraLarge
+        case .accessibility4: return .accessibilityExtraExtraLarge
+        case .accessibility5: return .accessibilityExtraExtraExtraLarge
+        @unknown default: return .large
         }
     }
 }
