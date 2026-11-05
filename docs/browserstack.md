@@ -6,7 +6,7 @@ with BrowserStack" to stay in `README.md` on `main`.
 
 ## What runs
 
-- **`SkarnikUITests`** is an XCUITest target with smoke tests (`SkarnikUITests/SkarnikSmokeUITests.swift`):
+- **`SkarnikUITests`** is an XCUITest target with a smoke test (`SkarnikUITests/SkarnikSmokeUITests.swift`):
   launch, decline the analytics consent sheet, check the tab bar, search «мова» in the bundled index and
   open the word screen. The tests avoid asserting on network-fetched translation text so they stay stable.
   It has its own `SkarnikUITests` scheme, so the unit-test scheme and its CI job are unchanged.
