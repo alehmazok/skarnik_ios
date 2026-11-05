@@ -87,16 +87,80 @@ private struct SKWordDetailsTranslationView: View {
     }
 }
 
-// MARK: - Share sheet
+// MARK: - Share
 
-private struct ShareSheet: UIViewControllerRepresentable {
+/// The URL item of an iOS 15 share: the word goes in as the subject (Mail and other targets that
+/// have one), next to a separate text item with the word for chats.
+private final class SKShareURLItemSource: NSObject, UIActivityItemSource {
     let url: URL
+    let subject: String
 
-    func makeUIViewController(context: Context) -> UIActivityViewController {
-        UIActivityViewController(activityItems: [url], applicationActivities: nil)
+    init(url: URL, subject: String) {
+        self.url = url
+        self.subject = subject
     }
 
-    func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
+    func activityViewControllerPlaceholderItem(_ activityViewController: UIActivityViewController) -> Any {
+        url
+    }
+
+    func activityViewController(_ activityViewController: UIActivityViewController,
+                                itemForActivityType activityType: UIActivity.ActivityType?) -> Any? {
+        url
+    }
+
+    func activityViewController(_ activityViewController: UIActivityViewController,
+                                subjectForActivityType activityType: UIActivity.ActivityType?) -> String {
+        subject
+    }
+}
+
+/// Invisible view placed behind the iOS 15 share button. It gives `UIActivityViewController`
+/// a source view, so on iPad the share sheet is a popover pointing at the button.
+private struct SKShareAnchor: UIViewRepresentable {
+    let anchor: SKShareAnchorBox
+
+    func makeUIView(context: Context) -> UIView {
+        let view = UIView()
+        view.isUserInteractionEnabled = false
+        view.backgroundColor = .clear
+        anchor.view = view
+        return view
+    }
+
+    func updateUIView(_ uiView: UIView, context: Context) {
+        anchor.view = uiView
+    }
+}
+
+private final class SKShareAnchorBox {
+    weak var view: UIView?
+
+    /// Presents the system share sheet from the controller hosting the anchor, as a popover
+    /// anchored to it on iPad (a regular sheet on iPhone).
+    func present(text: String, url: URL, subject: String) {
+        guard let view = view, let presenter = view.window?.rootViewController?.skTopmostPresented else { return }
+        let controller = UIActivityViewController(
+            activityItems: [text, SKShareURLItemSource(url: url, subject: subject)],
+            applicationActivities: nil
+        )
+        if let popover = controller.popoverPresentationController {
+            popover.sourceView = view
+            popover.sourceRect = view.bounds
+            popover.permittedArrowDirections = [.down, .up]
+        }
+        presenter.present(controller, animated: true)
+    }
+}
+
+private extension UIViewController {
+    var skTopmostPresented: UIViewController {
+        var top: UIViewController = self
+        while let presented = top.presentedViewController, !presented.isBeingDismissed {
+            top = presented
+        }
+        return top
+    }
 }
 
 // MARK: - Header scroll tracking
@@ -119,7 +183,7 @@ struct SKWordDetailsView: View {
     var onReport: () -> Void = {}
 
     @State private var toastMessage: String?
-    @State private var showShareSheet = false
+    @State private var shareAnchor = SKShareAnchorBox()
     /// True once the large headword has scrolled out of view; only then does the nav bar show it.
     @State private var isHeaderScrolledAway = false
 
@@ -184,16 +248,7 @@ struct SKWordDetailsView: View {
             }
             ToolbarItemGroup(placement: .bottomBar) {
                 // Share on the left, Bookmark on the right: balanced on iOS 26 glass and older bars.
-                Button(action: {
-                    if let translation = viewModel.translation {
-                        SKAnalyticsManager.logShareClicked(word: translation.word, url: translation.sharingUrl)
-                    }
-                    showShareSheet = true
-                }) {
-                    Image(systemName: "square.and.arrow.up")
-                }
-                .accessibilityLabel(SKLocalization.wordDetailsShare)
-                .disabled(viewModel.translation == nil)
+                shareButton
                 Spacer()
                 Button(action: {
                     viewModel.toggleFavorite()
@@ -208,14 +263,53 @@ struct SKWordDetailsView: View {
                 // TODO: re-enable report button when ready (between Share and Bookmark)
             }
         }
-        .sheet(isPresented: $showShareSheet) {
-            if let urlStr = viewModel.translation?.sharingUrl, let url = URL(string: urlStr) {
-                ShareSheet(url: url)
-            }
-        }
         .onReceive(viewModel.effectSubject) { effect in
             handleEffect(effect)
         }
+    }
+
+    // MARK: Share
+
+    /// Shares «word — link»: the word (stressed form when known) as text and subject, so a plain
+    /// chat shows what the link is about and Mail gets a subject; the link keeps its preview.
+    /// iOS 16+: `ShareLink`, which SwiftUI shows as a popover from the button on iPad.
+    /// iOS 15: `UIActivityViewController` presented with a popover anchored to the button.
+    @ViewBuilder
+    private var shareButton: some View {
+        let icon = Image(systemName: "square.and.arrow.up")
+        if let translation = viewModel.translation, let url = URL(string: translation.sharingUrl) {
+            let title = translation.shareTitle
+            if #available(iOS 16, *) {
+                ShareLink(item: url,
+                          subject: Text(title),
+                          message: Text(title)) {
+                    icon
+                }
+                // ShareLink has no action callback; a simultaneous tap still reports the click.
+                .simultaneousGesture(TapGesture().onEnded {
+                    logShareClicked(translation)
+                })
+                .accessibilityLabel(SKLocalization.wordDetailsShare)
+            } else {
+                Button(action: {
+                    logShareClicked(translation)
+                    shareAnchor.present(text: title, url: url, subject: title)
+                }) {
+                    icon
+                }
+                .background(SKShareAnchor(anchor: shareAnchor))
+                .accessibilityLabel(SKLocalization.wordDetailsShare)
+            }
+        } else {
+            // Same slot, disabled until the translation (and so the link) is there.
+            Button(action: {}) { icon }
+                .accessibilityLabel(SKLocalization.wordDetailsShare)
+                .disabled(true)
+        }
+    }
+
+    private func logShareClicked(_ translation: SKSkarnikTranslation) {
+        SKAnalyticsManager.logShareClicked(word: translation.word, url: translation.sharingUrl)
     }
 
     // MARK: Header

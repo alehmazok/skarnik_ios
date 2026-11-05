@@ -96,7 +96,12 @@ Opens stress and spelling tables; full behaviour in [stress_feature_spec.md](str
   depending on the state, instead of the SF Symbol name in the system language.
 - Bookmark toggling plays a light impact haptic.
 - Share is disabled until the translation loads; Bookmark until there is a word.
-- Share sends `https://skarnik.app/r/<dict>/<id>` (`sharingUrl`) and logs the Firebase `share` event (`logShareClicked`).
+- Share sends the link `https://skarnik.app/r/<dict>/<id>` (`sharingUrl`) together with the word
+  (stressed form when known, `shareTitle`) as the message text and subject, so a plain-text chat
+  reads «добразычлівасць — https://skarnik.app/r/belrus/27890» (`shareText`) and the link still
+  gets its preview. It logs the Firebase `share` event (`logShareClicked`). (#23)
+- iOS 16+ uses `ShareLink`; iOS 15 presents `UIActivityViewController` itself with the popover
+  anchored to the Share button, so on iPad it is a popover from the button instead of a full sheet.
 - The report button is hidden until it is ready (TODO in the view).
 
 ### Redirect toast (#18)

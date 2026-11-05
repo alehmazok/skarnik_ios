@@ -6,6 +6,32 @@ final class SKSkarnikByControllerTests: XCTestCase {
 
     // MARK: - SKSkarnikTranslation Tests
 
+    func testSharingUrl_pointsToSkarnikApp() {
+        let word = SKWord(word_id: 27890, word: "добразычлівасць", lang_id: .bel_rus)
+        let translation = SKSkarnikTranslation(word: word, url: "https://example.com", html: "")
+        XCTAssertEqual(translation.sharingUrl, "https://skarnik.app/r/belrus/27890")
+    }
+
+    func testShareText_usesPlainWordWithoutStress() {
+        let word = SKWord(word_id: 27890, word: "добразычлівасць", lang_id: .bel_rus)
+        let translation = SKSkarnikTranslation(word: word, url: "https://example.com", html: "")
+        XCTAssertEqual(translation.shareTitle, "добразычлівасць")
+        XCTAssertEqual(translation.shareText, "добразычлівасць — https://skarnik.app/r/belrus/27890")
+    }
+
+    func testShareText_prefersStressForm() {
+        let word = SKWord(word_id: 5, word: "кара", lang_id: .bel_definition)
+        let translation = SKSkarnikTranslation(word: word, url: "https://example.com", html: "", stress: "ка́ра")
+        XCTAssertEqual(translation.shareTitle, "ка́ра")
+        XCTAssertEqual(translation.shareText, "ка́ра — https://skarnik.app/r/tsbm/5")
+    }
+
+    func testShareTitle_ignoresEmptyStress() {
+        let word = SKWord(word_id: 7, word: "дом", lang_id: .rus_bel)
+        let translation = SKSkarnikTranslation(word: word, url: "https://example.com", html: "", stress: "")
+        XCTAssertEqual(translation.shareTitle, "дом")
+    }
+
     func testSKArticleColorTheme_defaultsToSystem() {
         XCTAssertEqual(SKArticleColorTheme(rawValue: "unknown") ?? .system, .system)
         XCTAssertEqual(SKArticleColorTheme(rawValue: "skarnikRed"), .skarnikRed)

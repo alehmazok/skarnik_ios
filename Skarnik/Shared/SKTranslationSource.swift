@@ -48,6 +48,18 @@ struct SKSkarnikTranslation {
         return "https://skarnik.app/r/\(path)/\(word.word_id)"
     }
 
+    /// The word as it goes into a share: the stressed form when known, else the plain word.
+    var shareTitle: String {
+        if let stress = stress, !stress.isEmpty { return stress }
+        return word.word
+    }
+
+    /// Plain-text form of a share, «добразычлівасць — https://skarnik.app/r/belrus/27890», for
+    /// targets that only take one string (and as the reference payload in docs/tests).
+    var shareText: String {
+        "\(shareTitle) — \(sharingUrl)"
+    }
+
     /// The translation as styled text (SwiftSoup, no WebKit), built off the main thread.
     /// Pass `traits` from the view so the text follows Dynamic Type and Bold Text; colours are
     /// dynamic and follow dark mode and Increase Contrast on their own.
