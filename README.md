@@ -93,6 +93,26 @@ Run the `SkarnikTests` scheme in Xcode, or:
 xcodebuild test -project Skarnik.xcodeproj -scheme Skarnik -destination 'platform=iOS Simulator,name=iPhone 16'
 ```
 
+## CI / TestFlight
+
+GitHub Actions workflows live in `.github/workflows/`:
+
+- **CI** (`ci.yml`) runs the unit tests on an iOS Simulator for every pull request and every push to `main`.
+- **TestFlight** (`testflight.yml`) archives a Release build and uploads it to TestFlight. Start it from
+  Actions → TestFlight → Run workflow. The build number defaults to `CURRENT_PROJECT_VERSION` in the project, so
+  bump the version as usual first, or pass `build_number`. Pull requests that change the pipeline run it as a dry
+  run (archive and export only, nothing uploaded).
+
+Signing is automatic (cloud-managed) through an App Store Connect API key, so no certificates or profiles are
+stored in the repo or in secrets. Required repository secrets:
+
+| Secret | Value |
+|--------|-------|
+| `ASC_KEY_ID` | App Store Connect API key ID |
+| `ASC_ISSUER_ID` | API key issuer ID |
+| `ASC_KEY_P8` | The `.p8` key, base64-encoded (raw text also works) |
+| `GOOGLE_SERVICE_INFO_PLIST` | `GoogleService-Info.plist`, base64-encoded |
+
 ## Data Sources
 
 - **[skarnik.by](https://skarnik.by)** — dictionary content (Рус-Бел, Бел-Рус, Тлумачальны), scraped as HTML via SwiftSoup; primary source in the translation fallback chain (skarnik_admin API → Supabase → HTML)
