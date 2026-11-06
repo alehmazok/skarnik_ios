@@ -50,7 +50,11 @@ struct SKErrorReportingTests {
 
     private enum SampleError: Error {
         case first
-        case withWord(String)
+        case second
+    }
+
+    private enum WordError: Error {
+        case notFound(String)
     }
 
     @Test func urlError_isNotReported() {
@@ -84,10 +88,16 @@ struct SKErrorReportingTests {
     }
 
     @Test func report_hasTypeCodeAndTagOnly() throws {
-        let report = try #require(SKErrorReporting.report(for: SampleError.withWord("сакрэт"), tag: "WordDetails"))
+        let report = try #require(SKErrorReporting.report(for: SampleError.second, tag: "WordDetails"))
         #expect(report.type.hasSuffix("SampleError"))
         #expect(report.code == 1)
         #expect(report.tag == "WordDetails")
+    }
+
+    @Test func report_dropsAssociatedValues() throws {
+        // Swift numbers payload cases separately, so only the type is checked here, not the code.
+        let report = try #require(SKErrorReporting.report(for: WordError.notFound("сакрэт"), tag: "WordDetails"))
+        #expect(report.type.hasSuffix("WordError"))
         #expect(!report.type.contains("сакрэт"))
     }
 
