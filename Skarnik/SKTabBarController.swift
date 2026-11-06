@@ -9,7 +9,6 @@ import SwiftUI
 class SKTabBarController: UITabBarController, UITabBarControllerDelegate {
 
     private weak var historyNav: UINavigationController?
-    private weak var settingsNav: UINavigationController?
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -48,17 +47,12 @@ class SKTabBarController: UITabBarController, UITabBarControllerDelegate {
 
         // Settings tab
         let settingsVC = SKSettingsViewController()
-        let settingsTabItem = UITabBarItem(
+        settingsVC.tabBarItem = UITabBarItem(
             title: SKLocalization.tabSettings,
             image: UIImage(systemName: "gearshape"),
             tag: 3
         )
-        // Empty-string badge renders as an unread dot (no number) — one-time promo for the
-        // offline-dictionaries feature, dismissed for good the first time this tab is opened.
-        settingsTabItem.badgeValue = SKOfflineDictionaryStorage.shared.promoSeen ? nil : ""
-        settingsVC.tabBarItem = settingsTabItem
         let settingsNav = UINavigationController(rootViewController: settingsVC)
-        self.settingsNav = settingsNav
 
         viewControllers = [historyNav, favoritesNav, vocabNav, settingsNav]
         selectedIndex = 0
@@ -76,11 +70,5 @@ class SKTabBarController: UITabBarController, UITabBarControllerDelegate {
             historyVC.activateSearch()
         }
         return true
-    }
-
-    func tabBarController(_ tabBarController: UITabBarController, didSelect viewController: UIViewController) {
-        guard viewController === settingsNav else { return }
-        SKOfflineDictionaryStorage.shared.markPromoSeen()
-        viewController.tabBarItem.badgeValue = nil
     }
 }

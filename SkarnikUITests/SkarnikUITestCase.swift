@@ -118,7 +118,7 @@ class SkarnikUITestCase: XCTestCase {
     // MARK: - Navigation
 
     func openTab(_ tab: Tab) {
-        // BEGINSWITH: a badge (Settings promo dot) can extend the label.
+        // BEGINSWITH: a tab badge, if any, extends the label.
         let button = app.tabBars.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", tab.rawValue)).firstMatch
         waitFor(button, "Missing tab «\(tab.rawValue)»").tap()
     }

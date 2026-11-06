@@ -6,13 +6,12 @@
 import Foundation
 
 /// UserDefaults-backed persistence for the offline-download feature: per-dictionary resume
-/// cursors, download-attempt rate-limit timestamps, and the one-time promo badge flag.
+/// cursors and download-attempt rate-limit timestamps.
 final class SKOfflineDictionaryStorage {
     static let shared = SKOfflineDictionaryStorage()
 
     private static let cursorsKey = "offlineDictionaryCursorsKey"
     private static let downloadAttemptsKey = "offlineDictionaryDownloadAttemptsKey"
-    private static let promoSeenKey = "offlineDictionariesPromoSeenKey"
 
     private static let rateLimitWindow: TimeInterval = 5 * 60
     private static let rateLimitMaxAttempts = 4
@@ -85,15 +84,5 @@ final class SKOfflineDictionaryStorage {
     private func saveAttempts(_ attempts: [Date]) {
         guard let data = try? JSONEncoder().encode(attempts) else { return }
         defaults.set(data, forKey: Self.downloadAttemptsKey)
-    }
-
-    // MARK: - Promo badge
-
-    var promoSeen: Bool {
-        defaults.bool(forKey: Self.promoSeenKey)
-    }
-
-    func markPromoSeen() {
-        defaults.set(true, forKey: Self.promoSeenKey)
     }
 }
