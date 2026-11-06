@@ -12,6 +12,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     var window: UIWindow?
     var pendingWord: SKWord?
     private var didPresentAnalyticsConsentPrompt = false
+    private var didPresentWhatsNew = false
 
     func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
         guard let _ = (scene as? UIWindowScene) else { return }
@@ -77,12 +78,27 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         return SKVocabularyIndex.shared.word(id: wordId, vocabularyType: lang)
     }
 
-    private func presentAnalyticsConsentIfNeeded() {
+    /// Returns true when the prompt was presented, so nothing else is stacked on top of it.
+    @discardableResult
+    private func presentAnalyticsConsentIfNeeded() -> Bool {
         guard !didPresentAnalyticsConsentPrompt,
               !SKAnalyticsConsentController.shared.hasRespondedToConsent,
-              let rootViewController = window?.rootViewController else { return }
+              let rootViewController = window?.rootViewController else { return false }
         didPresentAnalyticsConsentPrompt = true
         rootViewController.present(SKAnalyticsConsentViewController(), animated: true)
+        return true
+    }
+
+    /// Once per launch, never over another sheet: the next activation tries again.
+    /// The version is marked seen before the sheet shows, so it appears at most once.
+    private func presentWhatsNewIfNeeded() {
+        guard !didPresentWhatsNew,
+              let rootViewController = window?.rootViewController,
+              rootViewController.presentedViewController == nil,
+              let release = SKWhatsNewController.shared.releaseToShow else { return }
+        didPresentWhatsNew = true
+        SKWhatsNewController.shared.markCurrentVersionSeen()
+        rootViewController.present(SKWhatsNewViewController(release: release), animated: true)
     }
 
     private func openWord(_ word: SKWord) {
@@ -100,7 +116,9 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     func sceneDidBecomeActive(_ scene: UIScene) {
         // Called when the scene has moved from an inactive state to an active state.
         // Use this method to restart any tasks that were paused (or not yet started) when the scene was inactive.
-        presentAnalyticsConsentIfNeeded()
+        if !presentAnalyticsConsentIfNeeded() {
+            presentWhatsNewIfNeeded()
+        }
     }
 
     func sceneWillResignActive(_ scene: UIScene) {
