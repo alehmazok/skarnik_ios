@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Uploads an archive's dSYMs to Sentry so crash reports get symbolicated stack traces (issue #28).
-# Used by .github/workflows/testflight.yml and Xcode Cloud (ci_scripts/ci_post_xcodebuild.sh) after an archive.
+# Used by .github/workflows/testflight.yml after a TestFlight upload.
 # Without SENTRY_AUTH_TOKEN it only warns: the dSYMs stay in the build artifacts.
 #
 # Env: SENTRY_AUTH_TOKEN (optional), SENTRY_PROJECT (optional, default skarnik_ios).
@@ -20,7 +20,7 @@ if [[ -z "${SENTRY_AUTH_TOKEN:-}" ]]; then
 fi
 [[ -d "$dsyms" ]] || { echo "No dSYMs at $dsyms"; exit 1; }
 
-# The pinned macOS release binary: works on GitHub runners and Xcode Cloud alike, no Node needed.
+# The pinned macOS release binary, so the upload needs no Node on the runner.
 cli_dir=$(mktemp -d)
 trap 'rm -rf "$cli_dir"' EXIT
 curl -fsSL --retry 3 -o "$cli_dir/sentry-cli" \

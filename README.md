@@ -152,17 +152,9 @@ skarnik_android's ADR 0008:
 - Caught errors: `SKErrorReporting.logError(error, tag:)` sends the error type, code and tag only, never the
   message. Network, server and cancellation errors are not reported.
 - The widget does not report: it runs in a tight memory budget and shares its fetch code with the app, which reports.
-- After an archive, `ci/sentry-upload-dsyms.sh` uploads its dSYMs with a pinned `sentry-cli` release binary.
-
-Where the secrets go:
-
-- **GitHub** (`testflight.yml`): repository secrets `SENTRY_DSN` and `SENTRY_AUTH_TOKEN` (table above). The DSN
-  is passed to the archive as a build setting; the dSYMs are uploaded after a real TestFlight upload.
-- **Xcode Cloud** (TestFlight workflow): add `SENTRY_DSN` and `SENTRY_AUTH_TOKEN` as **Secret** environment
-  variables in the workflow's Environment section (optionally `SENTRY_PROJECT`). Xcode Cloud passes no custom
-  build settings, so `ci_scripts/ci_pre_xcodebuild.sh` writes the DSN into `Skarnik/Info.plist` before the
-  archive, and `ci_scripts/ci_post_xcodebuild.sh` uploads the dSYMs after it. A failed upload only warns, so
-  the build still reaches TestFlight.
+- The TestFlight workflow (`testflight.yml`) passes the `SENTRY_DSN` secret to the archive as a build setting and,
+  after a real TestFlight upload, `ci/sentry-upload-dsyms.sh` uploads the dSYMs with a pinned `sentry-cli`
+  release binary using `SENTRY_AUTH_TOKEN` (secrets table above). Missing secrets only produce a warning.
 
 ## Data Sources
 
