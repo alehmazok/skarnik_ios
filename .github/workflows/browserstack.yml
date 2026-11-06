@@ -19,6 +19,7 @@ on:
     paths:
       - .github/workflows/browserstack.yml
       - scripts/browserstack-run.sh
+      - SkarnikUITests/**
 
 concurrency:
   group: browserstack-${{ github.ref }}
@@ -26,6 +27,8 @@ concurrency:
 
 env:
   DEFAULT_DEVICES: iPhone 16-18,iPhone 14-18
+  # NoNetworkUITests runs once more on this device with networkProfile no-network.
+  NO_NETWORK_DEVICE: iPhone 16-18
 
 jobs:
   device-tests:
@@ -95,7 +98,26 @@ jobs:
           BROWSERSTACK_ACCESS_KEY: ${{ secrets.BROWSERSTACK_ACCESS_KEY }}
           BROWSERSTACK_DEVICES: ${{ inputs.devices || env.DEFAULT_DEVICES }}
           BUILD_TAG: ${{ github.ref_name }}@${{ github.sha }}
-        run: scripts/browserstack-run.sh build/Skarnik.ipa build/SkarnikUITests.zip
+        # Two BrowserStack builds in parallel: everything except NoNetworkUITests on the device list,
+        # and NoNetworkUITests alone with the network switched off.
+        run: |
+          set +e
+          RUN_NAME=online SKIP_TESTING=NoNetworkUITests \
+            scripts/browserstack-run.sh build/Skarnik.ipa build/SkarnikUITests.zip > build/browserstack-online.log 2>&1 &
+          online=$!
+          RUN_NAME="no network" ONLY_TESTING=NoNetworkUITests NETWORK_PROFILE=no-network \
+            BROWSERSTACK_DEVICES="$NO_NETWORK_DEVICE" BUILD_TAG="$BUILD_TAG no-network" \
+            scripts/browserstack-run.sh build/Skarnik.ipa build/SkarnikUITests.zip > build/browserstack-no-network.log 2>&1 &
+          offline=$!
+          wait $online; online_status=$?
+          wait $offline; offline_status=$?
+          for run in online no-network; do
+            echo "::group::BrowserStack $run"
+            cat "build/browserstack-$run.log"
+            echo "::endgroup::"
+          done
+          grep -h "^::error::" build/browserstack-*.log || true
+          [[ $online_status -eq 0 && $offline_status -eq 0 ]]
 
       - name: Dry run summary
         if: steps.secrets.outputs.browserstack != 'true'

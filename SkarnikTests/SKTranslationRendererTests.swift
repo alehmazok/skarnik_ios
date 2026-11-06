@@ -215,13 +215,13 @@ final class SKTranslationRendererTests: XCTestCase {
 
     // MARK: - Layout and Dynamic Type
 
-    func testArticleLayoutSpacesEntriesAndIndentsWrappedLines() {
+    func testArticleLayoutSpacesEntriesWithoutIndentingWrappedLines() {
         let text = render("першы радок<br>другі<br>трэці")
 
         XCTAssertEqual(text.string, "першы радок\nдругі\nтрэці")
         let style = attributes(of: "другі", in: text)[.paragraphStyle] as? NSParagraphStyle
         XCTAssertGreaterThan(style?.paragraphSpacing ?? 0, 0)
-        XCTAssertGreaterThan(style?.headIndent ?? 0, 0)
+        XCTAssertEqual(style?.headIndent, 0)
         XCTAssertEqual(style?.firstLineHeadIndent, 0)
     }
 

@@ -13,8 +13,11 @@ struct SKSettingsView: View {
     @State private var dictionaryPendingDelete: ESKVocabularyType?
     @State private var showRateLimitAlert = false
     @AppStorage(SKArticleColorTheme.userDefaultsKey) private var articleColorTheme = SKArticleColorTheme.system.rawValue
+    /// Mirrors the consent controller, which is not observable, so the toggle redraws when flipped.
+    @State private var analyticsGranted = SKAnalyticsConsentController.shared.analyticsConsentGranted
 
     var onAboutTapped: (() -> Void)?
+    var onWhatsNewTapped: (() -> Void)?
 
     private static let dictionaries = SKOfflineDictionaryDownloadManager.downloadableDictionaries
 
@@ -37,14 +40,16 @@ struct SKSettingsView: View {
                         .font(.system(size: 16, weight: .medium))
                 }
                 .pickerStyle(.menu)
+                .accessibilityIdentifier("settings.articleColors")
             } footer: {
                 Text(SKLocalization.articleColorsFooter)
             }
 
             Section {
                 Toggle(SKLocalization.analyticsConsentSettingsRowTitle, isOn: Binding(
-                    get: { SKAnalyticsConsentController.shared.analyticsConsentGranted },
+                    get: { analyticsGranted },
                     set: { isGranted in
+                        analyticsGranted = isGranted
                         if isGranted {
                             SKAnalyticsConsentController.shared.grantConsent()
                         } else {
@@ -53,10 +58,12 @@ struct SKSettingsView: View {
                     }
                 ))
                 .font(.system(size: 16, weight: .medium))
+                .accessibilityIdentifier("settings.analytics")
             }
 
             Section {
                 rateAppRow
+                whatsNewRow
                 aboutRow
             }
         }
@@ -130,6 +137,26 @@ struct SKSettingsView: View {
         .padding(.vertical, 4)
     }
 
+    private var whatsNewRow: some View {
+        HStack {
+            Text(SKLocalization.whatsNewRowTitle)
+                .font(.system(size: 16, weight: .medium))
+
+            Spacer()
+
+            Image(systemName: "chevron.right")
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundStyle(Color(UIColor.tertiaryLabel))
+        }
+        .contentShape(Rectangle())
+        .onTapGesture {
+            onWhatsNewTapped?()
+        }
+        .padding(.vertical, 4)
+        .accessibilityAddTraits(.isButton)
+        .accessibilityIdentifier("settings.whatsNew")
+    }
+
     @ViewBuilder
     private func row(for dictionary: ESKVocabularyType) -> some View {
         let state = manager.states[dictionary] ?? .notDownloaded
@@ -141,8 +168,10 @@ struct SKSettingsView: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text(shortName(for: dictionary))
                     .font(.system(size: 16, weight: .medium))
+                    .accessibilityIdentifier("settings.offline.\(dictionary.skarnikId ?? "").name")
 
                 subtitle(for: state)
+                    .accessibilityIdentifier("settings.offline.\(dictionary.skarnikId ?? "").status")
 
                 if case .downloading(let done, let total) = state {
                     ProgressView(value: total > 0 ? Double(done) / Double(total) : 0)
@@ -162,6 +191,7 @@ struct SKSettingsView: View {
                         .foregroundStyle(.red)
                 }
                 .buttonStyle(.plain)
+                .accessibilityIdentifier("settings.offline.\(dictionary.skarnikId ?? "").delete")
             }
         }
         .contentShape(Rectangle())
@@ -228,15 +258,20 @@ class SKSettingsViewController: UIHostingController<SKSettingsView> {
 
     init() {
         super.init(rootView: SKSettingsView())
-        rootView.onAboutTapped = { [weak self] in
-            self?.navigationController?.pushViewController(SKAboutViewController(), animated: true)
-        }
+        wireRows()
     }
 
     required init?(coder: NSCoder) {
         super.init(coder: coder, rootView: SKSettingsView())
+        wireRows()
+    }
+
+    private func wireRows() {
         rootView.onAboutTapped = { [weak self] in
             self?.navigationController?.pushViewController(SKAboutViewController(), animated: true)
+        }
+        rootView.onWhatsNewTapped = { [weak self] in
+            self?.navigationController?.pushViewController(SKWhatsNewHistoryViewController(), animated: true)
         }
     }
 

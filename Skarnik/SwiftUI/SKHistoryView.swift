@@ -141,6 +141,7 @@ private struct SKHistoryContentView: View {
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)
                 .padding()
+                .accessibilityIdentifier("history.empty")
             Spacer()
         }
     }
@@ -155,6 +156,7 @@ private struct SKHistoryContentView: View {
                 } label: {
                     wordCell(word)
                 }
+                .accessibilityIdentifier("history.row")
                 .listRowBackground(Color.appBackground)
             }
             .onDelete { viewModel.deleteWord(at: $0) }
@@ -174,6 +176,7 @@ private struct SKHistoryContentView: View {
                     .multilineTextAlignment(.center)
                     .font(.callout)
                     .padding()
+                    .accessibilityIdentifier("search.noResults")
                 Spacer()
             }
         } else {
@@ -223,6 +226,7 @@ private struct SKHistoryContentView: View {
         }
         .buttonBorderShape(buttonBorderShape)
         .tint(tint)
+        .accessibilityIdentifier("search.key.\(char)")
 
         if #available(iOS 26.0, *) {
             button.buttonStyle(.glass)

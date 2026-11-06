@@ -110,11 +110,17 @@ class SKVocabulariesTableViewController: UIViewController {
                 SKVocabularyIndex.shared.allWords(vocabularyType: type)
             }.value
             guard !Task.isCancelled else { return }
-            sections = result
+            sections = SKUITesting.isActive ? Self.trimmedForUITests(result) : result
             activityIndicator.stopAnimating()
             tableView.isHidden = false
             tableView.reloadData()
         }
+    }
+
+    /// UITableView reports every row to XCUITest, so a full dictionary (~100k rows) makes each UI
+    /// query time out. UI tests get the same sections with their first words only.
+    private static func trimmedForUITests(_ sections: [(title: String, words: [SKWord])]) -> [(title: String, words: [SKWord])] {
+        sections.map { (title: $0.title, words: Array($0.words.prefix(10))) }
     }
 
     // MARK: - Actions
@@ -148,6 +154,7 @@ extension SKVocabulariesTableViewController: UITableViewDataSource {
         config.text = sections[indexPath.section].words[indexPath.row].word
         cell.contentConfiguration = config
         cell.backgroundColor = tableView.backgroundColor
+        cell.accessibilityIdentifier = "vocabulary.word"
         return cell
     }
 

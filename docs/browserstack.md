@@ -6,17 +6,37 @@ with BrowserStack" to stay in `README.md` on `main`.
 
 ## What runs
 
-- **`SkarnikUITests`** is an XCUITest target with a smoke test (`SkarnikUITests/SkarnikSmokeUITests.swift`):
-  launch, decline the analytics consent sheet, check the tab bar, search «мова» in the bundled index and
-  open the word screen. The tests avoid asserting on network-fetched translation text so they stay stable.
+- **`SkarnikUITests`** is an XCUITest target with one class per journey. Every test launches the app
+  with `-uiTesting -uiTestingReset` (`SKUITesting` in `AppDelegate.swift`): a fresh-install state with no
+  history, bookmarks, settings or offline dictionaries, animations off and no App Store review prompt. The
+  analytics consent sheet shows and is declined. Tests find elements by accessibility identifiers
+  (`wordDetails.*`, `search.*`, `history.row`, `favorites.*`, `vocabulary.word`, `settings.*`, `wordStress`)
+  and never assert on translation text.
+
+  | Class | What it covers | Where it runs |
+  |---|---|---|
+  | `SearchUITests` | tabs, search in all three dictionaries, extra letter keys, Russian-layout letters, no-results hint, history (order, no duplicates, survives relaunch) | simulator + devices |
+  | `BookmarksUITests` | bookmark a word, find it after relaunch, remove it | simulator + devices |
+  | `BrowseUITests` | Слоўнікі tab opens a word from each dictionary | simulator + devices |
+  | `DeepLinkUITests` | `skarnik://word?id=&lang=` opens the word | simulator + devices |
+  | `SettingsUITests` | offline rows, analytics toggle, article colours persist, About | simulator + devices |
+  | `NetworkUITests` | translation loads from Supabase/API, share sheet, «На́ціск» stress table | devices |
+  | `OfflineDictionaryUITests` | download ТСБМ, read a word from the offline copy (`local` source), delete | devices |
+  | `NoNetworkUITests` | network error and retry with the network off | devices, no-network build only |
+
+  The word screen shows which source answered as a hidden `wordDetails.source` label, only under
+  `-uiTesting`, so tests can check the fetch order (offline db → Supabase → admin API).
   It has its own `SkarnikUITests` scheme, so the unit-test scheme and its CI job are unchanged.
-- **CI → UI tests** (`ci.yml`) runs the same suite on a simulator for every pull request and push to `main`.
+- **CI → UI tests** (`ci.yml`) runs the offline-safe classes on a simulator for every pull request and
+  push to `main` (it skips `NetworkUITests`, `OfflineDictionaryUITests` and `NoNetworkUITests`).
 - **BrowserStack** (`browserstack.yml`) builds the app and the test runner for real devices, unsigned,
   packages `Skarnik.ipa` and
   `SkarnikUITests.zip`, uploads both to App Automate and runs the suite on the device list, then waits for
   the result. It runs on every push to `main` and from Actions → BrowserStack → Run workflow (with an
-  optional `devices` input, e.g. `iPhone 16-18,iPhone 13-15`). Pull requests that change the pipeline run it
-  as well.
+  optional `devices` input, e.g. `iPhone 16-18,iPhone 13-15`). Pull requests that change the pipeline or
+  `SkarnikUITests` run it as well. Each run starts two BrowserStack builds in parallel: everything except
+  `NoNetworkUITests` on the device list, and `NoNetworkUITests` alone on one device with
+  `networkProfile: no-network`.
 
 The upload, run and polling logic is in `scripts/browserstack-run.sh` (BrowserStack REST API,
 `api-cloud.browserstack.com/app-automate/xcuitest/v2`). The job summary links to the build in the
@@ -52,6 +72,9 @@ once as a `.p12` secret and imported into the runner keychain, never a certifica
 
 ## Next steps
 
-- Add a journey to `SkarnikUITests` with every user-visible feature (favorites, offline dictionaries,
-  deep links), the way the Android app adds Maestro flows.
+- Add a journey to `SkarnikUITests` with every new user-visible feature, the way the Android app adds
+  Maestro flows.
+- Not covered yet: links inside an article and the redirect toast (they need a known entry with a link or
+  `redirect_to`), iPad split view, rotation and large text. The widget and Universal Links cannot run on
+  BrowserStack: re-signing strips the App Group and associated domains.
 - Tune the device list: oldest supported iOS (deployment target 15.0), current iOS, and an iPad.
