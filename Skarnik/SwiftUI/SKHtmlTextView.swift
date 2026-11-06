@@ -62,9 +62,7 @@ struct SKHtmlLabelView: UIViewRepresentable {
         // Type change): cancel any in-flight task so an older render can't overwrite a newer one.
         context.coordinator.task?.cancel()
         context.coordinator.task = Task { @MainActor in
-            let attributedString = await Task.detached(priority: .userInitiated) {
-                SKUncheckedSendable(SKTranslationRenderer.render(html: html, traits: traits, layout: .compact))
-            }.value.value
+            let attributedString = await SKTranslationRenderer.renderAsync(html: html, traits: traits, layout: .compact)
             guard !Task.isCancelled else { return }
             uiView.attributedText = attributedString
             let newHeight = uiView.sizeThatFits(CGSize(width: uiView.bounds.width, height: .greatestFiniteMagnitude)).height

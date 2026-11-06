@@ -34,16 +34,6 @@ enum SKArticleColorTheme: String, CaseIterable {
     }
 }
 
-// MARK: - Sendable box
-
-/// Hands a non-Sendable value (e.g. `NSAttributedString`) out of a detached task.
-/// Only for values built inside that task and never mutated afterwards, so no two
-/// threads ever touch them at once.
-struct SKUncheckedSendable<Value>: @unchecked Sendable {
-    let value: Value
-    init(_ value: Value) { self.value = value }
-}
-
 // MARK: - Domain Types
 
 struct SKSkarnikTranslation {
@@ -64,10 +54,7 @@ struct SKSkarnikTranslation {
     nonisolated(nonsending)
     func renderedText(theme: SKArticleColorTheme = .current,
                       traits: UITraitCollection? = nil) async -> NSAttributedString {
-        let html = self.html
-        return await Task.detached(priority: .userInitiated) {
-            SKUncheckedSendable(SKTranslationRenderer.render(html: html, theme: theme, traits: traits))
-        }.value.value
+        await SKTranslationRenderer.renderAsync(html: html, theme: theme, traits: traits)
     }
 
     nonisolated(nonsending) var attributedString: NSAttributedString? {
