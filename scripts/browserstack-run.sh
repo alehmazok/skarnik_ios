@@ -18,7 +18,9 @@ summary="${GITHUB_STEP_SUMMARY:-/dev/stdout}"
 
 upload() { # <endpoint> <file> <json field>
   local response
-  response=$(curl -sS --fail-with-body -u "$auth" -X POST "$api/$1" -F "file=@$2")
+  # `|| ...` keeps set -e from exiting before BrowserStack's error body is printed.
+  response=$(curl -sS --fail-with-body -u "$auth" -X POST "$api/$1" -F "file=@$2") ||
+    { echo "::error::Upload to $1 failed: $response"; exit 1; }
   jq -er ".$3" <<<"$response" || { echo "::error::Upload to $1 failed: $response"; exit 1; }
 }
 
