@@ -51,8 +51,6 @@ which must have the **Admin** role.
    - `ASC_KEY_ID`, `ASC_ISSUER_ID`, `ASC_KEY_P8` (the `.p8` text or base64, same as on GitHub)
    - `GOOGLE_SERVICE_INFO_PLIST` (base64, same as on GitHub)
    - `BROWSERSTACK_USERNAME`, `BROWSERSTACK_ACCESS_KEY`
-   - `SENTRY_DSN` (crash reporting in TestFlight builds) and `SENTRY_AUTH_TOKEN` (dSYM upload); optional env
-     `SENTRY_PROJECT` if the Sentry project is not `skarnik_ios`
 5. Run the `testflight-dry-run` workflow on `main` once, then `testflight`. Check the build appears in
    TestFlight and no new certificate appears at developer.apple.com → Certificates.
 
