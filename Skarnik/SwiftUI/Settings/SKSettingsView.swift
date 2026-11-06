@@ -15,6 +15,7 @@ struct SKSettingsView: View {
     @AppStorage(SKArticleColorTheme.userDefaultsKey) private var articleColorTheme = SKArticleColorTheme.system.rawValue
 
     var onAboutTapped: (() -> Void)?
+    var onWhatsNewTapped: (() -> Void)?
 
     private static let dictionaries = SKOfflineDictionaryDownloadManager.downloadableDictionaries
 
@@ -57,6 +58,7 @@ struct SKSettingsView: View {
 
             Section {
                 rateAppRow
+                whatsNewRow
                 aboutRow
             }
         }
@@ -128,6 +130,26 @@ struct SKSettingsView: View {
             onAboutTapped?()
         }
         .padding(.vertical, 4)
+    }
+
+    private var whatsNewRow: some View {
+        HStack {
+            Text(SKLocalization.whatsNewRowTitle)
+                .font(.system(size: 16, weight: .medium))
+
+            Spacer()
+
+            Image(systemName: "chevron.right")
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundStyle(Color(UIColor.tertiaryLabel))
+        }
+        .contentShape(Rectangle())
+        .onTapGesture {
+            onWhatsNewTapped?()
+        }
+        .padding(.vertical, 4)
+        .accessibilityAddTraits(.isButton)
+        .accessibilityIdentifier("settings.whatsNew")
     }
 
     @ViewBuilder
@@ -228,15 +250,20 @@ class SKSettingsViewController: UIHostingController<SKSettingsView> {
 
     init() {
         super.init(rootView: SKSettingsView())
-        rootView.onAboutTapped = { [weak self] in
-            self?.navigationController?.pushViewController(SKAboutViewController(), animated: true)
-        }
+        wireRows()
     }
 
     required init?(coder: NSCoder) {
         super.init(coder: coder, rootView: SKSettingsView())
+        wireRows()
+    }
+
+    private func wireRows() {
         rootView.onAboutTapped = { [weak self] in
             self?.navigationController?.pushViewController(SKAboutViewController(), animated: true)
+        }
+        rootView.onWhatsNewTapped = { [weak self] in
+            self?.navigationController?.pushViewController(SKWhatsNewHistoryViewController(), animated: true)
         }
     }
 

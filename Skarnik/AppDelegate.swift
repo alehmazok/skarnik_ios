@@ -27,6 +27,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         
         FirebaseApp.configure()
 
+        // Before the consent prompt writes its keys, which would make a fresh install look like an update.
+        SKWhatsNewController.shared.prepareAtLaunch()
+
         SKAnalyticsConsentController.shared.applyStoredConsent()
 
         SKAnalyticsManager.logAppOpen()
