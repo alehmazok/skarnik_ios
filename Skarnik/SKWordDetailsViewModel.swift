@@ -138,6 +138,7 @@ class SKWordDetailsViewModel: ObservableObject {
                 }
             } catch {
                 if !Task.isCancelled {
+                    SKErrorReporting.logError(error, tag: "WordDetails")
                     self.state = .error(error.localizedDescription)
                 }
             }

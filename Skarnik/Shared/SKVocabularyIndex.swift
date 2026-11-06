@@ -161,6 +161,7 @@ class SKVocabularyIndex {
         do {
             count = try self.db.scalar(sqlQuery) as? Int64
         } catch {
+            SKErrorReporting.logError(error, tag: "VocabularyIndex")
         }
 
         guard let count = count else {
@@ -197,6 +198,7 @@ class SKVocabularyIndex {
         do {
             rows = try self.db.prepare("SELECT word_id, word FROM vocabulary WHERE lang_id=? AND lword=? LIMIT 1", vocabularyType.rawValue, "\(query)")
         } catch {
+            SKErrorReporting.logError(error, tag: "VocabularyIndex")
         }
 
         guard let row = rows?.next() else {
@@ -213,6 +215,7 @@ class SKVocabularyIndex {
         do {
             rows = try self.db.prepare("SELECT word_id, word FROM vocabulary WHERE lang_id=? AND word_id=? LIMIT 1", vocabularyType.rawValue, id)
         } catch {
+            SKErrorReporting.logError(error, tag: "VocabularyIndex")
         }
 
         guard let row = rows?.next() else {
@@ -244,6 +247,7 @@ class SKVocabularyIndex {
                 }
             }
         } catch {
+            SKErrorReporting.logError(error, tag: "VocabularyIndex")
         }
         
         guard let rows = rows else {
@@ -310,6 +314,7 @@ class SKVocabularyIndex {
                 String(firstChar), SKVocabularyIndex.fuzzySearchCandidateLimit
             )
         } catch {
+            SKErrorReporting.logError(error, tag: "VocabularyIndex")
             return []
         }
 
@@ -371,6 +376,7 @@ class SKVocabularyIndex {
         do {
             rows = try self.db.prepare("SELECT word_id, word FROM vocabulary WHERE lang_id=? ORDER BY random() LIMIT 1", vocabularyType.rawValue)
         } catch {
+            SKErrorReporting.logError(error, tag: "VocabularyIndex")
         }
         
         guard let row = rows?.next() else {

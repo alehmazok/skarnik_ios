@@ -8,7 +8,10 @@
 
 /* Begin PBXBuildFile section */
 		0356FC30403576F7856E3723 /* SKOfflineDictionaryStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EE1CBEBCEB72B509DED307F /* SKOfflineDictionaryStorage.swift */; };
-		33599C19DA4044D7AC562A07 /* FirebaseCrashlytics in Frameworks */ = {isa = PBXBuildFile; productRef = 6B3799A98B8245B0B1C749BC /* FirebaseCrashlytics */; };
+		C5E0A1000000000000000001 /* Sentry in Frameworks */ = {isa = PBXBuildFile; productRef = C5E0A1000000000000000002 /* Sentry */; };
+		C5E0A1000000000000000005 /* SKCrashReporting.swift in Sources */ = {isa = PBXBuildFile; fileRef = C5E0A1000000000000000004 /* SKCrashReporting.swift */; };
+		C5E0A1000000000000000007 /* SKErrorReporting.swift in Sources */ = {isa = PBXBuildFile; fileRef = C5E0A1000000000000000006 /* SKErrorReporting.swift */; };
+		C5E0A1000000000000000008 /* SKErrorReporting.swift in Sources */ = {isa = PBXBuildFile; fileRef = C5E0A1000000000000000006 /* SKErrorReporting.swift */; };
 		445299E47407B56ED5B0270F /* SKFavoritesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36F38E4235774123327B50FF /* SKFavoritesView.swift */; };
 		4CBC1449DC5632EA59C93C52 /* SKDamerauLevenshtein.swift in Sources */ = {isa = PBXBuildFile; fileRef = B080BC497B8AC249E588E1F3 /* SKDamerauLevenshtein.swift */; };
 		6302A30443132D0B19CC4385 /* SKFavoritesViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B9637466CD916D0644FC9E7 /* SKFavoritesViewController.swift */; };
@@ -146,6 +149,8 @@
 		6EE1CBEBCEB72B509DED307F /* SKOfflineDictionaryStorage.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SKOfflineDictionaryStorage.swift; sourceTree = "<group>"; };
 		B080BC497B8AC249E588E1F3 /* SKDamerauLevenshtein.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SKDamerauLevenshtein.swift; sourceTree = "<group>"; };
 		B20ABAB628EEBF6F00AA2FC9 /* Skarnik.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Skarnik.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		C5E0A1000000000000000004 /* SKCrashReporting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SKCrashReporting.swift; sourceTree = "<group>"; };
+		C5E0A1000000000000000006 /* SKErrorReporting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SKErrorReporting.swift; sourceTree = "<group>"; };
 		B20ABAB928EEBF6F00AA2FC9 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		B20ABABB28EEBF6F00AA2FC9 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
 		B20ABAC028EEBF6F00AA2FC9 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
@@ -249,7 +254,7 @@
 				B20ABAD528EF215400AA2FC9 /* SQLite in Frameworks */,
 				B29000B62AF735780032532D /* UIKit.framework in Frameworks */,
 				F268C3D12D50DD4B004B7BE4 /* FirebaseAnalytics in Frameworks */,
-				33599C19DA4044D7AC562A07 /* FirebaseCrashlytics in Frameworks */,
+				C5E0A1000000000000000001 /* Sentry in Frameworks */,
 				B2FEFEF228F4E7A500675E49 /* SwiftSoup in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -336,6 +341,7 @@
 				B20ABABB28EEBF6F00AA2FC9 /* SceneDelegate.swift */,
 				B251A3652AE9947C00E78923 /* Shared */,
 				B20ABAB928EEBF6F00AA2FC9 /* AppDelegate.swift */,
+				C5E0A1000000000000000004 /* SKCrashReporting.swift */,
 				B20ABAD128EED10D00AA2FC9 /* SKSplitViewController.swift */,
 				B20ABACD28EEC39D00AA2FC9 /* SKVocabulariesTableViewController.swift */,
 				F2B7CC022F8C000000A8ACBE /* SKHistoryViewController.swift */,
@@ -378,6 +384,7 @@
 			children = (
 				B20ABAD828EF22AC00AA2FC9 /* SKVocabularyIndex.swift */,
 				B080BC497B8AC249E588E1F3 /* SKDamerauLevenshtein.swift */,
+				C5E0A1000000000000000006 /* SKErrorReporting.swift */,
 				B2881B4C28F5DE9800649278 /* SKTranslationSource.swift */,
 				6A21AA134C9191E3E29173FC /* SKStressResolver.swift */,
 				B2462E6C2927AE9F005C8D33 /* String+Skarnik.swift */,
@@ -481,7 +488,6 @@
 				B20ABAB328EEBF6F00AA2FC9 /* Frameworks */,
 				B20ABAB428EEBF6F00AA2FC9 /* Resources */,
 				B284FE672AE0A456009CA21D /* Embed Foundation Extensions */,
-				F2C21C4D2F71627F007F5479 /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -493,7 +499,7 @@
 				B20ABAD428EF215400AA2FC9 /* SQLite */,
 				B2FEFEF128F4E7A500675E49 /* SwiftSoup */,
 				F268C3D02D50DD4B004B7BE4 /* FirebaseAnalytics */,
-				6B3799A98B8245B0B1C749BC /* FirebaseCrashlytics */,
+				C5E0A1000000000000000002 /* Sentry */,
 			);
 			productName = Skarnik;
 			productReference = B20ABAB628EEBF6F00AA2FC9 /* Skarnik.app */;
@@ -603,6 +609,7 @@
 				B20ABAD328EF215200AA2FC9 /* XCRemoteSwiftPackageReference "SQLite.swift" */,
 				B2FEFEF028F4E7A400675E49 /* XCRemoteSwiftPackageReference "SwiftSoup" */,
 				F268C3CF2D50DD4B004B7BE4 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+				C5E0A1000000000000000003 /* XCRemoteSwiftPackageReference "sentry-cocoa" */,
 			);
 			productRefGroup = B20ABAB728EEBF6F00AA2FC9 /* Products */;
 			projectDirPath = "";
@@ -654,32 +661,6 @@
 		};
 /* End PBXResourcesBuildPhase section */
 
-/* Begin PBXShellScriptBuildPhase section */
-		F2C21C4D2F71627F007F5479 /* ShellScript */ = {
-			isa = PBXShellScriptBuildPhase;
-			alwaysOutOfDate = 1;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-				"${DWARF_DSYM_FOLDER_PATH}/${DWARF_DSYM_FILE_NAME}",
-				"${DWARF_DSYM_FOLDER_PATH}/${DWARF_DSYM_FILE_NAME}/Contents/Resources/DWARF/${PRODUCT_NAME}",
-				"${DWARF_DSYM_FOLDER_PATH}/${DWARF_DSYM_FILE_NAME}/Contents/Info.plist",
-				"$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/GoogleService-Info.plist",
-				"$(TARGET_BUILD_DIR)/$(EXECUTABLE_PATH)",
-			);
-			outputFileListPaths = (
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${BUILD_DIR%/Build/*}/SourcePackages/checkouts/firebase-ios-sdk/Crashlytics/run\"\n";
-		};
-/* End PBXShellScriptBuildPhase section */
-
 /* Begin PBXSourcesBuildPhase section */
 		B20ABAB228EEBF6F00AA2FC9 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
@@ -694,6 +675,8 @@
 				B25728F22AFDA1D2007ADCF5 /* SKHtmlTextView.swift in Sources */,
 				B27D996528FB341F0047CCBF /* SKAboutView.swift in Sources */,
 				B20ABABA28EEBF6F00AA2FC9 /* AppDelegate.swift in Sources */,
+				C5E0A1000000000000000005 /* SKCrashReporting.swift in Sources */,
+				C5E0A1000000000000000007 /* SKErrorReporting.swift in Sources */,
 				B25728EB2AFD9682007ADCF5 /* SKWordStressViewModel.swift in Sources */,
 				B251A34A2AE9931700E78923 /* SKWordFetchEntry.swift in Sources */,
 				B2AF083B29148AF00005E3E6 /* URLSession+Skarnik.swift in Sources */,
@@ -752,6 +735,7 @@
 				BEB193CCF22D7938CA2D3213 /* SKDamerauLevenshtein.swift in Sources */,
 				B284FE6F2AE0A527009CA21D /* SKWordWidgetEntry.swift in Sources */,
 				B284FE782AE0A5A0009CA21D /* SKTranslationSource.swift in Sources */,
+				C5E0A1000000000000000008 /* SKErrorReporting.swift in Sources */,
 				B284FE742AE0A556009CA21D /* SKTranslationRenderer.swift in Sources */,
 				B251A34F2AE9939300E78923 /* SKWordFetchEntry.swift in Sources */,
 				B284FE752AE0A565009CA21D /* URLSession+Skarnik.swift in Sources */,
@@ -980,6 +964,7 @@
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_BUNDLE_IDENTIFIER = by.mazokaleh.Skarnik;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SENTRY_DSN = "";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				"PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]" = "Skarnik Development";
 				"PROVISIONING_PROFILE_SPECIFIER[sdk=macosx*]" = "Mac Development";
@@ -1027,6 +1012,7 @@
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_BUNDLE_IDENTIFIER = by.mazokaleh.Skarnik;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SENTRY_DSN = "";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				"PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]" = "Skarnik AppStore";
 				"PROVISIONING_PROFILE_SPECIFIER[sdk=macosx*]" = "Skarnik Mac Appstore";
@@ -1301,13 +1287,21 @@
 				minimumVersion = 11.7.0;
 			};
 		};
+		C5E0A1000000000000000003 /* XCRemoteSwiftPackageReference "sentry-cocoa" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/getsentry/sentry-cocoa.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 9.33.0;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		6B3799A98B8245B0B1C749BC /* FirebaseCrashlytics */ = {
+		C5E0A1000000000000000002 /* Sentry */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = F268C3CF2D50DD4B004B7BE4 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
-			productName = FirebaseCrashlytics;
+			package = C5E0A1000000000000000003 /* XCRemoteSwiftPackageReference "sentry-cocoa" */;
+			productName = Sentry;
 		};
 		B20ABAD428EF215400AA2FC9 /* SQLite */ = {
 			isa = XCSwiftPackageProductDependency;

@@ -13,9 +13,12 @@ struct SKCloudWordRow: Decodable {
     let redirect_to: String?
 }
 
-enum SKOfflineDictionaryCloudError: Error {
+enum SKOfflineDictionaryCloudError: SKNetworkFailureError {
     case invalidURL
+    /// A non-2xx status or a response without the expected headers: a server problem, not reported.
     case invalidResponse
+
+    var isNetworkFailure: Bool { self == .invalidResponse }
 }
 
 /// Abstracts the cloud reads the download manager needs, so tests can inject a mock instead of

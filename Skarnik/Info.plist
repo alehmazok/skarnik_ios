@@ -4,6 +4,8 @@
 <dict>
 	<key>FirebaseAnalyticsCollectionEnabled</key>
 	<false/>
+	<key>SKSentryDSN</key>
+	<string>$(SENTRY_DSN)</string>
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>

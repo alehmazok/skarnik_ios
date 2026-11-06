@@ -7,7 +7,9 @@
 #
 # Env: ASC_KEY_ID, ASC_ISSUER_ID, ASC_KEY_P8 (raw .p8 text or base64), TEAM_ID,
 #      BUILD_NUMBER (optional, empty = next free number on App Store Connect),
-#      UPLOAD (true = upload to TestFlight, anything else = archive and export only).
+#      UPLOAD (true = upload to TestFlight, anything else = archive and export only),
+#      SENTRY_DSN (optional, turns crash reporting on in this build),
+#      SENTRY_AUTH_TOKEN, SENTRY_PROJECT (optional, dSYM upload to Sentry after a TestFlight upload).
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
@@ -45,6 +47,9 @@ if [[ -z "$build" ]]; then
   build=$(ruby ci/next-build-number.rb "$bundle_id" "$project_build")
 fi
 echo "Building Skarnik $version ($build)"
+if [[ -z "${SENTRY_DSN:-}" ]]; then
+  echo "WARNING: SENTRY_DSN is not set: this build reports no crashes."
+fi
 
 mkdir -p build
 set -o pipefail
@@ -62,6 +67,7 @@ xcodebuild archive \
   CODE_SIGN_IDENTITY="Apple Development" \
   PROVISIONING_PROFILE_SPECIFIER= \
   CURRENT_PROJECT_VERSION="$build" \
+  SENTRY_DSN="${SENTRY_DSN:-}" \
   | tee build/xcodebuild-archive.log
 
 cp ci/ExportOptions.plist build/ExportOptions.plist
@@ -78,9 +84,11 @@ xcodebuild -exportArchive \
   "${auth[@]}" \
   | tee build/xcodebuild-export.log
 
+(cd build/Skarnik.xcarchive && zip -qry ../dSYMs.zip dSYMs)
+
 if [[ "${UPLOAD:-}" == "true" ]]; then
   echo "Uploaded Skarnik $version ($build) to TestFlight. It shows up in App Store Connect after processing."
+  ci/sentry-upload-dsyms.sh build/Skarnik.xcarchive/dSYMs
 else
   echo "Dry run: archive and export of Skarnik $version ($build) succeeded, nothing uploaded."
 fi
-(cd build/Skarnik.xcarchive && zip -qry ../dSYMs.zip dSYMs)

@@ -140,6 +140,7 @@ final class SKOfflineDictionaryDownloadManager: ObservableObject {
             storage.clearCursor(for: dictionary)
             states[dictionary] = .downloaded(count: await store.wordCount(langId: langId))
         } catch {
+            SKErrorReporting.logError(error, tag: "OfflineDictionaryDownload")
             states[dictionary] = .failed(error.localizedDescription)
         }
         runningTasks[dictionary] = nil
