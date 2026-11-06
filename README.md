@@ -97,8 +97,8 @@ xcodebuild test -project Skarnik.xcodeproj -scheme Skarnik -destination 'platfor
 
 ## CI / TestFlight
 
-Bitrise (`bitrise.yml`, set up in [docs/bitrise.md](docs/bitrise.md)) runs the same jobs beside GitHub Actions and will replace it
-once it has proven itself.
+TestFlight builds move to Xcode Cloud (Apple-managed signing, 25 free hours a month); setup in
+[docs/xcode-cloud.md](docs/xcode-cloud.md). Until it has shipped a build, `testflight.yml` below stays as the fallback.
 
 GitHub Actions workflows live in `.github/workflows/`:
 
