@@ -23,9 +23,9 @@ Skarnik is a comprehensive Russian-Belarusian, Belarusian-Russian, and Belarusia
 
 - Fast offline word search via local SQLite index, with fuzzy fallback for misspelled queries
 - Word translation and detail lookup: downloaded offline dictionary first, then Supabase, then the Skarnik admin API
-- Word stress (nacisk) lookup from starnik.by, with dual-source fallback (aligned with the Flutter app)
+- Word stress (nacisk) lookup: starnik.by first, the Skarnik admin API as fallback
 - Spelling suggestions for rus-bel vocabulary
-- Offline dictionary download, per vocabulary
+- Offline dictionary download from Supabase, per vocabulary
 - Search history, with delete support
 - Закладкі (Favorites/Bookmarks): save words from the details screen, sort by date added or alphabetically
 - Belarusian keyboard row with haptic/sound feedback on extra letters
@@ -41,8 +41,8 @@ Skarnik is a comprehensive Russian-Belarusian, Belarusian-Russian, and Belarusia
 - **Reactive:** Combine (MVVM for word details / word stress)
 - **Local storage:** [SQLite.swift](https://github.com/stephencelis/SQLite.swift)
 - **HTML parsing:** [SwiftSoup](https://github.com/scinfu/SwiftSoup)
-- **Backend:** Supabase `main_word` and the Skarnik admin API for translations (fallback chain), starnik.by for stress
-- **Analytics:** Firebase Analytics
+- **Backend:** Supabase `main_word` and the Skarnik admin API for translations (after the offline dictionary), starnik.by and the admin API for stress
+- **Analytics:** Firebase Analytics, only after the user's consent
 - **Crash reporting:** [Sentry](https://sentry.io) (`sentry-cocoa`), release builds only
 - **Dependency management:** Swift Package Manager
 
@@ -52,9 +52,17 @@ Hybrid UIKit + SwiftUI, MVVM + Combine for the reactive pieces.
 
 ```
 Skarnik/
-├── Shared/
-│   ├── SKVocabularyIndex.swift        # Local SQLite queries
-│   └── SKTranslationSource.swift      # Translation fetching (local → Supabase → API fallback chain)
+├── Analytics/                         # Firebase Analytics (after consent) + debug logger
+├── Shared/                            # Code shared with the widget
+│   ├── SKVocabularyIndex.swift        # Local SQLite search queries
+│   ├── SKTranslationSource.swift      # Translation fetching (offline DB → Supabase → admin API)
+│   ├── SKTranslationRenderer.swift    # Translation HTML → attributed text (SwiftSoup)
+│   ├── SKStressResolver.swift         # Stress lookup (starnik.by → admin API)
+│   ├── SKErrorReporting.swift         # Non-fatal error hook (Sentry in the app)
+│   ├── OfflineDictionaries/           # Offline dictionary download and storage
+│   └── WordFetch/                     # Word of the Day fetching
+├── SwiftUI/                           # SwiftUI screens (settings, history, about, word stress, …)
+├── SKCrashReporting.swift                   # Sentry setup (Release builds with a DSN only)
 ├── SKSearchWordsTableViewController.swift   # Search UI (UIKit)
 ├── SKWordDetailsViewController.swift        # Word entry display (MVVM + Combine)
 ├── SKFavoritesController.swift              # Favorites persistence (UserDefaults)
@@ -64,7 +72,7 @@ Skarnik/
 └── vocabulary.db                      # Core search index
 
 WordWidget/                            # "Word of the Day" widget (SwiftUI + WidgetKit)
-SkarnikTests/                          # Unit tests (translation parsing, etc.)
+SkarnikTests/                          # Unit tests (search, translation sources and rendering, stress, …)
 SkarnikUITests/                        # XCUITest smoke tests (simulator CI + BrowserStack devices)
 ```
 
@@ -72,14 +80,16 @@ SkarnikUITests/                        # XCUITest smoke tests (simulator CI + Br
 
 ### Prerequisites
 
-- Xcode (see `Skarnik.xcodeproj` for the target Swift/iOS versions)
-- Swift Package Manager resolves dependencies automatically on first build
+- The latest stable Xcode (CI uses the same). The app and widget target iOS 15.0.
+- Swift Package Manager resolves dependencies automatically on first build.
+- A `GoogleService-Info.plist` in the project root. It is gitignored; the build needs the file, so use your
+  own Firebase project's config (CI writes it from the `GOOGLE_SERVICE_INFO_PLIST` secret).
 
 ### Setup
 
 ```bash
-git clone git@github.com:belanghelp/skarnik.by-ios.git
-cd skarnik.by-ios
+git clone git@github.com:alehmazok/skarnik_ios.git
+cd skarnik_ios
 open Skarnik.xcodeproj
 ```
 
@@ -89,18 +99,24 @@ Build and run the `Skarnik` scheme from Xcode on a simulator or device.
 
 ### Tests
 
-Run the `SkarnikTests` scheme in Xcode, or:
+Unit tests run with the `Skarnik` scheme (Product → Test in Xcode), UI tests with the `SkarnikUITests` scheme.
+From the command line, with any installed iPhone simulator:
 
 ```bash
-xcodebuild test -project Skarnik.xcodeproj -scheme Skarnik -destination 'platform=iOS Simulator,name=iPhone 16'
+xcodebuild test -project Skarnik.xcodeproj -scheme Skarnik -destination 'platform=iOS Simulator,name=iPhone 17'
+xcodebuild test -project Skarnik.xcodeproj -scheme SkarnikUITests -destination 'platform=iOS Simulator,name=iPhone 17'
 ```
+
+`NetworkUITests`, `OfflineDictionaryUITests` and `NoNetworkUITests` need the network (or its absence) and are
+meant for BrowserStack; the simulator CI job skips them.
 
 ## CI / TestFlight
 
-GitHub Actions workflows live in `.github/workflows/`:
+All CI, including TestFlight uploads, runs on GitHub Actions (`macos-26` runners, latest stable Xcode).
+Workflows live in `.github/workflows/`:
 
-- **CI** (`ci.yml`) runs the unit tests and the `SkarnikUITests` UI tests on an iOS Simulator for every pull request and every push to `main`.
-- **BrowserStack** (`browserstack.yml`) runs the UI tests on real devices in BrowserStack App Automate on every push to `main` (setup in [docs/browserstack.md](docs/browserstack.md)).
+- **CI** (`ci.yml`) runs the unit tests and the offline-safe `SkarnikUITests` on the newest iOS Simulator for every pull request and every push to `main`.
+- **BrowserStack** (`browserstack.yml`) runs the UI tests on real devices in BrowserStack App Automate on every push to `main`, manually, and on pull requests that change the pipeline or the UI tests (setup in [docs/browserstack.md](docs/browserstack.md)).
 - **TestFlight** (`testflight.yml`) archives a Release build and uploads it to TestFlight. Start it from
   Actions → TestFlight → Run workflow. The build number is picked automatically: the highest build already on
   App Store Connect + 1 (never below `CURRENT_PROJECT_VERSION` in the project). Pass `build_number` to override it.
@@ -145,7 +161,7 @@ skarnik_android's ADR 0008:
   install (sandbox receipt), `production` from the App Store.
 - No user data: no IP or user id (`sendDefaultPii = false`), no screenshots, no view hierarchy, no breadcrumbs
   (taps, network URLs can carry the query), no failed-request events, no performance tracing, no session replay.
-  Not gated by the analytics consent, as Crashlytics wasn't.
+  Not gated by the analytics consent.
 - Caught errors: `SKErrorReporting.logError(error, tag:)` sends the error type, code and tag only, never the
   message. Network, server and cancellation errors are not reported.
 - The widget does not report: it runs in a tight memory budget and shares its fetch code with the app, which reports.
@@ -155,20 +171,27 @@ skarnik_android's ADR 0008:
 
 ## Data Sources
 
-- **[skarnik.by](https://skarnik.by)** — dictionary content (Рус-Бел, Бел-Рус, Тлумачальны), scraped as HTML via SwiftSoup; primary source in the translation fallback chain (skarnik_admin API → Supabase → HTML)
-- **skarnik_admin** (`skarnik.play.of.by`) — Django/MariaDB backend used both as a translation API fallback and as the cloud fallback for word-stress lookup
-- **[starnik.by](https://starnik.by)** — primary source for word stress (nacisk) and spelling suggestions
-- **[GrammarDB](https://github.com/Belarus/GrammarDB)** — fallback source for word stress data, licensed under [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/)
+Translations are looked up in this order, the same in every Skarnik app: the downloaded offline dictionary,
+then Supabase, then the Skarnik admin API.
+
+- **[skarnik.by](https://skarnik.by)** — origin of the dictionary content (Рус-Бел, Бел-Рус, Тлумачальны). The app no longer scrapes it; each entry still links to its skarnik.by page.
+- **Supabase** (`main_word` table) — online translation source and the source of the offline dictionary downloads
+- **Skarnik admin** (`skarnik.play.of.by`) — Django backend; last translation fallback and the fallback for word-stress lookup
+- **[starnik.by](https://starnik.by)** — primary source for word stress (nacisk) and spelling info
+- **[GrammarDB](https://github.com/Belarus/GrammarDB)** — word stress data behind the admin API fallback, licensed under [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/)
 
 ## Contributing
 
 This is a personal project. Issues and pull requests are welcome — please open an issue to discuss significant changes before submitting a PR.
+For anything else, write to skarnikapp@gmail.com. The privacy policy is at [skarnik.app/privacy](https://skarnik.app/privacy).
 
 ## Acknowledgements
 
 This project is tested with BrowserStack.
 
 [BrowserStack](https://www.browserstack.com) supports the project through its open source sponsorship program.
+
+[Sentry](https://sentry.io) provides crash reporting through its open source sponsorship program.
 
 ## License
 
