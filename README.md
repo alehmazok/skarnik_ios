@@ -96,6 +96,9 @@ xcodebuild test -project Skarnik.xcodeproj -scheme Skarnik -destination 'platfor
 
 ## CI / TestFlight
 
+Bitrise (`bitrise.yml`, set up in [docs/bitrise.md](docs/bitrise.md)) runs the same jobs beside GitHub Actions and will replace it
+once it has proven itself.
+
 GitHub Actions workflows live in `.github/workflows/`:
 
 - **CI** (`ci.yml`) runs the unit tests and the `SkarnikUITests` UI tests on an iOS Simulator for every pull request and every push to `main`.
