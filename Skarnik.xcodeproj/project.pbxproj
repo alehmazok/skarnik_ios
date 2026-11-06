@@ -1058,7 +1058,7 @@
 				INFOPLIST_FILE = WordWidget/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = WordWidget;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2023 Skarnik. All rights reserved.";
-				IPHONEOS_DEPLOYMENT_TARGET = 14.7;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -1105,7 +1105,7 @@
 				INFOPLIST_FILE = WordWidget/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = WordWidget;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2023 Skarnik. All rights reserved.";
-				IPHONEOS_DEPLOYMENT_TARGET = 14.7;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
