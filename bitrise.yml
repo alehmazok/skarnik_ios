@@ -5,14 +5,15 @@
 #   pull request  → pipeline "pr":   unit tests + UI tests (no secrets: placeholder Firebase config)
 #   push to main  → pipeline "main": unit tests + UI tests + BrowserStack real-device tests
 #   manual        → workflow "testflight" (upload) or "testflight-dry-run" (archive + export only)
-format_version: "13"
+format_version: "26"
 default_step_lib_source: https://github.com/bitrise-io/bitrise-steplib.git
 project_type: ios
 
 meta:
   bitrise.io:
-    # Newest Xcode 26 stack; bump when Bitrise publishes a newer stable one (see docs/bitrise.md).
-    stack: osx-xcode-26.0.x
+    # Stack and machine Bitrise picked for the app (2026-11-06); bump the stack with new Xcode releases.
+    stack: osx-xcode-27.2.x
+    machine_type_id: g2.mac.large
 
 app:
   envs:

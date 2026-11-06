@@ -43,8 +43,8 @@ which must have the **Admin** role.
    **Add new app** → `alehmazok/skarnik_ios` → choose **Public**. Let it install the Bitrise GitHub app on
    the repo so PRs get status checks. When it asks for a config, choose the `bitrise.yml` stored in the
    repository.
-2. **Settings → Stack & Machine**: pick the newest stable Xcode 26 stack. If it is newer than the `stack` in
-   `bitrise.yml`, tell Claude so the file matches.
+2. **Configuration**: switch the app to the `bitrise.yml` stored in the repository (not the one edited on
+   bitrise.io). Stack and machine come from its `meta` block (`osx-xcode-27.2.x`, `g2.mac.large`).
 3. **Code Signing → Code signing certificates**: upload the same development `.p12` as the GitHub secret
    `DEV_CERT_P12` (decoded from base64), with its password.
 4. **Secrets** (all **protected**, none exposed to pull requests):
