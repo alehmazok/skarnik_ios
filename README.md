@@ -96,9 +96,6 @@ xcodebuild test -project Skarnik.xcodeproj -scheme Skarnik -destination 'platfor
 
 ## CI / TestFlight
 
-TestFlight builds move to Xcode Cloud (Apple-managed signing, 25 free hours a month); setup in
-[docs/xcode-cloud.md](docs/xcode-cloud.md). Until it has shipped a build, `testflight.yml` below stays as the fallback.
-
 GitHub Actions workflows live in `.github/workflows/`:
 
 - **CI** (`ci.yml`) runs the unit tests and the `SkarnikUITests` UI tests on an iOS Simulator for every pull request and every push to `main`.
