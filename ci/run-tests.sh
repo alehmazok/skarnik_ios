@@ -11,11 +11,12 @@ cd "$(dirname "$0")/.."
 scheme="$1"
 result="$2"
 
-# Newest available iOS runtime, first iPhone on it.
+# Newest available iOS runtime, first iPhone on it. Version parts are read with scan, not split, so a
+# runtime key with a trailing dash (e.g. "iOS-27-2-" before a suffix) does not yield an empty part.
 udid=$(xcrun simctl list devices available -j | jq -r '
   .devices | to_entries
   | map(select(.key | test("iOS")))
-  | sort_by(.key | capture("iOS-(?<v>[0-9-]+)").v | split("-") | map(tonumber))
+  | sort_by(.key | capture("iOS-(?<v>[0-9-]+)").v | [scan("[0-9]+") | tonumber])
   | last | .value | map(select(.name | startswith("iPhone"))) | first | .udid')
 [[ -n "$udid" && "$udid" != "null" ]] || { echo "No iPhone simulator found"; exit 1; }
 echo "Using simulator $udid"
