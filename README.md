@@ -33,7 +33,7 @@ Skarnik is a comprehensive Russian-Belarusian, Belarusian-Russian, and Belarusia
 - Universal Links support for skarnik.app sharing URLs
 - Word sharing via share sheet
 - Report issue flow for word translation feedback
-- Firebase Analytics & Crashlytics integration
+- Firebase Analytics (after consent) and Sentry crash reporting
 
 ## Tech Stack
 
@@ -42,7 +42,8 @@ Skarnik is a comprehensive Russian-Belarusian, Belarusian-Russian, and Belarusia
 - **Local storage:** [SQLite.swift](https://github.com/stephencelis/SQLite.swift)
 - **HTML parsing:** [SwiftSoup](https://github.com/scinfu/SwiftSoup)
 - **Backend:** Supabase `main_word` and the Skarnik admin API for translations (fallback chain), starnik.by for stress
-- **Analytics:** Firebase
+- **Analytics:** Firebase Analytics
+- **Crash reporting:** [Sentry](https://sentry.io) (`sentry-cocoa`), release builds only
 - **Dependency management:** Swift Package Manager
 
 ## Architecture
@@ -122,11 +123,35 @@ create a new development certificate (runners start with an empty keychain) unti
 | `DEV_CERT_PASSWORD` | Password of that `.p12` (empty if none) |
 | `BROWSERSTACK_USERNAME` | BrowserStack username (BrowserStack workflow only) |
 | `BROWSERSTACK_ACCESS_KEY` | BrowserStack access key (BrowserStack workflow only) |
+| `SENTRY_DSN` | DSN of the Sentry project `skarnik_ios` (org `skarnik`). Without it the build reports no crashes |
+| `SENTRY_AUTH_TOKEN` | Sentry auth token with `project:releases` scope, for the dSYM upload. Without it crashes stay unsymbolicated |
+
+The repository variable `SENTRY_PROJECT` overrides the Sentry project slug (default `skarnik_ios`).
 
 To set up or rotate the certificate: revoke the old development certificates created by CI at
 developer.apple.com → Certificates, then on a Mac open Xcode → Settings → Accounts → Manage Certificates,
 add an **Apple Development** certificate, right-click it → Export Certificate, set a password, and store
 `base64 -i cert.p12 | pbcopy` as `DEV_CERT_P12` and the password as `DEV_CERT_PASSWORD`.
+
+## Crash reporting
+
+Crashes go to Sentry (org `skarnik`, project `skarnik_ios`), the same place as the Android app. The rules match
+skarnik_android's ADR 0008:
+
+- `SKCrashReporting.start()` runs first in `didFinishLaunching`, only in Release builds whose Info.plist has a DSN
+  (`SKSentryDSN = $(SENTRY_DSN)`, passed by the TestFlight pipeline from the secret). Debug builds, local builds,
+  UI tests and the BrowserStack builds report nothing.
+- TestFlight and App Store share one binary, so the environment is decided at run time: `internal` on a TestFlight
+  install (sandbox receipt), `production` from the App Store.
+- No user data: no IP or user id (`sendDefaultPii = false`), no screenshots, no view hierarchy, no breadcrumbs
+  (taps, network URLs can carry the query), no failed-request events, no performance tracing, no session replay.
+  Not gated by the analytics consent, as Crashlytics wasn't.
+- Caught errors: `SKErrorReporting.logError(error, tag:)` sends the error type, code and tag only, never the
+  message. Network, server and cancellation errors are not reported.
+- The widget does not report: it runs in a tight memory budget and shares its fetch code with the app, which reports.
+- The TestFlight workflow (`testflight.yml`) passes the `SENTRY_DSN` secret to the archive as a build setting and,
+  after a real TestFlight upload, `ci/sentry-upload-dsyms.sh` uploads the dSYMs with a pinned `sentry-cli`
+  release binary using `SENTRY_AUTH_TOKEN` (secrets table above). Missing secrets only produce a warning.
 
 ## Data Sources
 

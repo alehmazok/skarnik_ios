@@ -7,7 +7,6 @@
 
 import UIKit
 import FirebaseCore
-import FirebaseCrashlytics
 
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -25,8 +24,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 //            return
 //        }
         
+        // First, so a crash anywhere after this is reported (release builds with a DSN only).
+        SKCrashReporting.start()
+
         SKUITesting.prepareForLaunch()
 
+        // Firebase Analytics only; crash reporting is Sentry (SKCrashReporting).
         FirebaseApp.configure()
 
         // Before the consent prompt writes its keys, which would make a fresh install look like an update.

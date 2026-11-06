@@ -45,8 +45,10 @@ struct SKStressRow: Identifiable {
     let content: String // HTML
 }
 
-enum SKStressError: Error {
+enum SKStressError: SKNetworkFailureError {
     case networkError
+
+    var isNetworkFailure: Bool { true }
 }
 
 // MARK: - Backend protocol

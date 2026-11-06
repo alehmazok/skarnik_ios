@@ -53,6 +53,7 @@ final class SKOfflineDictionaryStore {
             """)
             connection = opened
         } catch {
+            SKErrorReporting.logError(error, tag: "OfflineDictionaryStore")
             connection = nil
         }
         self.db = connection

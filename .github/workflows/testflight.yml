@@ -122,9 +122,13 @@ jobs:
           echo "BUILD_NUMBER=$build" >> "$GITHUB_ENV"
           echo "### Skarnik $version ($build)" >> "$GITHUB_STEP_SUMMARY"
 
+      # Crash reporting (issue #28): the DSN turns Sentry on in this build; without it the build reports nothing.
       - name: Archive
+        env:
+          SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
         run: |
           set -o pipefail
+          if [[ -z "$SENTRY_DSN" ]]; then echo "::warning::SENTRY_DSN is not set: this build reports no crashes."; fi
           mkdir -p build
           xcodebuild archive \
             -project Skarnik.xcodeproj \
@@ -142,6 +146,7 @@ jobs:
             CODE_SIGN_IDENTITY="Apple Development" \
             PROVISIONING_PROFILE_SPECIFIER= \
             CURRENT_PROJECT_VERSION="$BUILD_NUMBER" \
+            SENTRY_DSN="$SENTRY_DSN" \
             | tee build/xcodebuild-archive.log
 
       - name: Export and upload
@@ -170,6 +175,15 @@ jobs:
           else
             echo "Dry run: archive and export succeeded, nothing uploaded." >> "$GITHUB_STEP_SUMMARY"
           fi
+
+      # Symbolicated stack traces in Sentry. Org "skarnik"; project from the repository variable SENTRY_PROJECT,
+      # "skarnik_ios" by default. Without SENTRY_AUTH_TOKEN the script only warns.
+      - name: Upload dSYMs to Sentry
+        if: github.event_name == 'workflow_dispatch' && inputs.upload
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          SENTRY_PROJECT: ${{ vars.SENTRY_PROJECT || 'skarnik_ios' }}
+        run: ci/sentry-upload-dsyms.sh build/Skarnik.xcarchive/dSYMs
 
       - name: Upload dSYMs and logs
         if: always()

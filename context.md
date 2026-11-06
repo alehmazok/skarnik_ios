@@ -20,6 +20,7 @@ The project uses a hybrid architecture combining established UIKit patterns with
     - **SKStarnikByController:** Handles word stress/spelling data fetching and parsing.
     - **SKStorageController:** Manages user search history using `UserDefaults`.
     - **SKAnalyticsManager:** A wrapper for Firebase and debug analytics.
+    - **SKCrashReporting / SKErrorReporting:** Sentry crash reporting (release builds with a DSN only) and the `logError(_:tag:)` helper for caught errors (type, code and tag only). See README → Crash reporting.
     - **SKWhatsNewController:** "What's new" after an update. Notes ship in the app (`SKWhatsNewCatalog`, newest first, Belarusian); the sheet (`SKWhatsNewView`) shows once on the first launch of a version that has notes, never on a fresh install, and Settings → «Што новага» lists all releases. Add a catalog entry in the same PR as any user-visible change.
     - **SKWordFetchService:** Orchestrates word retrieval for features like the "Word of the Day" widget. Accepts `SKTranslationSource` via init (defaults to `SKFallbackTranslationSource.shared`).
 
@@ -31,6 +32,7 @@ The project uses a hybrid architecture combining established UIKit patterns with
 - **Networking:** `URLSession` with custom extensions.
 - **HTML Parsing:** [SwiftSoup](https://github.com/scinfu/SwiftSoup).
 - **Analytics:** Firebase (Google Analytics).
+- **Crash reporting:** Sentry (`sentry-cocoa` via SPM). No Firebase Crashlytics.
 - **Dependency Management:** Swift Package Manager (SPM).
 - **Localization:** Supports Belarusian (`be`) and Base (likely Russian/English defaults).
 
