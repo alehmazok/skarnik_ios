@@ -5,6 +5,8 @@
 #
 # Env: BROWSERSTACK_USERNAME, BROWSERSTACK_ACCESS_KEY (secrets), BROWSERSTACK_DEVICES (comma-separated,
 # e.g. "iPhone 15-17,iPhone 13-15"), BUILD_TAG (optional label shown in the BrowserStack dashboard).
+# Optional: RUN_NAME (label in the job summary), ONLY_TESTING / SKIP_TESTING (comma-separated test classes
+# or Class/testMethod), NETWORK_PROFILE (e.g. "no-network").
 # Exits non-zero unless the BrowserStack build ends as "passed".
 set -euo pipefail
 
@@ -25,12 +27,19 @@ app_url=$(upload app "$ipa" app_url)
 echo "Uploading $suite"
 suite_url=$(upload test-suite "$suite" test_suite_url)
 
-devices=$(jq -cn --arg d "$BROWSERSTACK_DEVICES" '$d | split(",") | map(gsub("^ +| +$"; ""))')
+list() { jq -cn --arg d "$1" '$d | split(",") | map(gsub("^ +| +$"; "")) | map(select(length > 0))'; }
+devices=$(list "$BROWSERSTACK_DEVICES")
 payload=$(jq -n \
   --arg app "$app_url" --arg suite "$suite_url" --argjson devices "$devices" \
   --arg tag "${BUILD_TAG:-manual}" \
+  --argjson only "$(list "${ONLY_TESTING:-}")" --argjson skip "$(list "${SKIP_TESTING:-}")" \
+  --arg network "${NETWORK_PROFILE:-}" \
   '{app: $app, testSuite: $suite, devices: $devices, project: "Skarnik iOS", buildTag: $tag,
-    deviceLogs: true, networkLogs: false}')
+    deviceLogs: true, networkLogs: false}
+   + (if ($only | length) > 0 then {"only-testing": $only} else {} end)
+   + (if ($skip | length) > 0 then {"skip-testing": $skip} else {} end)
+   + (if $network != "" then {networkProfile: $network} else {} end)')
+echo "Build request: $(jq -c 'del(.app, .testSuite)' <<<"$payload")"
 
 response=$(curl -sS --fail-with-body -u "$auth" -X POST "$api/build" \
   -H "Content-Type: application/json" -d "$payload")
@@ -66,7 +75,7 @@ for session in $(jq -r '[.. | objects | select(has("sessions")) | .sessions[]? |
 done
 
 {
-  echo "### BrowserStack: ${status:-timed out}"
+  echo "### BrowserStack${RUN_NAME:+ ($RUN_NAME)}: ${status:-timed out}"
   echo "Devices: $BROWSERSTACK_DEVICES"
   echo
   echo "[Open the build in BrowserStack]($dashboard)"

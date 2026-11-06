@@ -25,6 +25,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 //            return
 //        }
         
+        SKUITesting.prepareForLaunch()
+
         FirebaseApp.configure()
 
         // Before the consent prompt writes its keys, which would make a fresh install look like an update.
@@ -54,3 +56,29 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
 }
 
+
+// MARK: - UI testing
+
+/// Hooks for `SkarnikUITests` (CI simulator and BrowserStack devices). Inactive unless the test
+/// launches the app with `-uiTesting`, so they never change what users get.
+enum SKUITesting {
+    /// The app was launched by a UI test.
+    static let isActive = ProcessInfo.processInfo.arguments.contains("-uiTesting")
+    /// Start from a fresh install: no history, bookmarks, settings or offline dictionaries.
+    static let resetsState = ProcessInfo.processInfo.arguments.contains("-uiTestingReset")
+
+    /// Runs first in `didFinishLaunching`, before any controller reads its stored state.
+    static func prepareForLaunch() {
+        guard isActive else { return }
+        // Fewer animations means fewer "wait for app to idle" stalls in XCTest.
+        UIView.setAnimationsEnabled(false)
+        guard resetsState else { return }
+        if let domain = Bundle.main.bundleIdentifier {
+            UserDefaults.standard.removePersistentDomain(forName: domain)
+        }
+        let support = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
+        for suffix in ["", "-wal", "-shm", "-journal"] {
+            try? FileManager.default.removeItem(at: support.appendingPathComponent("offline_dictionary.db" + suffix))
+        }
+    }
+}

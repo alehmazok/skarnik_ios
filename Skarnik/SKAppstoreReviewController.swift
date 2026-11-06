@@ -16,7 +16,9 @@ class SKAppstoreReviewController: Any {
     static let maxCount = 5
     
     class func requestReview() {
-        
+        // A system review alert would block UI tests.
+        guard !SKUITesting.isActive else { return }
+
         let lastVersionPromptedForReview = UserDefaults.standard.string(forKey: self.lastVersionPromptedKey) ?? ""
         let infoDictionaryKey = kCFBundleVersionKey as String
         guard let currentVersion = Bundle.main.object(forInfoDictionaryKey: infoDictionaryKey) as? String

@@ -77,6 +77,7 @@ private struct SKFavoritesContentView: View {
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)
                 .padding()
+                .accessibilityIdentifier("favorites.empty")
             Spacer()
         }
     }
@@ -89,6 +90,7 @@ private struct SKFavoritesContentView: View {
                 } label: {
                     wordCell(favorite.word)
                 }
+                .accessibilityIdentifier("favorites.row")
                 .listRowBackground(Color.appBackground)
             }
             .onDelete { viewModel.deleteFavorite(at: $0) }
