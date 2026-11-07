@@ -121,7 +121,7 @@ final class SKOfflineDictionaryStore {
 
     func deleteAll(langId: Int) async {
         _ = await runOnQueue { db -> Void in
-            try? db.run("DELETE FROM downloaded_word WHERE lang_id=?", langId)
+            _ = try? db.run("DELETE FROM downloaded_word WHERE lang_id=?", langId)
         }
     }
 
