@@ -38,7 +38,6 @@ struct SKAttributedTextView: UIViewRepresentable {
         uiView.invalidateIntrinsicContentSize()
     }
 
-    @available(iOS 16, *)
     func sizeThatFits(_ proposal: ProposedViewSize, uiView: UITextView, context: Context) -> CGSize? {
         let width = proposal.width ?? uiView.frame.width
         guard width > 0 else { return nil }
@@ -88,88 +87,12 @@ private struct SKWordDetailsTranslationView: View {
             }
             .task(id: "\(translation.url)-\(dynamicTypeSize)-\(legibilityWeight == .bold)-\(articleColorTheme)") {
                 let theme = SKArticleColorTheme(rawValue: articleColorTheme) ?? .system
-                let traits = SKTranslationRenderer.traits(contentSize: dynamicTypeSize.skContentSizeCategory,
+                let traits = SKTranslationRenderer.traits(contentSize: UIContentSizeCategory(dynamicTypeSize),
                                                           boldText: legibilityWeight == .bold)
                 let text = await translation.renderedText(theme: theme, traits: traits)
                 guard !Task.isCancelled else { return }
                 attributedText = text
             }
-    }
-}
-
-// MARK: - Share
-
-/// The URL item of an iOS 15 share: the word goes in as the subject (Mail and other targets that
-/// have one), next to a separate text item with the word for chats.
-private final class SKShareURLItemSource: NSObject, UIActivityItemSource {
-    let url: URL
-    let subject: String
-
-    init(url: URL, subject: String) {
-        self.url = url
-        self.subject = subject
-    }
-
-    func activityViewControllerPlaceholderItem(_ activityViewController: UIActivityViewController) -> Any {
-        url
-    }
-
-    func activityViewController(_ activityViewController: UIActivityViewController,
-                                itemForActivityType activityType: UIActivity.ActivityType?) -> Any? {
-        url
-    }
-
-    func activityViewController(_ activityViewController: UIActivityViewController,
-                                subjectForActivityType activityType: UIActivity.ActivityType?) -> String {
-        subject
-    }
-}
-
-/// Invisible view placed behind the iOS 15 share button. It gives `UIActivityViewController`
-/// a source view, so on iPad the share sheet is a popover pointing at the button.
-private struct SKShareAnchor: UIViewRepresentable {
-    let anchor: SKShareAnchorBox
-
-    func makeUIView(context: Context) -> UIView {
-        let view = UIView()
-        view.isUserInteractionEnabled = false
-        view.backgroundColor = .clear
-        anchor.view = view
-        return view
-    }
-
-    func updateUIView(_ uiView: UIView, context: Context) {
-        anchor.view = uiView
-    }
-}
-
-private final class SKShareAnchorBox {
-    weak var view: UIView?
-
-    /// Presents the system share sheet from the controller hosting the anchor, as a popover
-    /// anchored to it on iPad (a regular sheet on iPhone).
-    func present(text: String, url: URL, subject: String) {
-        guard let view = view, let presenter = view.window?.rootViewController?.skTopmostPresented else { return }
-        let controller = UIActivityViewController(
-            activityItems: [text, SKShareURLItemSource(url: url, subject: subject)],
-            applicationActivities: nil
-        )
-        if let popover = controller.popoverPresentationController {
-            popover.sourceView = view
-            popover.sourceRect = view.bounds
-            popover.permittedArrowDirections = [.down, .up]
-        }
-        presenter.present(controller, animated: true)
-    }
-}
-
-private extension UIViewController {
-    var skTopmostPresented: UIViewController {
-        var top: UIViewController = self
-        while let presented = top.presentedViewController, !presented.isBeingDismissed {
-            top = presented
-        }
-        return top
     }
 }
 
@@ -193,7 +116,6 @@ struct SKWordDetailsView: View {
     var onReport: () -> Void = {}
 
     @State private var toastMessage: String?
-    @State private var shareAnchor = SKShareAnchorBox()
     /// True once the large headword has scrolled out of view; only then does the nav bar show it.
     @State private var isHeaderScrolledAway = false
 
@@ -285,36 +207,23 @@ struct SKWordDetailsView: View {
 
     /// Shares «word — link»: the word (stressed form when known) as text and subject, so a plain
     /// chat shows what the link is about and Mail gets a subject; the link keeps its preview.
-    /// iOS 16+: `ShareLink`, which SwiftUI shows as a popover from the button on iPad.
-    /// iOS 15: `UIActivityViewController` presented with a popover anchored to the button.
+    /// `ShareLink`, which SwiftUI shows as a popover from the button on iPad.
     @ViewBuilder
     private var shareButton: some View {
         let icon = Image(systemName: "square.and.arrow.up")
         if let translation = viewModel.translation, let url = URL(string: translation.sharingUrl) {
             let title = translation.shareTitle
-            if #available(iOS 16, *) {
-                ShareLink(item: url,
-                          subject: Text(title),
-                          message: Text(title)) {
-                    icon
-                }
-                // ShareLink has no action callback; a simultaneous tap still reports the click.
-                .simultaneousGesture(TapGesture().onEnded {
-                    logShareClicked(translation)
-                })
-                .accessibilityLabel(SKLocalization.wordDetailsShare)
-                .accessibilityIdentifier("wordDetails.share")
-            } else {
-                Button(action: {
-                    logShareClicked(translation)
-                    shareAnchor.present(text: title, url: url, subject: title)
-                }) {
-                    icon
-                }
-                .background(SKShareAnchor(anchor: shareAnchor))
-                .accessibilityLabel(SKLocalization.wordDetailsShare)
-                .accessibilityIdentifier("wordDetails.share")
+            ShareLink(item: url,
+                      subject: Text(title),
+                      message: Text(title)) {
+                icon
             }
+            // ShareLink has no action callback; a simultaneous tap still reports the click.
+            .simultaneousGesture(TapGesture().onEnded {
+                logShareClicked(translation)
+            })
+            .accessibilityLabel(SKLocalization.wordDetailsShare)
+            .accessibilityIdentifier("wordDetails.share")
         } else {
             // Same slot, disabled until the translation (and so the link) is there.
             Button(action: {}) { icon }
@@ -391,31 +300,15 @@ struct SKWordDetailsView: View {
         }
     }
 
-    /// Centred message with a retry button. `ContentUnavailableView` on iOS 17+, a look-alike before.
-    @ViewBuilder
+    /// Centred message with a retry button.
     private func errorView(message: String) -> some View {
         let retryButton = Button(SKLocalization.wordDetailsRetry) { viewModel.retry() }
             .buttonStyle(.bordered)
             .accessibilityIdentifier("wordDetailsRetry")
-        if #available(iOS 17, *) {
-            ContentUnavailableView {
-                Label(message, systemImage: "exclamationmark.triangle")
-            } actions: {
-                retryButton
-            }
-        } else {
-            VStack(spacing: 16) {
-                Image(systemName: "exclamationmark.triangle")
-                    .font(.system(size: 48))
-                    .foregroundColor(.secondary)
-                    .accessibilityHidden(true)
-                Text(message)
-                    .font(.title3.weight(.semibold))
-                    .multilineTextAlignment(.center)
-                    .fixedSize(horizontal: false, vertical: true)
-                retryButton
-            }
-            .padding(.vertical, 24)
+        return ContentUnavailableView {
+            Label(message, systemImage: "exclamationmark.triangle")
+        } actions: {
+            retryButton
         }
     }
 

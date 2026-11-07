@@ -5,7 +5,6 @@
 
 import SwiftUI
 
-@available(iOS 14.0, *)
 struct SKReportIssueView: View {
 
     enum IssueType: String, CaseIterable, Identifiable {
@@ -32,15 +31,9 @@ struct SKReportIssueView: View {
     @State private var details: String = ""
 
     var body: some View {
-        if #available(iOS 16.0, *) {
-            NavigationStack {
-                formContent
-                    .scrollContentBackground(.hidden)
-            }
-        } else {
-            NavigationView {
-                formContent
-            }
+        NavigationStack {
+            formContent
+                .scrollContentBackground(.hidden)
         }
     }
 
@@ -58,14 +51,9 @@ struct SKReportIssueView: View {
             }
 
             Section(header: Text(SKLocalization.reportIssueDetailsPlaceholder)) {
-                if #available(iOS 16.0, *) {
-                    TextEditor(text: $details)
-                        .scrollContentBackground(.hidden)
-                        .frame(minHeight: 80, maxHeight: 160)
-                } else {
-                    TextEditor(text: $details)
-                        .frame(minHeight: 80, maxHeight: 160)
-                }
+                TextEditor(text: $details)
+                    .scrollContentBackground(.hidden)
+                    .frame(minHeight: 80, maxHeight: 160)
             }
         }
         .navigationTitle(SKLocalization.reportIssueTitle)

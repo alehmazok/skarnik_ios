@@ -58,7 +58,7 @@ Until the two secrets exist, the workflow still builds and packages, and skips t
 The test runner is built with the latest Xcode (26.x). On BrowserStack's iOS 16 and 17 devices it crashes
 before any test starts: `Symbol not found: _OBJC_CLASS_$_XCTCommandLineToolHelper` (iOS 17) and
 `Library not loaded: @rpath/lib_TestingInterop.dylib` (iOS 16). That is the Xcode 26 test runtime missing
-on those systems, not an app bug. The default device list is therefore iOS 18+ only. Covering iOS 15–17
+on those systems, not an app bug. The default device list is therefore iOS 18+ only. Covering iOS 17
 would need a second build of the runner with an older Xcode (e.g. Xcode 16 on a `macos-15` runner).
 
 ## Signing notes
@@ -77,4 +77,4 @@ once as a `.p12` secret and imported into the runner keychain, never a certifica
 - Not covered yet: links inside an article and the redirect toast (they need a known entry with a link or
   `redirect_to`), iPad split view, rotation and large text. The widget and Universal Links cannot run on
   BrowserStack: re-signing strips the App Group and associated domains.
-- Tune the device list: oldest supported iOS (deployment target 15.0), current iOS, and an iPad.
+- Tune the device list: oldest supported iOS (deployment target 17.0), current iOS, and an iPad.

@@ -42,7 +42,6 @@ struct SKInstallSourceTests {
     }
 
     @Test func appTransactionEnvironment_mapsToChannel() {
-        guard #available(iOS 16.0, *) else { return }
         #expect(SKInstallSource(environment: .production) == .appStore)
         #expect(SKInstallSource(environment: .sandbox) == .testFlight)
         #expect(SKInstallSource(environment: .xcode) == .debug)

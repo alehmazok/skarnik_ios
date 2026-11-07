@@ -30,9 +30,7 @@ class SKSearchWordsTableViewController: UITableViewController, UISearchResultsUp
         self.tableView.contentInset.bottom = 60.0 // Additional Keyboard Size
         self.labelSearchHeaderAdditionalRulesHeader.numberOfLines = 0
 
-        if #available(iOS 15.0, *) {
-            self.tableView.sectionHeaderTopPadding = 0
-        }
+        self.tableView.sectionHeaderTopPadding = 0
     }
 
     override func viewWillAppear(_ animated: Bool) {

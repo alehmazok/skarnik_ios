@@ -96,7 +96,7 @@ private struct SKFavoritesContentView: View {
             .onDelete { viewModel.deleteFavorite(at: $0) }
         }
         .listStyle(.plain)
-        .modifier(ListBackgroundModifier())
+        .appListBackground()
     }
 
     @ViewBuilder
@@ -126,7 +126,7 @@ struct SKFavoritesView: View {
                     sortMenu
                 }
             }
-            .modifier(OpaqueTabBarModifier())
+            .opaqueTabBar()
     }
 
     private var sortMenu: some View {

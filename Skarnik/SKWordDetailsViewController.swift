@@ -54,23 +54,17 @@ class SKWordDetailsViewController: UIHostingController<SKWordDetailsView> {
     // MARK: - Private
 
     private func presentReport() {
-        if #available(iOS 14, *) {
-            let reportView = SKReportIssueView(
-                word: viewModel.word,
-                translationUrl: viewModel.translation?.url
-            )
-            let hostingController = UIHostingController(rootView: reportView)
-            if #available(iOS 15, *) {
-                if let sheet = hostingController.sheetPresentationController {
-                    sheet.detents = [.medium(), .large()]
-                    sheet.prefersGrabberVisible = true
-                    if #available(iOS 16, *) {
-                        sheet.preferredCornerRadius = 20
-                    }
-                }
-            }
-            present(hostingController, animated: true)
+        let reportView = SKReportIssueView(
+            word: viewModel.word,
+            translationUrl: viewModel.translation?.url
+        )
+        let hostingController = UIHostingController(rootView: reportView)
+        if let sheet = hostingController.sheetPresentationController {
+            sheet.detents = [.medium(), .large()]
+            sheet.prefersGrabberVisible = true
+            sheet.preferredCornerRadius = 20
         }
+        present(hostingController, animated: true)
     }
 
     private func openSpellingWord(_ word: String) {

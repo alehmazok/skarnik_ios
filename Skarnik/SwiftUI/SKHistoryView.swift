@@ -15,7 +15,7 @@ final class SKHistoryViewModel: ObservableObject {
     }
     @Published private(set) var searchResults: [SKWord] = []
     @Published private(set) var words: [SKWord] = []
-    /// Bound to `.searchable(isPresented:)` on iOS 17+. SwiftUI sets it back to `false`
+    /// Bound to `.searchable(isPresented:)`. SwiftUI sets it back to `false`
     /// when the user cancels search.
     @Published var isSearchPresented = false
 
@@ -162,7 +162,7 @@ private struct SKHistoryContentView: View {
             .onDelete { viewModel.deleteWord(at: $0) }
         }
         .listStyle(.plain)
-        .modifier(ListBackgroundModifier())
+        .appListBackground()
     }
 
     // MARK: Search results
@@ -191,7 +191,7 @@ private struct SKHistoryContentView: View {
                 .listRowBackground(Color.appBackground)
             }
             .listStyle(.plain)
-            .modifier(ListBackgroundModifier())
+            .appListBackground()
         }
     }
 
@@ -212,11 +212,6 @@ private struct SKHistoryContentView: View {
         .padding(.bottom, 6)
     }
 
-    private var buttonBorderShape: ButtonBorderShape {
-        if #available(iOS 17, *) { return .circle }
-        return .roundedRectangle
-    }
-
     @ViewBuilder
     private func keyboardKey(_ char: String, tint: Color) -> some View {
         let button = Button(action: { viewModel.searchText += char }) {
@@ -224,7 +219,7 @@ private struct SKHistoryContentView: View {
                 .font(.system(size: 17))
                 .frame(width: 24, height: 24)
         }
-        .buttonBorderShape(buttonBorderShape)
+        .buttonBorderShape(.circle)
         .tint(tint)
         .accessibilityIdentifier("search.key.\(char)")
 
@@ -259,31 +254,12 @@ struct SKHistoryView: View {
     var body: some View {
         SKHistoryContentView(viewModel: viewModel, onWordSelected: onWordSelected)
             .navigationBarTitleDisplayMode(.inline)
-            .modifier(HistorySearchableModifier(viewModel: viewModel))
-            .modifier(OpaqueTabBarModifier())
-    }
-}
-
-/// `.searchable` with the `isPresented` binding where it exists (iOS 17+), so the
-/// view model can open search. Older systems fall back to the UIKit search bar
-/// (see `SKHistoryViewController.activateSearch()`).
-private struct HistorySearchableModifier: ViewModifier {
-    @ObservedObject var viewModel: SKHistoryViewModel
-
-    func body(content: Content) -> some View {
-        if #available(iOS 17, *) {
-            content.searchable(
+            .searchable(
                 text: $viewModel.searchText,
                 isPresented: $viewModel.isSearchPresented,
                 placement: .navigationBarDrawer(displayMode: .always),
                 prompt: SKLocalization.searchbarSearchWords
             )
-        } else {
-            content.searchable(
-                text: $viewModel.searchText,
-                placement: .navigationBarDrawer(displayMode: .always),
-                prompt: SKLocalization.searchbarSearchWords
-            )
-        }
+            .opaqueTabBar()
     }
 }

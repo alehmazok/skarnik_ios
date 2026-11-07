@@ -24,7 +24,6 @@ class SKWordStressViewModel: ObservableObject {
         self.fetchTable()
     }
 
-    var presentLoadingLabel: String { SKLocalization.wordStressLoadingLabel }
     var presentTitle: String { SKLocalization.wordStressTitle }
 
     func fetchTable() {

@@ -48,12 +48,11 @@ class SKHistoryViewController: UIHostingController<SKHistoryView> {
 
     /// Focuses the search field and shows the keyboard (Search tab re-tap).
     func activateSearch() {
-        if #available(iOS 17, *), !viewModel.isSearchPresented {
+        if !viewModel.isSearchPresented {
             // SwiftUI drives the field through `.searchable(isPresented:)`.
             viewModel.activateSearch()
         } else {
-            // iOS 15–16 have no `isPresented` binding; on iOS 17+ this also re-focuses a field
-            // that is still presented but whose keyboard was dismissed.
+            // The field is still presented but its keyboard was dismissed: focus it again.
             searchBar?.becomeFirstResponder()
         }
     }

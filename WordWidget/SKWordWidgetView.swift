@@ -10,27 +10,17 @@ import SwiftUI
 import WidgetKit
 import Foundation
 
-extension View {
-    func universalForeground(_ color: Color) -> some View {
-        if #available(iOSApplicationExtension 15.0, iOS 15.0, *) {
-            return self.foregroundStyle(color)
-        } else {
-            return self.foregroundColor(color)
-        }
-    }
-}
-
 struct SKWordWidgetView : View {
-    var entry: SKWordTimelineProvider.Entry
+    var entry: SKWordWidgetEntry
 
     var body: some View {
         VStack(spacing: 0) {
             HStack(alignment: .top, spacing: 0) {
                 VStack(alignment: .leading, spacing: 6) {
                     self.textWord
-                        .universalForeground(Color.accent)
+                        .foregroundStyle(Color.accent)
                     self.textTranslation
-                        .universalForeground(.secondary)
+                        .foregroundStyle(.secondary)
                 }
                 Spacer(minLength: 0)
             }

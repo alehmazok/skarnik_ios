@@ -10,7 +10,7 @@
 import Foundation
 
 struct SKWhatsNewItem: Equatable, Identifiable {
-    /// SF Symbol name; must exist on the deployment target (iOS 15).
+    /// SF Symbol name; must exist on the deployment target (iOS 17).
     let symbol: String
     let title: String
     let text: String

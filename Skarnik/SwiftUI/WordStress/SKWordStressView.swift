@@ -15,12 +15,7 @@ struct SKWordStressView: View {
             self.background
             Group {
                 if self.viewModel.isLoading {
-                    if #available(iOS 14.0, *) {
-                        ProgressView()
-                    } else {
-                        Text(self.viewModel.presentLoadingLabel)
-                            .font(.body)
-                    }
+                    ProgressView()
                 } else {
                     if let error = self.viewModel.error {
                         Text(error)
@@ -36,19 +31,12 @@ struct SKWordStressView: View {
         }
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("wordStress")
-        .combinedNavigationTitle(self.viewModel.presentTitle)
+        .navigationTitle(self.viewModel.presentTitle)
     }
     
     var background: some View {
-        Group {
-            if #available(iOS 15.0, *) {
-                Color(uiColor: UIColor.secondarySystemBackground)
-                    .ignoresSafeArea()
-            } else {
-                Color(UIColor.secondarySystemBackground)
-                    .edgesIgnoringSafeArea(.all)
-            }
-        }
+        Color(uiColor: UIColor.secondarySystemBackground)
+            .ignoresSafeArea()
     }
     
     var list: some View {
