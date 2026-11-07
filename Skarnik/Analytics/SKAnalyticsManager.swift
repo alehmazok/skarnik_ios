@@ -64,4 +64,15 @@ class SKAnalyticsManager {
     static func logSearchResultTapped(word: SKWord, position: Int, query: String) {
         shared.service.logSearchResultTapped(word: word, position: position, query: query)
     }
+
+    /// Sets the `install_source` user property. Fire-and-forget: the lookup runs off the main thread
+    /// and never blocks launch. Call at launch (after `applyStoredConsent`) and when consent is granted;
+    /// does nothing while analytics consent is not granted.
+    static func reportInstallSource(consent: SKAnalyticsConsentController = .shared) {
+        guard consent.isCollectionEnabled else { return }
+        Task.detached(priority: .utility) {
+            let source = await SKInstallSourceDetector.detect()
+            shared.service.setInstallSource(source)
+        }
+    }
 }
