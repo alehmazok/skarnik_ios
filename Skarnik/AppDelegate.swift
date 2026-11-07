@@ -36,6 +36,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         SKWhatsNewController.shared.prepareAtLaunch()
 
         SKAnalyticsConsentController.shared.applyStoredConsent()
+        SKAnalyticsManager.reportInstallSource()
 
         SKAnalyticsManager.logAppOpen()
 

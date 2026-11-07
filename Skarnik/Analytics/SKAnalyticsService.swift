@@ -26,6 +26,8 @@ protocol SKAnalyticsService {
     func logSearchNoResults(query: String)
 
     func logSearchResultTapped(word: SKWord, position: Int, query: String)
+
+    func setInstallSource(_ source: SKInstallSource)
 }
 
 enum SKAnalyticsEvent: String {

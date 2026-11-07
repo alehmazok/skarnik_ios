@@ -90,6 +90,7 @@
 		F229B9D02D5134B000B2463E /* SKAnalyticsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = F229B9CA2D5134B000B2463E /* SKAnalyticsManager.swift */; };
 		F229B9D12D5134B000B2463E /* SKFirebaseAnalytics.swift in Sources */ = {isa = PBXBuildFile; fileRef = F229B9CD2D5134B000B2463E /* SKFirebaseAnalytics.swift */; };
 		F229B9D22D5134B000B2463E /* SKDebugAnalytics.swift in Sources */ = {isa = PBXBuildFile; fileRef = F229B9CC2D5134B000B2463E /* SKDebugAnalytics.swift */; };
+		C5E0A1000000000000000021 /* SKInstallSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = C5E0A1000000000000000020 /* SKInstallSource.swift */; };
 		DF96F3C40DBF4DD1E7BADF2E /* SKAnalyticsConsentController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F2D3467A0E13565699DFA3E2 /* SKAnalyticsConsentController.swift */; };
 		100B83236B965618B65AA1DA /* SKAnalyticsConsentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC4660145EE3A48BEDF34B8B /* SKAnalyticsConsentView.swift */; };
 		F268C3D12D50DD4B004B7BE4 /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = F268C3D02D50DD4B004B7BE4 /* FirebaseAnalytics */; };
@@ -212,6 +213,7 @@
 		F229B9CB2D5134B000B2463E /* SKAnalyticsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SKAnalyticsService.swift; sourceTree = "<group>"; };
 		F229B9CC2D5134B000B2463E /* SKDebugAnalytics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SKDebugAnalytics.swift; sourceTree = "<group>"; };
 		F229B9CD2D5134B000B2463E /* SKFirebaseAnalytics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SKFirebaseAnalytics.swift; sourceTree = "<group>"; };
+		C5E0A1000000000000000020 /* SKInstallSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SKInstallSource.swift; sourceTree = "<group>"; };
 		F2D3467A0E13565699DFA3E2 /* SKAnalyticsConsentController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SKAnalyticsConsentController.swift; sourceTree = "<group>"; };
 		FC4660145EE3A48BEDF34B8B /* SKAnalyticsConsentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SKAnalyticsConsentView.swift; sourceTree = "<group>"; };
 		F26469052F6F5DE600BEBF1F /* SkarnikTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SkarnikTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -460,6 +462,7 @@
 				F229B9CC2D5134B000B2463E /* SKDebugAnalytics.swift */,
 				F229B9CD2D5134B000B2463E /* SKFirebaseAnalytics.swift */,
 				F2D3467A0E13565699DFA3E2 /* SKAnalyticsConsentController.swift */,
+				C5E0A1000000000000000020 /* SKInstallSource.swift */,
 			);
 			path = Analytics;
 			sourceTree = "<group>";
@@ -705,6 +708,7 @@
 				F229B9D12D5134B000B2463E /* SKFirebaseAnalytics.swift in Sources */,
 				F229B9D22D5134B000B2463E /* SKDebugAnalytics.swift in Sources */,
 				DF96F3C40DBF4DD1E7BADF2E /* SKAnalyticsConsentController.swift in Sources */,
+				C5E0A1000000000000000021 /* SKInstallSource.swift in Sources */,
 				100B83236B965618B65AA1DA /* SKAnalyticsConsentView.swift in Sources */,
 				B251A34B2AE9932800E78923 /* SKLevenshtein.swift in Sources */,
 				B251A3832AF1AFCB00E78923 /* SKSwiftUiViewController.swift in Sources */,
@@ -961,7 +965,11 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 3.7.0;
-				OTHER_LDFLAGS = "-ObjC";
+				OTHER_LDFLAGS = (
+					"-ObjC",
+					"-weak_framework",
+					MarketplaceKit,
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = by.mazokaleh.Skarnik;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SENTRY_DSN = "";
@@ -1009,7 +1017,11 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 3.7.0;
-				OTHER_LDFLAGS = "-ObjC";
+				OTHER_LDFLAGS = (
+					"-ObjC",
+					"-weak_framework",
+					MarketplaceKit,
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = by.mazokaleh.Skarnik;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SENTRY_DSN = "";

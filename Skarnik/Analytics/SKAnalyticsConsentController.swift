@@ -13,10 +13,17 @@ final class SKAnalyticsConsentController {
     private static let grantedKey = "analyticsConsentGranted"
 
     private let userDefaults: UserDefaults
+    private let onConsentGranted: () -> Void
 
     // Non-private init (unlike sibling singletons) so tests can inject an isolated UserDefaults suite.
-    init(userDefaults: UserDefaults = .standard) {
+    /// `onConsentGranted` runs after collection is switched on, so values set once per launch (the
+    /// `install_source` user property) are not missing until the next launch.
+    init(
+        userDefaults: UserDefaults = .standard,
+        onConsentGranted: @escaping () -> Void = { SKAnalyticsManager.reportInstallSource() }
+    ) {
         self.userDefaults = userDefaults
+        self.onConsentGranted = onConsentGranted
     }
 
     var hasRespondedToConsent: Bool {
@@ -27,16 +34,22 @@ final class SKAnalyticsConsentController {
         userDefaults.bool(forKey: Self.grantedKey)
     }
 
+    /// Whether Firebase collection is on: the user answered the prompt and agreed.
+    var isCollectionEnabled: Bool {
+        hasRespondedToConsent && analyticsConsentGranted
+    }
+
     /// Re-applies the persisted consent decision to the Firebase SDK. Call at app launch,
     /// before any analytics event fires, so collection stays off until the user has answered.
     func applyStoredConsent() {
-        Analytics.setAnalyticsCollectionEnabled(hasRespondedToConsent && analyticsConsentGranted)
+        Analytics.setAnalyticsCollectionEnabled(isCollectionEnabled)
     }
 
     func grantConsent() {
         userDefaults.set(true, forKey: Self.hasRespondedKey)
         userDefaults.set(true, forKey: Self.grantedKey)
         Analytics.setAnalyticsCollectionEnabled(true)
+        onConsentGranted()
     }
 
     func revokeConsent() {
