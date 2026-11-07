@@ -169,7 +169,16 @@ skarnik_android's ADR 0008:
   after a real TestFlight upload, `ci/sentry-upload-dsyms.sh` uploads the dSYMs with a pinned `sentry-cli`
   release binary using `SENTRY_AUTH_TOKEN` (secrets table above). Missing secrets only produce a warning.
 
-## Data Sources
+## Install source
+
+The GA4 user property `install_source` (custom dimension `customUser:install_source`) records the channel the
+app came from, with the same values as skarnik_android: `app_store`, `testflight`, `ios_marketplace`, `sideload`
+(web or other distributor), `debug`, `unknown` (lookup failed or took over 3 s). `SKInstallSourceDetector` asks
+MarketplaceKit `AppDistributor` on iOS 17.4+, then the StoreKit 2 `AppTransaction` environment, then the receipt
+name. Debug builds send `debug` without a lookup. It is set off the main thread on every launch and right after
+the user grants consent, and never while analytics consent is off. MarketplaceKit is weak-linked
+(`-weak_framework`) because the app still runs on iOS 15.
+
 
 Translations are looked up in this order, the same in every Skarnik app: the downloaded offline dictionary,
 then Supabase, then the Skarnik admin API.

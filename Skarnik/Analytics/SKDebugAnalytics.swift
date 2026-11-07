@@ -50,4 +50,8 @@ class SKDebugAnalytics: SKAnalyticsService {
     func logSearchResultTapped(word: SKWord, position: Int, query: String) {
         print("📊 Search result tapped: word=\(word.word), word_id=\(word.word_id), lang_id=\(word.lang_id.rawValue), dict_name=\(word.lang_id.name ?? "unknown"), dict_path=\(word.lang_id.skarnikId ?? "unknown"), position=\(position), query=\(query)")
     }
+
+    func setInstallSource(_ source: SKInstallSource) {
+        print("📊 User property: \(SKInstallSource.userPropertyName)=\(source.rawValue)")
+    }
 }
