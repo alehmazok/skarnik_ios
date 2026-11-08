@@ -72,7 +72,6 @@
 		B2AF0839291482DD0005E3E6 /* SKTranslationRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2AF0838291482DD0005E3E6 /* SKTranslationRenderer.swift */; };
 		B2AF083B29148AF00005E3E6 /* URLSession+Skarnik.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2AF083A29148AEF0005E3E6 /* URLSession+Skarnik.swift */; };
 		B2BE6DDC2AE132AB00EE7A25 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B20ABAC228EEBF8400AA2FC9 /* Assets.xcassets */; };
-		B2BE6DDD2AE1349200EE7A25 /* vocabulary.db in Resources */ = {isa = PBXBuildFile; fileRef = B20ABAD628EF21CA00AA2FC9 /* vocabulary.db */; };
 		B2C557DA290898A700FEB28A /* Task+Skarnik.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2C557D9290898A700FEB28A /* Task+Skarnik.swift */; };
 		B2C557DC2908991300FEB28A /* Array+Skarnik.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2C557DB2908991300FEB28A /* Array+Skarnik.swift */; };
 		B2C557DE2908996500FEB28A /* UIColor+Skarnik.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2C557DD2908996500FEB28A /* UIColor+Skarnik.swift */; };
@@ -651,7 +650,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				B2BE6DDC2AE132AB00EE7A25 /* Assets.xcassets in Resources */,
-				B2BE6DDD2AE1349200EE7A25 /* vocabulary.db in Resources */,
 				C5E0A1000000000000000104 /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
