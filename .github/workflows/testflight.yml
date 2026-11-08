@@ -1,10 +1,12 @@
 name: TestFlight
 
-# Archives a Release build with automatic signing via the App Store Connect API key and uploads
-# it to TestFlight. The archive is signed with one stored Apple Development certificate
+# Archives Release builds for iOS and Mac Catalyst with automatic signing via the App Store Connect
+# API key and uploads them to TestFlight (issue #66). Both platforms share one App Store Connect
+# record and one build number. The archive is signed with one stored Apple Development certificate
 # (DEV_CERT_P12) imported into a temporary keychain: without it, every run on a fresh runner asks
 # Apple for a new development certificate and the team soon hits Apple's certificate limit.
 # Export for App Store Connect uses cloud-managed distribution signing.
+# The iOS build is archived and uploaded first, so a failing Mac build never blocks an iOS release.
 #   - Run manually: Actions → TestFlight → Run workflow.
 #   - Pull requests that touch this pipeline do a dry run: archive + export, no upload.
 on:
@@ -19,6 +21,15 @@ on:
         required: false
         type: boolean
         default: true
+      platforms:
+        description: Platforms to build
+        required: false
+        type: choice
+        options:
+          - both
+          - ios
+          - mac
+        default: both
   pull_request:
     paths:
       - .github/workflows/testflight.yml
@@ -30,13 +41,16 @@ concurrency:
 
 env:
   TEAM_ID: EQFFWL4KZF
+  # Pull request dry runs build both platforms.
+  BUILD_IOS: ${{ inputs.platforms != 'mac' }}
+  BUILD_MAC: ${{ inputs.platforms != 'ios' }}
 
 jobs:
   deploy:
     name: Archive and upload
     # Same image and Xcode as the CI test job, so the archive uses the toolchain the tests ran on.
     runs-on: macos-26
-    timeout-minutes: 60
+    timeout-minutes: 90
     steps:
       - uses: actions/checkout@v5
 
@@ -123,57 +137,50 @@ jobs:
           echo "### Skarnik $version ($build)" >> "$GITHUB_STEP_SUMMARY"
 
       # Crash reporting (issue #28): the DSN turns Sentry on in this build; without it the build reports nothing.
-      - name: Archive
+      - name: Archive (iOS)
+        if: env.BUILD_IOS == 'true'
         env:
           SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
         run: |
-          set -o pipefail
           if [[ -z "$SENTRY_DSN" ]]; then echo "::warning::SENTRY_DSN is not set: this build reports no crashes."; fi
-          mkdir -p build
-          xcodebuild archive \
-            -project Skarnik.xcodeproj \
-            -scheme Skarnik \
-            -configuration Release \
-            -destination 'generic/platform=iOS' \
-            -archivePath build/Skarnik.xcarchive \
-            -derivedDataPath build/DerivedData \
-            -allowProvisioningUpdates \
-            -authenticationKeyPath "$ASC_KEY_PATH" \
-            -authenticationKeyID "${{ secrets.ASC_KEY_ID }}" \
-            -authenticationKeyIssuerID "${{ secrets.ASC_ISSUER_ID }}" \
-            CODE_SIGN_STYLE=Automatic \
-            DEVELOPMENT_TEAM="$TEAM_ID" \
-            CODE_SIGN_IDENTITY="Apple Development" \
-            PROVISIONING_PROFILE_SPECIFIER= \
-            CURRENT_PROJECT_VERSION="$BUILD_NUMBER" \
-            SENTRY_DSN="$SENTRY_DSN" \
-            | tee build/xcodebuild-archive.log
+          ci/archive.sh ios build/Skarnik.xcarchive
 
-      - name: Export and upload
+      - name: Export and upload (iOS)
+        if: env.BUILD_IOS == 'true'
         env:
           UPLOAD: ${{ github.event_name == 'workflow_dispatch' && inputs.upload }}
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
         run: |
-          set -o pipefail
-          cp ci/ExportOptions.plist build/ExportOptions.plist
+          ci/export-archive.sh build/Skarnik.xcarchive build/export
           if [[ "$UPLOAD" == "true" ]]; then
-            /usr/libexec/PlistBuddy -c "Set :destination upload" build/ExportOptions.plist
-            echo "Exporting and uploading to App Store Connect"
+            echo "iOS: uploaded build $BUILD_NUMBER to TestFlight. It shows up in App Store Connect after processing." >> "$GITHUB_STEP_SUMMARY"
           else
-            echo "Dry run: exporting the .ipa only"
+            echo "iOS: dry run, archive and export succeeded, nothing uploaded." >> "$GITHUB_STEP_SUMMARY"
           fi
-          xcodebuild -exportArchive \
-            -archivePath build/Skarnik.xcarchive \
-            -exportOptionsPlist build/ExportOptions.plist \
-            -exportPath build/export \
-            -allowProvisioningUpdates \
-            -authenticationKeyPath "$ASC_KEY_PATH" \
-            -authenticationKeyID "${{ secrets.ASC_KEY_ID }}" \
-            -authenticationKeyIssuerID "${{ secrets.ASC_ISSUER_ID }}" \
-            | tee build/xcodebuild-export.log
+
+      - name: Archive (Mac Catalyst)
+        if: env.BUILD_MAC == 'true'
+        env:
+          SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+        run: ci/archive.sh mac build/Skarnik-mac.xcarchive
+
+      - name: Export and upload (Mac Catalyst)
+        if: env.BUILD_MAC == 'true'
+        env:
+          UPLOAD: ${{ github.event_name == 'workflow_dispatch' && inputs.upload }}
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+        run: |
+          ci/export-archive.sh build/Skarnik-mac.xcarchive build/export-mac
           if [[ "$UPLOAD" == "true" ]]; then
-            echo "Uploaded build $BUILD_NUMBER to TestFlight. It shows up in App Store Connect after processing." >> "$GITHUB_STEP_SUMMARY"
+            echo "macOS: uploaded build $BUILD_NUMBER to TestFlight. It shows up in App Store Connect after processing." >> "$GITHUB_STEP_SUMMARY"
           else
-            echo "Dry run: archive and export succeeded, nothing uploaded." >> "$GITHUB_STEP_SUMMARY"
+            echo "macOS: dry run, archive and export succeeded, nothing uploaded." >> "$GITHUB_STEP_SUMMARY"
           fi
 
       # Symbolicated stack traces in Sentry. Org "skarnik"; project from the repository variable SENTRY_PROJECT,
@@ -183,7 +190,10 @@ jobs:
         env:
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
           SENTRY_PROJECT: ${{ vars.SENTRY_PROJECT || 'skarnik_ios' }}
-        run: ci/sentry-upload-dsyms.sh build/Skarnik.xcarchive/dSYMs
+        run: |
+          for archive in build/Skarnik.xcarchive build/Skarnik-mac.xcarchive; do
+            if [[ -d "$archive/dSYMs" ]]; then ci/sentry-upload-dsyms.sh "$archive/dSYMs"; fi
+          done
 
       - name: Upload dSYMs and logs
         if: always()
@@ -192,8 +202,10 @@ jobs:
           name: skarnik-${{ env.BUILD_NUMBER }}
           path: |
             build/Skarnik.xcarchive/dSYMs
+            build/Skarnik-mac.xcarchive/dSYMs
             build/*.log
             build/export/*.ipa
+            build/export-mac/*.pkg
           if-no-files-found: ignore
           retention-days: 30
 
