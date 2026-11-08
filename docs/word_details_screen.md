@@ -100,8 +100,7 @@ Opens stress and spelling tables; full behaviour in [stress_feature_spec.md](str
   (stressed form when known, `shareTitle`) as the message text and subject, so a plain-text chat
   reads «добразычлівасць — https://skarnik.app/r/belrus/27890» (`shareText`) and the link still
   gets its preview. It logs the Firebase `share` event (`logShareClicked`). (#23)
-- iOS 16+ uses `ShareLink`; iOS 15 presents `UIActivityViewController` itself with the popover
-  anchored to the Share button, so on iPad it is a popover from the button instead of a full sheet.
+- It uses `ShareLink`, which on iPad is a popover from the button instead of a full sheet.
 - The report button is hidden until it is ready (TODO in the view).
 
 ### Redirect toast (#18)
@@ -120,8 +119,7 @@ scrolls as before.
 - Loading: a centred spinner.
 - Error: a centred message («Слова не знойдзена.», «Памылка сеткі. Праверце злучэнне з
   інтэрнэтам.», or the error's description) with a «Паспрабаваць яшчэ» button. The button calls
-  `retry()`, which reloads the current word only from `.error`. iOS 17+ uses
-  `ContentUnavailableView`; iOS 15–16 a look-alike stack (icon, message, bordered button).
+  `retry()`, which reloads the current word only from `.error`. It uses `ContentUnavailableView`.
 
 ---
 

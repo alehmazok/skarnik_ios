@@ -76,7 +76,7 @@
 		B2C557DA290898A700FEB28A /* Task+Skarnik.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2C557D9290898A700FEB28A /* Task+Skarnik.swift */; };
 		B2C557DC2908991300FEB28A /* Array+Skarnik.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2C557DB2908991300FEB28A /* Array+Skarnik.swift */; };
 		B2C557DE2908996500FEB28A /* UIColor+Skarnik.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2C557DD2908996500FEB28A /* UIColor+Skarnik.swift */; };
-		B2C81E042AFECCF70057FD56 /* SKDeprecatedView+Modifiers.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2C81E032AFECCF70057FD56 /* SKDeprecatedView+Modifiers.swift */; };
+		B2C81E042AFECCF70057FD56 /* SKView+Modifiers.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2C81E032AFECCF70057FD56 /* SKView+Modifiers.swift */; };
 		B2FEFEE928F3634800675E49 /* SKAdditionalKeyboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2FEFEE828F3634800675E49 /* SKAdditionalKeyboardView.swift */; };
 		B2FEFEEB28F3776E00675E49 /* SKSearchWordsTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2FEFEEA28F3776E00675E49 /* SKSearchWordsTableViewController.swift */; };
 		B2FEFEED28F43DFF00675E49 /* SKStorageController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2FEFEEC28F43DFE00675E49 /* SKStorageController.swift */; };
@@ -202,7 +202,7 @@
 		B2C557D9290898A700FEB28A /* Task+Skarnik.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Task+Skarnik.swift"; sourceTree = "<group>"; };
 		B2C557DB2908991300FEB28A /* Array+Skarnik.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Array+Skarnik.swift"; sourceTree = "<group>"; };
 		B2C557DD2908996500FEB28A /* UIColor+Skarnik.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIColor+Skarnik.swift"; sourceTree = "<group>"; };
-		B2C81E032AFECCF70057FD56 /* SKDeprecatedView+Modifiers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SKDeprecatedView+Modifiers.swift"; sourceTree = "<group>"; };
+		B2C81E032AFECCF70057FD56 /* SKView+Modifiers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SKView+Modifiers.swift"; sourceTree = "<group>"; };
 		B2FEFEE828F3634800675E49 /* SKAdditionalKeyboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SKAdditionalKeyboardView.swift; sourceTree = "<group>"; };
 		B2FEFEEA28F3776E00675E49 /* SKSearchWordsTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SKSearchWordsTableViewController.swift; sourceTree = "<group>"; };
 		B2FEFEEC28F43DFE00675E49 /* SKStorageController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SKStorageController.swift; sourceTree = "<group>"; };
@@ -413,7 +413,7 @@
 				B251A3822AF1AFCB00E78923 /* SKSwiftUiViewController.swift */,
 				B25728F12AFDA1D2007ADCF5 /* SKHtmlTextView.swift */,
 				B27D996428FB341F0047CCBF /* SKAboutView.swift */,
-				B2C81E032AFECCF70057FD56 /* SKDeprecatedView+Modifiers.swift */,
+				B2C81E032AFECCF70057FD56 /* SKView+Modifiers.swift */,
 				B2AA11223344556677880001 /* SKReportIssueView.swift */,
 				F2A652A42F7B000000A8ACBE /* SKWordDetailsView.swift */,
 				F2B7CC002F8C000000A8ACBE /* SKHistoryView.swift */,
@@ -724,7 +724,7 @@
 				B2462E6D2927AE9F005C8D33 /* String+Skarnik.swift in Sources */,
 				B2881B4D28F5DE9800649278 /* SKTranslationSource.swift in Sources */,
 				B2FEFEEB28F3776E00675E49 /* SKSearchWordsTableViewController.swift in Sources */,
-				B2C81E042AFECCF70057FD56 /* SKDeprecatedView+Modifiers.swift in Sources */,
+				B2C81E042AFECCF70057FD56 /* SKView+Modifiers.swift in Sources */,
 				F2005D262F5CF009003A032C /* SKWordDetailsViewModel.swift in Sources */,
 				B27D996828FC92910047CCBF /* SKStarnikByController.swift in Sources */,
 				FC2AB0490A4470BD43C00D0F /* SKStressResolver.swift in Sources */,
@@ -871,7 +871,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -928,7 +928,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = iphoneos;
@@ -965,7 +965,7 @@
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
-				IPHONEOS_DEPLOYMENT_TARGET = "$(RECOMMENDED_IPHONEOS_DEPLOYMENT_TARGET)";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -1014,7 +1014,7 @@
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
-				IPHONEOS_DEPLOYMENT_TARGET = "$(RECOMMENDED_IPHONEOS_DEPLOYMENT_TARGET)";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -1060,7 +1060,7 @@
 				INFOPLIST_FILE = WordWidget/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = WordWidget;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2023 Skarnik. All rights reserved.";
-				IPHONEOS_DEPLOYMENT_TARGET = "$(RECOMMENDED_IPHONEOS_DEPLOYMENT_TARGET)";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -1104,7 +1104,7 @@
 				INFOPLIST_FILE = WordWidget/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = WordWidget;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2023 Skarnik. All rights reserved.";
-				IPHONEOS_DEPLOYMENT_TARGET = "$(RECOMMENDED_IPHONEOS_DEPLOYMENT_TARGET)";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -1135,7 +1135,7 @@
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = "$(RECOMMENDED_IPHONEOS_DEPLOYMENT_TARGET)";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = by.skarnik.SkarnikUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -1156,7 +1156,7 @@
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = "$(RECOMMENDED_IPHONEOS_DEPLOYMENT_TARGET)";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = by.skarnik.SkarnikUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -1178,7 +1178,7 @@
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 26.2;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = by.skarnik.SkarnikTests;
@@ -1205,7 +1205,7 @@
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 26.2;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = by.skarnik.SkarnikTests;

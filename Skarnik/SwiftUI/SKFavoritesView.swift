@@ -13,9 +13,10 @@ enum SKFavoritesSortMode: String {
 }
 
 @MainActor
-final class SKFavoritesViewModel: ObservableObject {
-    @Published private(set) var favorites: [SKFavoriteWord] = []
-    @Published var sortMode: SKFavoritesSortMode {
+@Observable
+final class SKFavoritesViewModel {
+    private(set) var favorites: [SKFavoriteWord] = []
+    var sortMode: SKFavoritesSortMode {
         didSet {
             UserDefaults.standard.set(sortMode.rawValue, forKey: Self.sortModeKey)
             sortFavorites()
@@ -23,7 +24,7 @@ final class SKFavoritesViewModel: ObservableObject {
     }
 
     private static let sortModeKey = "favoritesSortModeKey"
-    private var unsorted: [SKFavoriteWord] = []
+    @ObservationIgnored private var unsorted: [SKFavoriteWord] = []
 
     init() {
         let storedMode = UserDefaults.standard.string(forKey: Self.sortModeKey).flatMap(SKFavoritesSortMode.init)
@@ -55,7 +56,7 @@ final class SKFavoritesViewModel: ObservableObject {
 // MARK: - Content view
 
 private struct SKFavoritesContentView: View {
-    @ObservedObject var viewModel: SKFavoritesViewModel
+    let viewModel: SKFavoritesViewModel
     var onWordSelected: (SKWord) -> Void
 
     var body: some View {
@@ -74,7 +75,7 @@ private struct SKFavoritesContentView: View {
         VStack {
             Spacer()
             Text(SKLocalization.favoritesEmptyPlaceholder)
-                .foregroundColor(.secondary)
+                .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
                 .padding()
                 .accessibilityIdentifier("favorites.empty")
@@ -96,17 +97,17 @@ private struct SKFavoritesContentView: View {
             .onDelete { viewModel.deleteFavorite(at: $0) }
         }
         .listStyle(.plain)
-        .modifier(ListBackgroundModifier())
+        .appListBackground()
     }
 
     @ViewBuilder
     private func wordCell(_ word: SKWord) -> some View {
         VStack(alignment: .leading, spacing: 2) {
-            Text(word.word).foregroundColor(.primary)
+            Text(word.word).foregroundStyle(.primary)
             if let name = word.lang_id.name {
                 Text(name.uppercased())
                     .font(.caption)
-                    .foregroundColor(.secondary)
+                    .foregroundStyle(.secondary)
             }
         }
     }
@@ -115,7 +116,7 @@ private struct SKFavoritesContentView: View {
 // MARK: - Main view
 
 struct SKFavoritesView: View {
-    @ObservedObject var viewModel: SKFavoritesViewModel
+    let viewModel: SKFavoritesViewModel
     var onWordSelected: (SKWord) -> Void = { _ in }
 
     var body: some View {
@@ -126,7 +127,7 @@ struct SKFavoritesView: View {
                     sortMenu
                 }
             }
-            .modifier(OpaqueTabBarModifier())
+            .opaqueTabBar()
     }
 
     private var sortMenu: some View {

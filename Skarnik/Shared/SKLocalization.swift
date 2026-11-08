@@ -66,7 +66,6 @@ class SKLocalization: Any {
     class var aboutVersionPrefix: String { "Версія" }
     class var rateAppRowTitle: String { "Ацаніць праграму" }
     class var rateAppURLString: String { "https://apps.apple.com/app/id988334682?action=write-review" }
-    class var wordStressLoadingLabel: String { "Пачакайце, калі ласка" }
     class var wordStressTitle: String { "Націск" }
     class var wordStressError: String { "Адбылася памылка падчас загрузкі інфармацыі аб націску." }
     class var wordStressNotFound: String { "Інфармацыя аб націску для гэтага слова не знойдзена." }

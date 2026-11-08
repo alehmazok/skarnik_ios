@@ -21,10 +21,7 @@ struct SKHtmlTextView: View {
                         dynamicTypeSize: dynamicTypeSize,
                         boldText: legibilityWeight == .bold,
                         dynamicHeight: $height)
-            .combinedBackground(.clear)
             .frame(minHeight: height)
-            .combinedBackground(.clear)
-
     }
 }
 
@@ -54,7 +51,7 @@ struct SKHtmlLabelView: UIViewRepresentable {
 
     func updateUIView(_ uiView: UILabel, context: Context) {
         let html = self.html
-        let traits = SKTranslationRenderer.traits(contentSize: dynamicTypeSize.skContentSizeCategory,
+        let traits = SKTranslationRenderer.traits(contentSize: UIContentSizeCategory(dynamicTypeSize),
                                                   boldText: boldText)
 
         // Rendering is SwiftSoup only (no WebKit), but still keep it off the layout pass.
@@ -72,27 +69,6 @@ struct SKHtmlLabelView: UIViewRepresentable {
                     dynamicHeight = newHeight
                 }
             }
-        }
-    }
-}
-
-extension DynamicTypeSize {
-    /// UIKit content size for this SwiftUI size (`UIContentSizeCategory(_:)` needs iOS 17).
-    var skContentSizeCategory: UIContentSizeCategory {
-        switch self {
-        case .xSmall: return .extraSmall
-        case .small: return .small
-        case .medium: return .medium
-        case .large: return .large
-        case .xLarge: return .extraLarge
-        case .xxLarge: return .extraExtraLarge
-        case .xxxLarge: return .extraExtraExtraLarge
-        case .accessibility1: return .accessibilityMedium
-        case .accessibility2: return .accessibilityLarge
-        case .accessibility3: return .accessibilityExtraLarge
-        case .accessibility4: return .accessibilityExtraExtraLarge
-        case .accessibility5: return .accessibilityExtraExtraExtraLarge
-        @unknown default: return .large
         }
     }
 }

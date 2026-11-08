@@ -80,7 +80,7 @@ SkarnikUITests/                        # XCUITest smoke tests (simulator CI + Br
 
 ### Prerequisites
 
-- The latest stable Xcode (CI uses the same). The app and widget target iOS 15.0.
+- The latest stable Xcode (CI uses the same). The app and widget target iOS 17.0.
 - Swift Package Manager resolves dependencies automatically on first build.
 - A `GoogleService-Info.plist` in the project root. It is gitignored; the build needs the file, so use your
   own Firebase project's config (CI writes it from the `GOOGLE_SERVICE_INFO_PLIST` secret).
@@ -177,7 +177,7 @@ app came from, with the same values as skarnik_android: `app_store`, `testflight
 MarketplaceKit `AppDistributor` on iOS 17.4+, then the StoreKit 2 `AppTransaction` environment, then the receipt
 name. Debug builds send `debug` without a lookup. It is set off the main thread on every launch and right after
 the user grants consent, and never while analytics consent is off. MarketplaceKit is weak-linked
-(`-weak_framework`) because the app still runs on iOS 15.
+(`-weak_framework`) because `AppDistributor` needs iOS 17.4 and the app runs on iOS 17.0.
 
 
 Translations are looked up in this order, the same in every Skarnik app: the downloaded offline dictionary,

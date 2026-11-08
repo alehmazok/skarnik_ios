@@ -69,7 +69,6 @@ extension UIViewController {
 
 extension SKSplitViewController: UISplitViewControllerDelegate {
     
-    @available(iOS 14.0, *)
     func splitViewController(_ svc: UISplitViewController, topColumnForCollapsingToProposedTopColumn proposedTopColumn: UISplitViewController.Column) -> UISplitViewController.Column {
         return .primary
     }

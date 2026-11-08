@@ -5,7 +5,6 @@
 
 import SwiftUI
 
-@available(iOS 14.0, *)
 struct SKReportIssueView: View {
 
     enum IssueType: String, CaseIterable, Identifiable {
@@ -26,21 +25,19 @@ struct SKReportIssueView: View {
 
     let word: SKWord?
     let translationUrl: String?
+    /// Closes the sheet. UIKit presents this view in a `UIHostingController`,
+    /// so the presenter passes its own dismiss instead of relying on
+    /// `@Environment(\.dismiss)` reaching the UIKit presentation.
+    var onDismiss: (@MainActor () -> Void)? = nil
 
-    @Environment(\.presentationMode) private var presentationMode
+    @Environment(\.dismiss) private var dismissAction
     @State private var selectedIssue: IssueType = .translationError
     @State private var details: String = ""
 
     var body: some View {
-        if #available(iOS 16.0, *) {
-            NavigationStack {
-                formContent
-                    .scrollContentBackground(.hidden)
-            }
-        } else {
-            NavigationView {
-                formContent
-            }
+        NavigationStack {
+            formContent
+                .scrollContentBackground(.hidden)
         }
     }
 
@@ -58,14 +55,9 @@ struct SKReportIssueView: View {
             }
 
             Section(header: Text(SKLocalization.reportIssueDetailsPlaceholder)) {
-                if #available(iOS 16.0, *) {
-                    TextEditor(text: $details)
-                        .scrollContentBackground(.hidden)
-                        .frame(minHeight: 80, maxHeight: 160)
-                } else {
-                    TextEditor(text: $details)
-                        .frame(minHeight: 80, maxHeight: 160)
-                }
+                TextEditor(text: $details)
+                    .scrollContentBackground(.hidden)
+                    .frame(minHeight: 80, maxHeight: 160)
             }
         }
         .navigationTitle(SKLocalization.reportIssueTitle)
@@ -75,7 +67,7 @@ struct SKReportIssueView: View {
                 Button(action: dismiss) {
                     Image(systemName: "xmark.circle.fill")
                         .font(.title2)
-                        .foregroundColor(.secondary)
+                        .foregroundStyle(.secondary)
                 }
             }
             ToolbarItem(placement: .confirmationAction) {
@@ -88,7 +80,11 @@ struct SKReportIssueView: View {
     }
 
     private func dismiss() {
-        presentationMode.wrappedValue.dismiss()
+        if let onDismiss {
+            onDismiss()
+        } else {
+            dismissAction()
+        }
     }
 
     private func sendReport() {
@@ -103,11 +99,18 @@ struct SKReportIssueView: View {
         .compactMap { $0 }
         .joined(separator: "\n")
 
-        let query = "subject=\(subject)&body=\(body)"
-            .addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
+        let query = "subject=\(Self.mailtoEncoded(subject))&body=\(Self.mailtoEncoded(body))"
         if let url = URL(string: "mailto:skarnikapp@gmail.com?\(query)") {
             UIApplication.shared.open(url)
         }
         dismiss()
+    }
+
+    /// Percent-encodes one mailto query value. `.urlQueryAllowed` keeps `&`, `=`, `+`
+    /// and `?` literal, which would split the value into extra query keys.
+    nonisolated static func mailtoEncoded(_ value: String) -> String {
+        var allowed = CharacterSet.urlQueryAllowed
+        allowed.remove(charactersIn: "&=+?#")
+        return value.addingPercentEncoding(withAllowedCharacters: allowed) ?? ""
     }
 }

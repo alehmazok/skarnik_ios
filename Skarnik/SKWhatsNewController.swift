@@ -10,7 +10,7 @@
 import Foundation
 
 struct SKWhatsNewItem: Equatable, Identifiable {
-    /// SF Symbol name; must exist on the deployment target (iOS 15).
+    /// SF Symbol name; must exist on the deployment target (iOS 17).
     let symbol: String
     let title: String
     let text: String
@@ -50,6 +50,11 @@ enum SKWhatsNewCatalog {
                 symbol: "magnifyingglass",
                 title: "Пошук адным націскам",
                 text: "Націсніце на ўкладку «Пошук» яшчэ раз, каб адразу пачаць уводзіць слова."
+            ),
+            SKWhatsNewItem(
+                symbol: "rectangle.on.rectangle",
+                title: "Спрытнейшы віджэт",
+                text: "Віджэт са словам паказвае новае слова адразу, а не праз гадзіну. Для праграмы цяпер патрэбна iOS 17 ці навейшая."
             ),
         ]),
         SKWhatsNewRelease(version: "3.6.0", items: [

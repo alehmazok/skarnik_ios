@@ -12,25 +12,14 @@ import SwiftUI
 
 struct SKWordWidget: Widget {
     let kindAppIntent: String = "SKWordOfTheDayAppIntent"
-    let kindStatic: String = "SKWordOfTheDayStatic"
 
     var body: some WidgetConfiguration {
-        if #available(iOSApplicationExtension 17.0, *) {
-            return AppIntentConfiguration(kind: kindAppIntent, intent: SKWordWidgetConfigurationIntent.self, provider: SKWordAppIntentTimelineProvider()) { entry in
-                SKWordWidgetView(entry: entry)
-                    .containerBackground(.fill.tertiary, for: .widget)
-            }
-            .configurationDisplayName(SKLocalization.widgetWordTitle)
-            .description(SKLocalization.widgetWordDescriptioon)
-            .supportedFamilies([.systemSmall, .systemMedium])
-        } else {
-            return StaticConfiguration(kind: kindStatic, provider: SKWordTimelineProvider(), content: { entry in
-                SKWordWidgetView(entry: entry)
-                    .padding(12)
-            })
-                .configurationDisplayName(SKLocalization.widgetWordTitle)
-                .description(SKLocalization.widgetWordDescriptioon)
-                .supportedFamilies([.systemSmall, .systemMedium])
+        AppIntentConfiguration(kind: kindAppIntent, intent: SKWordWidgetConfigurationIntent.self, provider: SKWordAppIntentTimelineProvider()) { entry in
+            SKWordWidgetView(entry: entry)
+                .containerBackground(.fill.tertiary, for: .widget)
         }
+        .configurationDisplayName(SKLocalization.widgetWordTitle)
+        .description(SKLocalization.widgetWordDescriptioon)
+        .supportedFamilies([.systemSmall, .systemMedium])
     }
 }

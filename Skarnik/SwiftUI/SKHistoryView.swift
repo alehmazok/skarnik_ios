@@ -9,22 +9,23 @@ import SwiftUI
 // MARK: - ViewModel
 
 @MainActor
-final class SKHistoryViewModel: ObservableObject {
-    @Published var searchText: String = "" {
+@Observable
+final class SKHistoryViewModel {
+    var searchText: String = "" {
         didSet { updateSearch(searchText) }
     }
-    @Published private(set) var searchResults: [SKWord] = []
-    @Published private(set) var words: [SKWord] = []
-    /// Bound to `.searchable(isPresented:)` on iOS 17+. SwiftUI sets it back to `false`
+    private(set) var searchResults: [SKWord] = []
+    private(set) var words: [SKWord] = []
+    /// Bound to `.searchable(isPresented:)`. SwiftUI sets it back to `false`
     /// when the user cancels search.
-    @Published var isSearchPresented = false
+    var isSearchPresented = false
 
-    private var searchTask: Task<Void, Never>?
+    @ObservationIgnored private var searchTask: Task<Void, Never>?
 
     // Second, independent 500ms debounce layered on top of the search-as-you-type
     // above: only the last settle in a burst of typing fires a search analytics event.
     private let searchSettleSubject = PassthroughSubject<(query: String, resultCount: Int), Never>()
-    private var cancellables = Set<AnyCancellable>()
+    @ObservationIgnored private var cancellables = Set<AnyCancellable>()
 
     private let onSearchPerformed: (_ query: String, _ resultCount: Int) -> Void
     private let onSearchNoResults: (_ query: String) -> Void
@@ -102,7 +103,7 @@ final class SKHistoryViewModel: ObservableObject {
 // MARK: - Content view (reads isSearching from environment)
 
 private struct SKHistoryContentView: View {
-    @ObservedObject var viewModel: SKHistoryViewModel
+    let viewModel: SKHistoryViewModel
     @Environment(\.isSearching) private var isSearching
     var onWordSelected: (SKWord, String) -> Void
 
@@ -138,7 +139,7 @@ private struct SKHistoryContentView: View {
         VStack {
             Spacer()
             Text(SKLocalization.historyEmptyPlaceholder)
-                .foregroundColor(.secondary)
+                .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
                 .padding()
                 .accessibilityIdentifier("history.empty")
@@ -162,7 +163,7 @@ private struct SKHistoryContentView: View {
             .onDelete { viewModel.deleteWord(at: $0) }
         }
         .listStyle(.plain)
-        .modifier(ListBackgroundModifier())
+        .appListBackground()
     }
 
     // MARK: Search results
@@ -172,7 +173,7 @@ private struct SKHistoryContentView: View {
         if viewModel.searchResults.isEmpty {
             VStack {
                 Text(SKLocalization.searchHeaderAdditionalRules)
-                    .foregroundColor(.secondary)
+                    .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
                     .font(.callout)
                     .padding()
@@ -191,7 +192,7 @@ private struct SKHistoryContentView: View {
                 .listRowBackground(Color.appBackground)
             }
             .listStyle(.plain)
-            .modifier(ListBackgroundModifier())
+            .appListBackground()
         }
     }
 
@@ -212,11 +213,6 @@ private struct SKHistoryContentView: View {
         .padding(.bottom, 6)
     }
 
-    private var buttonBorderShape: ButtonBorderShape {
-        if #available(iOS 17, *) { return .circle }
-        return .roundedRectangle
-    }
-
     @ViewBuilder
     private func keyboardKey(_ char: String, tint: Color) -> some View {
         let button = Button(action: { viewModel.searchText += char }) {
@@ -224,7 +220,7 @@ private struct SKHistoryContentView: View {
                 .font(.system(size: 17))
                 .frame(width: 24, height: 24)
         }
-        .buttonBorderShape(buttonBorderShape)
+        .buttonBorderShape(.circle)
         .tint(tint)
         .accessibilityIdentifier("search.key.\(char)")
 
@@ -240,11 +236,11 @@ private struct SKHistoryContentView: View {
     @ViewBuilder
     private func wordCell(_ word: SKWord) -> some View {
         VStack(alignment: .leading, spacing: 2) {
-            Text(word.word).foregroundColor(.primary)
+            Text(word.word).foregroundStyle(.primary)
             if let name = word.lang_id.name {
                 Text(name.uppercased())
                     .font(.caption)
-                    .foregroundColor(.secondary)
+                    .foregroundStyle(.secondary)
             }
         }
     }
@@ -253,37 +249,18 @@ private struct SKHistoryContentView: View {
 // MARK: - Main view
 
 struct SKHistoryView: View {
-    @ObservedObject var viewModel: SKHistoryViewModel
+    @Bindable var viewModel: SKHistoryViewModel
     var onWordSelected: (SKWord, String) -> Void = { _, _ in }
 
     var body: some View {
         SKHistoryContentView(viewModel: viewModel, onWordSelected: onWordSelected)
             .navigationBarTitleDisplayMode(.inline)
-            .modifier(HistorySearchableModifier(viewModel: viewModel))
-            .modifier(OpaqueTabBarModifier())
-    }
-}
-
-/// `.searchable` with the `isPresented` binding where it exists (iOS 17+), so the
-/// view model can open search. Older systems fall back to the UIKit search bar
-/// (see `SKHistoryViewController.activateSearch()`).
-private struct HistorySearchableModifier: ViewModifier {
-    @ObservedObject var viewModel: SKHistoryViewModel
-
-    func body(content: Content) -> some View {
-        if #available(iOS 17, *) {
-            content.searchable(
+            .searchable(
                 text: $viewModel.searchText,
                 isPresented: $viewModel.isSearchPresented,
                 placement: .navigationBarDrawer(displayMode: .always),
                 prompt: SKLocalization.searchbarSearchWords
             )
-        } else {
-            content.searchable(
-                text: $viewModel.searchText,
-                placement: .navigationBarDrawer(displayMode: .always),
-                prompt: SKLocalization.searchbarSearchWords
-            )
-        }
+            .opaqueTabBar()
     }
 }

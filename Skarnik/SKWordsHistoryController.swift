@@ -27,7 +27,6 @@ class SKStorageController: Any {
     private func saveWords(words: [SKWord]) {
         if let jsonData = try? JSONEncoder().encode(words) {
             UserDefaults.standard.set(jsonData, forKey: SKWordsHistoryController.wordsHistoryKey)
-            UserDefaults.standard.synchronize()
         }
     }
     

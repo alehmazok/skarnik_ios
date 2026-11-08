@@ -41,8 +41,7 @@ enum SKInstallSource: String, Sendable {
     }
     #endif
 
-    /// iOS 16+: the StoreKit 2 app transaction environment. TestFlight installs are sandbox.
-    @available(iOS 16.0, *)
+    /// The StoreKit 2 app transaction environment. TestFlight installs are sandbox.
     init(environment: AppStore.Environment) {
         switch environment {
         case .production:
@@ -84,7 +83,7 @@ enum SKInstallSourceDetector {
             return SKInstallSource(distributor: distributor)
         }
         #endif
-        if #available(iOS 16.0, *), let result = try? await AppTransaction.shared {
+        if let result = try? await AppTransaction.shared {
             switch result {
             case .verified(let transaction), .unverified(let transaction, _):
                 // Only the channel is read, so an unverified transaction is good enough.

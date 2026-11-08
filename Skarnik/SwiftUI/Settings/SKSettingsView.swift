@@ -284,7 +284,7 @@ class SKSettingsViewController: UIHostingController<SKSettingsView> {
 
 #if DEBUG
 #Preview {
-    NavigationView {
+    NavigationStack {
         SKSettingsView()
     }
 }
