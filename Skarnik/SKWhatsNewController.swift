@@ -53,7 +53,7 @@ enum SKWhatsNewCatalog {
             ),
             SKWhatsNewItem(
                 symbol: "rectangle.on.rectangle",
-                title: "Віджэт хутчэй",
+                title: "Спрытнейшы віджэт",
                 text: "Віджэт са словам паказвае новае слова адразу, а не праз гадзіну. Для праграмы цяпер патрэбна iOS 17 ці навейшая."
             ),
         ]),
