@@ -23,6 +23,7 @@ xcodebuild archive \
   -destination "$destination" \
   -archivePath "$archive" \
   -derivedDataPath build/DerivedData \
+  -clonedSourcePackagesDirPath build/SourcePackages \
   -allowProvisioningUpdates \
   -authenticationKeyPath "$ASC_KEY_PATH" \
   -authenticationKeyID "$ASC_KEY_ID" \

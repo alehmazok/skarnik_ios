@@ -116,13 +116,35 @@ jobs:
           grep -q '"Apple Development' <<<"$identities" \
             || { echo "::error::DEV_CERT_P12 has no valid Apple Development identity with its private key"; exit 1; }
 
+      # GitHub release downloads (Sentry's binary xcframeworks) sometimes fail with 504 or connection
+      # errors. Cache the resolved packages and retry the download, so a CDN hiccup doesn't fail a release.
+      - name: Cache Swift packages
+        uses: actions/cache@v4
+        with:
+          path: build/SourcePackages
+          key: spm-${{ hashFiles('Skarnik.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved') }}
+
+      - name: Resolve Swift packages
+        run: |
+          for attempt in 1 2 3 4 5; do
+            if xcodebuild -resolvePackageDependencies -project Skarnik.xcodeproj -scheme Skarnik \
+                -clonedSourcePackagesDirPath build/SourcePackages; then
+              exit 0
+            fi
+            echo "::warning::Package resolution failed (attempt $attempt), retrying in $((attempt * 30))s"
+            sleep $((attempt * 30))
+          done
+          echo "::error::Could not resolve Swift packages"
+          exit 1
+
       - name: Resolve build number
         env:
           INPUT_BUILD_NUMBER: ${{ inputs.build_number }}
           ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
           ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
         run: |
-          if ! settings=$(xcodebuild -project Skarnik.xcodeproj -target Skarnik -configuration Release -showBuildSettings 2>"$RUNNER_TEMP/show-settings.err"); then
+          if ! settings=$(xcodebuild -project Skarnik.xcodeproj -target Skarnik -configuration Release -showBuildSettings \
+              -clonedSourcePackagesDirPath build/SourcePackages 2>"$RUNNER_TEMP/show-settings.err"); then
             cat "$RUNNER_TEMP/show-settings.err"
             echo "::error::xcodebuild -showBuildSettings failed"
             exit 1
