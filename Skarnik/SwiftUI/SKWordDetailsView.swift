@@ -81,7 +81,7 @@ private struct SKWordDetailsTranslationView: View {
                     // Lets UI tests check which source answered (local, supabase, api).
                     Text(translation.sourceName)
                         .font(.system(size: 1))
-                        .foregroundColor(.clear)
+                        .foregroundStyle(.clear)
                         .accessibilityIdentifier("wordDetails.source")
                 }
             }
@@ -249,7 +249,7 @@ struct SKWordDetailsView: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text(headword)
                     .font(.largeTitle.weight(.bold))
-                    .foregroundColor(.primary)
+                    .foregroundStyle(.primary)
                     .fixedSize(horizontal: false, vertical: true)
                     .textSelection(.enabled)
                     .accessibilityAddTraits(.isHeader)
@@ -257,7 +257,7 @@ struct SKWordDetailsView: View {
                 if let subtitle = viewModel.vocabularySubtitle {
                     Text(subtitle)
                         .font(.footnote)
-                        .foregroundColor(.secondary)
+                        .foregroundStyle(.secondary)
                         .fixedSize(horizontal: false, vertical: true)
                         .accessibilityIdentifier("wordDetails.subtitle")
                 }
@@ -320,7 +320,7 @@ struct SKWordDetailsView: View {
         if words.count == 1 {
             Button(action: { onSpellingWord(words[0]) }) {
                 Text(SKLocalization.wordDetailsSpelling)
-                    .foregroundColor(Color.accentColor)
+                    .foregroundStyle(Color.accentColor)
             }
             .accessibilityIdentifier("wordDetails.stress")
         } else {
@@ -330,7 +330,7 @@ struct SKWordDetailsView: View {
                 }
             } label: {
                 Text(SKLocalization.wordDetailsSpelling)
-                    .foregroundColor(Color.accentColor)
+                    .foregroundStyle(Color.accentColor)
             }
             .accessibilityIdentifier("wordDetails.stress")
         }
@@ -524,10 +524,8 @@ private let previewTranslation = SKSkarnikTranslation(
     sourceName: "mock"
 )
 #Preview("Loading") {
-    NavigationView {
-        NavigationLink(isActive: .constant(true)) {
-            SKWordDetailsView(viewModel: SKWordDetailsViewModel())
-        } label: { EmptyView() }
+    NavigationStack {
+        SKWordDetailsView(viewModel: SKWordDetailsViewModel())
     }
 }
 
@@ -535,21 +533,17 @@ private let previewTranslation = SKSkarnikTranslation(
     let vm = SKWordDetailsViewModel(
         translationSource: MockTranslationSource(translation: previewTranslation)
     )
-    return NavigationView {
-        NavigationLink(isActive: .constant(true)) {
-            SKWordDetailsView(viewModel: vm)
-                .onAppear { vm.updateWord(previewWord) }
-        } label: { EmptyView() }
+    return NavigationStack {
+        SKWordDetailsView(viewModel: vm)
+            .onAppear { vm.updateWord(previewWord) }
     }
 }
 
 #Preview("Error") {
     let vm = SKWordDetailsViewModel(translationSource: ErrorTranslationSource())
-    return NavigationView {
-        NavigationLink(isActive: .constant(true)) {
-            SKWordDetailsView(viewModel: vm)
-                .onAppear { vm.updateWord(previewWord) }
-        } label: { EmptyView() }
+    return NavigationStack {
+        SKWordDetailsView(viewModel: vm)
+            .onAppear { vm.updateWord(previewWord) }
     }
 }
 #endif

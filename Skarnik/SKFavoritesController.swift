@@ -30,7 +30,6 @@ class SKFavoritesController {
     private func saveFavorites() {
         if let jsonData = try? JSONEncoder().encode(favorites) {
             UserDefaults.standard.set(jsonData, forKey: SKFavoritesController.favoritesKey)
-            UserDefaults.standard.synchronize()
         }
     }
 

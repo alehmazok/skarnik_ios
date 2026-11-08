@@ -9,7 +9,7 @@
 import SwiftUI
 
 struct SKWordStressView: View {
-    @ObservedObject var viewModel: SKWordStressViewModel
+    let viewModel: SKWordStressViewModel
     var body: some View {
         ZStack {
             self.background

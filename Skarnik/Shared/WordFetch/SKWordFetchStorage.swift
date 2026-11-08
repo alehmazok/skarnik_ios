@@ -41,7 +41,6 @@ class SKWordFetchStorage {
             return
         }
         UserDefaults.standard.setValue(data, forKey: UserDefaults.skWordFetchStorageKey)
-        UserDefaults.standard.synchronize()
     }
     
     func addWord(_ wordFetchEntry: SKWordFetchEntry) {

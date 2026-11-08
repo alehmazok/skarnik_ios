@@ -56,7 +56,8 @@ class SKWordDetailsViewController: UIHostingController<SKWordDetailsView> {
     private func presentReport() {
         let reportView = SKReportIssueView(
             word: viewModel.word,
-            translationUrl: viewModel.translation?.url
+            translationUrl: viewModel.translation?.url,
+            onDismiss: { [weak self] in self?.dismiss(animated: true) }
         )
         let hostingController = UIHostingController(rootView: reportView)
         if let sheet = hostingController.sheetPresentationController {

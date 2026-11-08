@@ -30,7 +30,6 @@ class SKAppstoreReviewController: Any {
         
         let count = 1 + UserDefaults.standard.integer(forKey: self.wordsCompletedCountKey)
         UserDefaults.standard.set(count, forKey: self.wordsCompletedCountKey)
-        UserDefaults.standard.synchronize()
 
          // Verify the user completes the process several times and doesn’t receive a prompt for this app version.
         if count >= self.maxCount {

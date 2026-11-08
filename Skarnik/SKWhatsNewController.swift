@@ -51,6 +51,11 @@ enum SKWhatsNewCatalog {
                 title: "Пошук адным націскам",
                 text: "Націсніце на ўкладку «Пошук» яшчэ раз, каб адразу пачаць уводзіць слова."
             ),
+            SKWhatsNewItem(
+                symbol: "rectangle.on.rectangle",
+                title: "Віджэт хутчэй",
+                text: "Віджэт са словам паказвае новае слова адразу, а не праз гадзіну. Для праграмы цяпер патрэбна iOS 17 ці навейшая."
+            ),
         ]),
         SKWhatsNewRelease(version: "3.6.0", items: [
             SKWhatsNewItem(

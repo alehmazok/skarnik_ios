@@ -152,7 +152,7 @@ final class SKWhatsNewHistoryViewController: UIHostingController<SKWhatsNewHisto
 }
 
 #Preview("History") {
-    NavigationView {
+    NavigationStack {
         SKWhatsNewHistoryView(releases: SKWhatsNewCatalog.releases)
     }
 }

@@ -25,6 +25,10 @@ struct SKReportIssueView: View {
 
     let word: SKWord?
     let translationUrl: String?
+    /// Closes the sheet. UIKit presents this view in a `UIHostingController`,
+    /// so the presenter passes its own dismiss instead of relying on
+    /// `@Environment(\.dismiss)` reaching the UIKit presentation.
+    var onDismiss: (@MainActor () -> Void)? = nil
 
     @Environment(\.dismiss) private var dismissAction
     @State private var selectedIssue: IssueType = .translationError
@@ -76,7 +80,11 @@ struct SKReportIssueView: View {
     }
 
     private func dismiss() {
-        dismissAction()
+        if let onDismiss {
+            onDismiss()
+        } else {
+            dismissAction()
+        }
     }
 
     private func sendReport() {

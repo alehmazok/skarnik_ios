@@ -139,7 +139,7 @@ private struct SKHistoryContentView: View {
         VStack {
             Spacer()
             Text(SKLocalization.historyEmptyPlaceholder)
-                .foregroundColor(.secondary)
+                .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
                 .padding()
                 .accessibilityIdentifier("history.empty")
@@ -173,7 +173,7 @@ private struct SKHistoryContentView: View {
         if viewModel.searchResults.isEmpty {
             VStack {
                 Text(SKLocalization.searchHeaderAdditionalRules)
-                    .foregroundColor(.secondary)
+                    .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
                     .font(.callout)
                     .padding()
@@ -236,11 +236,11 @@ private struct SKHistoryContentView: View {
     @ViewBuilder
     private func wordCell(_ word: SKWord) -> some View {
         VStack(alignment: .leading, spacing: 2) {
-            Text(word.word).foregroundColor(.primary)
+            Text(word.word).foregroundStyle(.primary)
             if let name = word.lang_id.name {
                 Text(name.uppercased())
                     .font(.caption)
-                    .foregroundColor(.secondary)
+                    .foregroundStyle(.secondary)
             }
         }
     }

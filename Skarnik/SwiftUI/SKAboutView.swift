@@ -178,7 +178,7 @@ class SKAboutViewController: UIHostingController<SKAboutView> {
 
 #if DEBUG
 #Preview {
-    NavigationView {
+    NavigationStack {
         SKAboutView()
     }
 }

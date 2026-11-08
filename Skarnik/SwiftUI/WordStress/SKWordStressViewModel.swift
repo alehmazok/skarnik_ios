@@ -7,13 +7,14 @@
 //
 
 import Foundation
-import Combine
+import Observation
 
 @MainActor
-class SKWordStressViewModel: ObservableObject {
-    @Published var table: [SKStressRow] = []
-    @Published var error: String?
-    @Published var isLoading: Bool
+@Observable
+final class SKWordStressViewModel {
+    var table: [SKStressRow] = []
+    var error: String?
+    var isLoading: Bool
     private let entry: SKStressWordEntry
     private let resolver: SKStressResolver
 
