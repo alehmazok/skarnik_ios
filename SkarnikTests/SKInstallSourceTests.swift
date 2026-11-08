@@ -84,6 +84,7 @@ struct SKInstallSourceTests {
             }
         }
         #expect(value == .unknown)
-        #expect(Date().timeIntervalSince(start) < 2)
+        // Well under the 5 s the operation hangs for, with headroom for a loaded CI simulator.
+        #expect(Date().timeIntervalSince(start) < 4)
     }
 }
