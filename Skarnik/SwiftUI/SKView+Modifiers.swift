@@ -23,11 +23,12 @@ extension View {
         scrollContentBackground(.hidden).background(Color.appBackground)
     }
 
+    /// Extra vertical row padding on Mac Catalyst; no change elsewhere.
     @ViewBuilder
-    func combinedVerticalPadding() -> some View {
+    func catalystVerticalPadding() -> some View {
 #if targetEnvironment(macCatalyst)
         padding(.vertical)
-#elseif os(iOS)
+#else
         self
 #endif
     }

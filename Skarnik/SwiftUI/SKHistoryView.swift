@@ -9,22 +9,23 @@ import SwiftUI
 // MARK: - ViewModel
 
 @MainActor
-final class SKHistoryViewModel: ObservableObject {
-    @Published var searchText: String = "" {
+@Observable
+final class SKHistoryViewModel {
+    var searchText: String = "" {
         didSet { updateSearch(searchText) }
     }
-    @Published private(set) var searchResults: [SKWord] = []
-    @Published private(set) var words: [SKWord] = []
+    private(set) var searchResults: [SKWord] = []
+    private(set) var words: [SKWord] = []
     /// Bound to `.searchable(isPresented:)`. SwiftUI sets it back to `false`
     /// when the user cancels search.
-    @Published var isSearchPresented = false
+    var isSearchPresented = false
 
-    private var searchTask: Task<Void, Never>?
+    @ObservationIgnored private var searchTask: Task<Void, Never>?
 
     // Second, independent 500ms debounce layered on top of the search-as-you-type
     // above: only the last settle in a burst of typing fires a search analytics event.
     private let searchSettleSubject = PassthroughSubject<(query: String, resultCount: Int), Never>()
-    private var cancellables = Set<AnyCancellable>()
+    @ObservationIgnored private var cancellables = Set<AnyCancellable>()
 
     private let onSearchPerformed: (_ query: String, _ resultCount: Int) -> Void
     private let onSearchNoResults: (_ query: String) -> Void
@@ -102,7 +103,7 @@ final class SKHistoryViewModel: ObservableObject {
 // MARK: - Content view (reads isSearching from environment)
 
 private struct SKHistoryContentView: View {
-    @ObservedObject var viewModel: SKHistoryViewModel
+    let viewModel: SKHistoryViewModel
     @Environment(\.isSearching) private var isSearching
     var onWordSelected: (SKWord, String) -> Void
 
@@ -248,7 +249,7 @@ private struct SKHistoryContentView: View {
 // MARK: - Main view
 
 struct SKHistoryView: View {
-    @ObservedObject var viewModel: SKHistoryViewModel
+    @Bindable var viewModel: SKHistoryViewModel
     var onWordSelected: (SKWord, String) -> Void = { _, _ in }
 
     var body: some View {

@@ -26,7 +26,7 @@ struct SKReportIssueView: View {
     let word: SKWord?
     let translationUrl: String?
 
-    @Environment(\.presentationMode) private var presentationMode
+    @Environment(\.dismiss) private var dismissAction
     @State private var selectedIssue: IssueType = .translationError
     @State private var details: String = ""
 
@@ -63,7 +63,7 @@ struct SKReportIssueView: View {
                 Button(action: dismiss) {
                     Image(systemName: "xmark.circle.fill")
                         .font(.title2)
-                        .foregroundColor(.secondary)
+                        .foregroundStyle(.secondary)
                 }
             }
             ToolbarItem(placement: .confirmationAction) {
@@ -76,7 +76,7 @@ struct SKReportIssueView: View {
     }
 
     private func dismiss() {
-        presentationMode.wrappedValue.dismiss()
+        dismissAction()
     }
 
     private func sendReport() {
@@ -91,11 +91,18 @@ struct SKReportIssueView: View {
         .compactMap { $0 }
         .joined(separator: "\n")
 
-        let query = "subject=\(subject)&body=\(body)"
-            .addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
+        let query = "subject=\(Self.mailtoEncoded(subject))&body=\(Self.mailtoEncoded(body))"
         if let url = URL(string: "mailto:skarnikapp@gmail.com?\(query)") {
             UIApplication.shared.open(url)
         }
         dismiss()
+    }
+
+    /// Percent-encodes one mailto query value. `.urlQueryAllowed` keeps `&`, `=`, `+`
+    /// and `?` literal, which would split the value into extra query keys.
+    nonisolated static func mailtoEncoded(_ value: String) -> String {
+        var allowed = CharacterSet.urlQueryAllowed
+        allowed.remove(charactersIn: "&=+?#")
+        return value.addingPercentEncoding(withAllowedCharacters: allowed) ?? ""
     }
 }

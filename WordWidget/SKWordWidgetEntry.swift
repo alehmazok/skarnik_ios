@@ -11,8 +11,6 @@ import WidgetKit
 
 struct SKWordWidgetEntry: TimelineEntry {
     let date: Date
-    
-    let configuration: SKWordWidgetConfigurationIntent
 
     let word: String
     let wordTranslation: String
@@ -23,9 +21,8 @@ struct SKWordWidgetEntry: TimelineEntry {
         URL(string: "skarnik://word?id=\(wordId)&lang=\(language.rawValue)")
     }
 
-    init(date: Date, configuration: SKWordWidgetConfigurationIntent, word: String, wordTranslation: String, wordId: Int64 = 0, language: ESKVocabularyType = .bel_rus) {
+    init(date: Date, word: String, wordTranslation: String, wordId: Int64 = 0, language: ESKVocabularyType = .bel_rus) {
         self.date = date
-        self.configuration = configuration
         self.word = word
         self.wordTranslation = wordTranslation
         self.wordId = wordId

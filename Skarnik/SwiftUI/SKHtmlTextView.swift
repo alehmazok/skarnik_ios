@@ -21,10 +21,7 @@ struct SKHtmlTextView: View {
                         dynamicTypeSize: dynamicTypeSize,
                         boldText: legibilityWeight == .bold,
                         dynamicHeight: $height)
-            .background(Color.clear)
             .frame(minHeight: height)
-            .background(Color.clear)
-
     }
 }
 

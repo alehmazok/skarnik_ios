@@ -60,6 +60,6 @@ struct SKWordStressView: View {
                 .frame(minWidth: 0, maxWidth: .infinity)
 
         })
-        .combinedVerticalPadding()
+        .catalystVerticalPadding()
     }
 }
