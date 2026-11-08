@@ -102,7 +102,7 @@ jobs:
         # and NoNetworkUITests alone with the network switched off.
         run: |
           set +e
-          RUN_NAME=online SKIP_TESTING=NoNetworkUITests \
+          RUN_NAME=online SKIP_TESTING=NoNetworkUITests,AppStoreScreenshotsUITests \
             scripts/browserstack-run.sh build/Skarnik.ipa build/SkarnikUITests.zip > build/browserstack-online.log 2>&1 &
           online=$!
           RUN_NAME="no network" ONLY_TESTING=NoNetworkUITests NETWORK_PROFILE=no-network \

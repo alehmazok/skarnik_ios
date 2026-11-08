@@ -24,6 +24,8 @@
 		B20ABACE28EEC39E00AA2FC9 /* SKVocabulariesTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20ABACD28EEC39D00AA2FC9 /* SKVocabulariesTableViewController.swift */; };
 		B20ABAD228EED10D00AA2FC9 /* SKSplitViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20ABAD128EED10D00AA2FC9 /* SKSplitViewController.swift */; };
 		B20ABAD528EF215400AA2FC9 /* SQLite in Frameworks */ = {isa = PBXBuildFile; productRef = B20ABAD428EF215400AA2FC9 /* SQLite */; };
+		C5E0A1000000000000000103 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = C5E0A1000000000000000101 /* PrivacyInfo.xcprivacy */; };
+		C5E0A1000000000000000104 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = C5E0A1000000000000000102 /* PrivacyInfo.xcprivacy */; };
 		B20ABAD728EF21CC00AA2FC9 /* vocabulary.db in Resources */ = {isa = PBXBuildFile; fileRef = B20ABAD628EF21CA00AA2FC9 /* vocabulary.db */; };
 		B20ABAD928EF22AD00AA2FC9 /* SKVocabularyIndex.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20ABAD828EF22AC00AA2FC9 /* SKVocabularyIndex.swift */; };
 		B2362A90290697E50059B13C /* SKAppstoreReviewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2362A8F290697E50059B13C /* SKAppstoreReviewController.swift */; };
@@ -160,6 +162,8 @@
 		B20ABACF28EEC55400AA2FC9 /* be */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = be; path = be.lproj/Main.strings; sourceTree = "<group>"; };
 		B20ABAD028EEC55500AA2FC9 /* be */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = be; path = be.lproj/LaunchScreen.strings; sourceTree = "<group>"; };
 		B20ABAD128EED10D00AA2FC9 /* SKSplitViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SKSplitViewController.swift; sourceTree = "<group>"; };
+		C5E0A1000000000000000101 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		C5E0A1000000000000000102 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		B20ABAD628EF21CA00AA2FC9 /* vocabulary.db */ = {isa = PBXFileReference; lastKnownFileType = file; path = vocabulary.db; sourceTree = "<group>"; };
 		B20ABAD828EF22AC00AA2FC9 /* SKVocabularyIndex.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SKVocabularyIndex.swift; sourceTree = "<group>"; };
 		B2362A8F290697E50059B13C /* SKAppstoreReviewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SKAppstoreReviewController.swift; sourceTree = "<group>"; };
@@ -366,6 +370,7 @@
 				B27D996628FBB15E0047CCBF /* Skarnik.entitlements */,
 				B20ABAC728EEBF8400AA2FC9 /* Info.plist */,
 				B20ABAD628EF21CA00AA2FC9 /* vocabulary.db */,
+				C5E0A1000000000000000101 /* PrivacyInfo.xcprivacy */,
 			);
 			path = Skarnik;
 			sourceTree = "<group>";
@@ -450,6 +455,7 @@
 				B284FE6E2AE0A527009CA21D /* SKWordWidgetView.swift */,
 				B284FE662AE0A456009CA21D /* WordWidgetExtension.entitlements */,
 				B284FE622AE0A456009CA21D /* Info.plist */,
+				C5E0A1000000000000000102 /* PrivacyInfo.xcprivacy */,
 			);
 			path = WordWidget;
 			sourceTree = "<group>";
@@ -636,6 +642,7 @@
 				F268C3D32D50DF5F004B7BE4 /* GoogleService-Info.plist in Resources */,
 				B20ABAC328EEBF8400AA2FC9 /* Assets.xcassets in Resources */,
 				B20ABAC128EEBF6F00AA2FC9 /* Main.storyboard in Resources */,
+				C5E0A1000000000000000103 /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -645,6 +652,7 @@
 			files = (
 				B2BE6DDC2AE132AB00EE7A25 /* Assets.xcassets in Resources */,
 				B2BE6DDD2AE1349200EE7A25 /* vocabulary.db in Resources */,
+				C5E0A1000000000000000104 /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
