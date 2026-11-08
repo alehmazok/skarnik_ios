@@ -121,6 +121,7 @@ jobs:
             -skip-testing:SkarnikUITests/NetworkUITests \
             -skip-testing:SkarnikUITests/OfflineDictionaryUITests \
             -skip-testing:SkarnikUITests/NoNetworkUITests \
+            -skip-testing:SkarnikUITests/AppStoreScreenshotsUITests \
             CODE_SIGNING_ALLOWED=NO \
             | tee build/xcodebuild-ui-test.log
 
