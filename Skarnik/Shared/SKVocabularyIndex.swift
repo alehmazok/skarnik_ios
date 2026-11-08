@@ -101,8 +101,24 @@ class SKVocabularyIndex {
     static let gluedPrefixLetters: Set<Character> = ["а", "в", "ж", "з", "и", "і", "к", "о", "с", "у", "ў"]
     
     private init() {
-        let dbUrl = Bundle.main.url(forResource: "vocabulary", withExtension: "db")
+        let dbUrl = Self.databaseURL(in: Bundle.main)
         self.db = try! Connection(dbUrl!.absoluteString)
+    }
+
+    /// Where `vocabulary.db` lives. Only the app target bundles it (issue #58: it is 84 MB, and
+    /// bundling it into WordWidgetExtension too doubled the install size). The widget extension sits
+    /// inside the app at `Skarnik.app/PlugIns/WordWidgetExtension.appex`, so from an `.appex` we read
+    /// the containing app's copy. That copy is installed together with the extension, so it is there
+    /// even when the widget runs before the app has ever been launched.
+    static func databaseURL(in bundle: Bundle) -> URL? {
+        if let url = bundle.url(forResource: "vocabulary", withExtension: "db") {
+            return url
+        }
+        let bundleURL = bundle.bundleURL
+        guard bundleURL.pathExtension == "appex" else { return nil }
+        let appURL = bundleURL.deletingLastPathComponent().deletingLastPathComponent()
+        guard appURL.pathExtension == "app", let app = Bundle(url: appURL) else { return nil }
+        return app.url(forResource: "vocabulary", withExtension: "db")
     }
     
     func preprocessQuery(_ query: String, vocabularyType: ESKVocabularyType) -> String {

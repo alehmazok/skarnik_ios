@@ -61,6 +61,16 @@ jobs:
             CODE_SIGNING_ALLOWED=NO \
             | tee build/xcodebuild-test.log
 
+      # Issue #58: vocabulary.db (84 MB) must ship once, in the app. The widget extension reads the app's copy.
+      - name: Check vocabulary.db is bundled once
+        run: |
+          app=build/Build/Products/Debug-iphonesimulator/Skarnik.app
+          copies=$(find "$app" -name vocabulary.db)
+          echo "$copies"
+          if [[ "$copies" != "$app/vocabulary.db" ]]; then
+            echo "::error::vocabulary.db must be bundled only at $app/vocabulary.db (issue #58)"; exit 1
+          fi
+
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v4
