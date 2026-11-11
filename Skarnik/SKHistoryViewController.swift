@@ -80,7 +80,8 @@ class SKHistoryViewController: UIHostingController<SKHistoryView> {
         controller.searchResultsUpdater = self
         controller.delegate = self
         controller.searchBar.placeholder = SKLocalization.searchbarSearchWords
-        controller.searchBar.inputAccessoryView = makeKeyRowAccessory()
+        // On the text field itself: `UISearchBar.inputAccessoryView` is not passed on to it.
+        controller.searchBar.searchTextField.inputAccessoryView = makeKeyRowAccessory()
         navigationItem.searchController = controller
         navigationItem.hidesSearchBarWhenScrolling = false
         definesPresentationContext = true
