@@ -95,6 +95,11 @@ final class SKHistoryViewModel {
         isSearchPresented = true
     }
 
+    /// Appends a letter from the extra key row (і, ў, ʼ, и, щ, ъ) to the query.
+    func insertCharacter(_ char: String) {
+        searchText += char
+    }
+
     func resultTapped(_ word: SKWord, position: Int) {
         onSearchResultTapped(word, position, searchText)
     }
@@ -104,8 +109,15 @@ final class SKHistoryViewModel {
 
 private struct SKHistoryContentView: View {
     let viewModel: SKHistoryViewModel
-    @Environment(\.isSearching) private var isSearching
+    /// `true` when a UIKit `UISearchController` owns the field (iOS 26 bottom search):
+    /// SwiftUI's `isSearching` is then never set, so search mode comes from the view model.
+    let usesSystemSearchController: Bool
+    @Environment(\.isSearching) private var swiftUiIsSearching
     var onWordSelected: (SKWord, String) -> Void
+
+    private var isSearching: Bool {
+        usesSystemSearchController ? viewModel.isSearchPresented : swiftUiIsSearching
+    }
 
     private static let rusKeyboardChars = ["и", "щ", "ъ"]
     private static let belKeyboardChars = ["і", "ў", "'"]
@@ -215,7 +227,7 @@ private struct SKHistoryContentView: View {
 
     @ViewBuilder
     private func keyboardKey(_ char: String, tint: Color) -> some View {
-        let button = Button(action: { viewModel.searchText += char }) {
+        let button = Button(action: { viewModel.insertCharacter(char) }) {
             Text(char)
                 .font(.system(size: 17))
                 .frame(width: 24, height: 24)
@@ -250,17 +262,31 @@ private struct SKHistoryContentView: View {
 
 struct SKHistoryView: View {
     @Bindable var viewModel: SKHistoryViewModel
+    /// See `SKHistoryContentView.usesSystemSearchController`.
+    var usesSystemSearchController = false
     var onWordSelected: (SKWord, String) -> Void = { _, _ in }
 
     var body: some View {
-        SKHistoryContentView(viewModel: viewModel, onWordSelected: onWordSelected)
-            .navigationBarTitleDisplayMode(.inline)
-            .searchable(
-                text: $viewModel.searchText,
-                isPresented: $viewModel.isSearchPresented,
-                placement: .navigationBarDrawer(displayMode: .always),
-                prompt: SKLocalization.searchbarSearchWords
-            )
-            .opaqueTabBar()
+        if usesSystemSearchController {
+            content
+        } else {
+            content
+                .searchable(
+                    text: $viewModel.searchText,
+                    isPresented: $viewModel.isSearchPresented,
+                    placement: .navigationBarDrawer(displayMode: .always),
+                    prompt: SKLocalization.searchbarSearchWords
+                )
+                .opaqueTabBar()
+        }
+    }
+
+    private var content: some View {
+        SKHistoryContentView(
+            viewModel: viewModel,
+            usesSystemSearchController: usesSystemSearchController,
+            onWordSelected: onWordSelected
+        )
+        .navigationBarTitleDisplayMode(.inline)
     }
 }
