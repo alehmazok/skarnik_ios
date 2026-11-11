@@ -15,6 +15,8 @@ class SKHistoryViewController: UIHostingController<SKHistoryView> {
     /// Set only in `.searchOnly` mode: a UIKit `UISearchController`, so the iOS 26
     /// `UISearchTab` can show the field at the bottom of the Liquid Glass tab bar.
     private var searchController: UISearchController?
+    /// Hosts the extra letter row used as the search bar's input accessory (`.searchOnly`).
+    private var keyRowController: UIHostingController<SKSearchKeyRow>?
 
     init(mode: SKHistoryScreenMode = .historyAndSearch) {
         let vm = SKHistoryViewModel()
@@ -78,11 +80,25 @@ class SKHistoryViewController: UIHostingController<SKHistoryView> {
         controller.searchResultsUpdater = self
         controller.delegate = self
         controller.searchBar.placeholder = SKLocalization.searchbarSearchWords
+        controller.searchBar.inputAccessoryView = makeKeyRowAccessory()
         navigationItem.searchController = controller
         navigationItem.hidesSearchBarWhenScrolling = false
         definesPresentationContext = true
         searchController = controller
         observeSearchText()
+    }
+
+    /// The extra letter row as an input accessory: it rides on the keyboard, and the iOS 26
+    /// floating search field sits above it.
+    private func makeKeyRowAccessory() -> UIView {
+        let host = UIHostingController(rootView: SKSearchKeyRow { [weak self] char in
+            self?.viewModel.insertCharacter(char)
+        })
+        host.view.backgroundColor = .clear
+        host.view.frame = CGRect(x: 0, y: 0, width: view.bounds.width, height: SKSearchKeyRow.height)
+        host.view.autoresizingMask = [.flexibleWidth]
+        keyRowController = host
+        return host.view
     }
 
     /// Mirrors view-model edits (the extra key row) into the UIKit field.

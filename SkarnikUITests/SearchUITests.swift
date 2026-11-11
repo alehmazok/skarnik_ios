@@ -11,7 +11,7 @@ final class SearchUITests: SkarnikUITestCase {
 
     func testLaunchShowsTabsAndSearchOpensWord() {
         let tabBar = app.tabBars.firstMatch
-        XCTAssertEqual(tabBar.buttons.count, 4)
+        XCTAssertEqual(tabBar.buttons.count, allTabs.count)
         for tab in allTabs {
             let button = tabBar.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", tab.rawValue)).firstMatch
             XCTAssertTrue(button.exists, "Missing tab «\(tab.rawValue)»")

@@ -134,16 +134,14 @@ private struct SKHistoryContentView: View {
         }
     }
 
-    private static let rusKeyboardChars = ["и", "щ", "ъ"]
-    private static let belKeyboardChars = ["і", "ў", "'"]
-    private static let keyboardKeySpacing: CGFloat = 8
-
     var body: some View {
         mainContent
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(Color.appBackground.ignoresSafeArea())
             .safeAreaInset(edge: .bottom) {
-                if isSearching { belarusianKeyboardRow }
+                // In `.searchOnly` the row is the search bar's input accessory instead, so it sits
+                // on the keyboard below the floating iOS 26 field rather than under it.
+                if isSearching && mode != .searchOnly { belarusianKeyboardRow }
             }
     }
 
@@ -226,6 +224,37 @@ private struct SKHistoryContentView: View {
     // MARK: Belarusian character row
 
     private var belarusianKeyboardRow: some View {
+        SKSearchKeyRow { viewModel.insertCharacter($0) }
+    }
+
+    // MARK: Cell helper
+
+    @ViewBuilder
+    private func wordCell(_ word: SKWord) -> some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text(word.word).foregroundStyle(.primary)
+            if let name = word.lang_id.name {
+                Text(name.uppercased())
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+        }
+    }
+}
+
+// MARK: - Extra letter row
+
+/// The и щ ъ / і ў ʼ keys shown above the keyboard while searching.
+struct SKSearchKeyRow: View {
+    var onInsert: (String) -> Void
+
+    static let height: CGFloat = 58
+
+    private static let rusKeyboardChars = ["и", "щ", "ъ"]
+    private static let belKeyboardChars = ["і", "ў", "'"]
+    private static let keyboardKeySpacing: CGFloat = 8
+
+    var body: some View {
         HStack(spacing: 0) {
             HStack(spacing: Self.keyboardKeySpacing) {
                 ForEach(Self.rusKeyboardChars, id: \.self) { keyboardKey($0, tint: .secondary) }
@@ -242,7 +271,7 @@ private struct SKHistoryContentView: View {
 
     @ViewBuilder
     private func keyboardKey(_ char: String, tint: Color) -> some View {
-        let button = Button(action: { viewModel.insertCharacter(char) }) {
+        let button = Button(action: { onInsert(char) }) {
             Text(char)
                 .font(.system(size: 17))
                 .frame(width: 24, height: 24)
@@ -255,20 +284,6 @@ private struct SKHistoryContentView: View {
             button.buttonStyle(.glass)
         } else {
             button.buttonStyle(.borderedProminent)
-        }
-    }
-
-    // MARK: Cell helper
-
-    @ViewBuilder
-    private func wordCell(_ word: SKWord) -> some View {
-        VStack(alignment: .leading, spacing: 2) {
-            Text(word.word).foregroundStyle(.primary)
-            if let name = word.lang_id.name {
-                Text(name.uppercased())
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            }
         }
     }
 }
