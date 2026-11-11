@@ -10,20 +10,17 @@ class SKHistoryViewController: UIHostingController<SKHistoryView> {
 
     let viewModel: SKHistoryViewModel
 
-    /// On iOS 26 the field is a UIKit `UISearchController`, so a `UISearchTab` can move it to
-    /// the bottom (Liquid Glass tab bar). Earlier versions keep SwiftUI's `.searchable` drawer.
-    static var usesSystemSearchController: Bool {
-        if #available(iOS 26.0, *) { return true }
-        return false
-    }
+    let mode: SKHistoryScreenMode
 
-    /// Set only when `usesSystemSearchController` is `true`.
+    /// Set only in `.searchOnly` mode: a UIKit `UISearchController`, so the iOS 26
+    /// `UISearchTab` can show the field at the bottom of the Liquid Glass tab bar.
     private var searchController: UISearchController?
 
-    init() {
+    init(mode: SKHistoryScreenMode = .historyAndSearch) {
         let vm = SKHistoryViewModel()
         self.viewModel = vm
-        super.init(rootView: SKHistoryView(viewModel: vm, usesSystemSearchController: Self.usesSystemSearchController))
+        self.mode = mode
+        super.init(rootView: SKHistoryView(viewModel: vm, mode: mode))
     }
 
     required init?(coder: NSCoder) {
@@ -32,16 +29,16 @@ class SKHistoryViewController: UIHostingController<SKHistoryView> {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        navigationItem.title = SKLocalization.tabHistory
+        navigationItem.title = mode == .historyOnly ? SKLocalization.tabHistoryList : SKLocalization.tabHistory
         navigationItem.largeTitleDisplayMode = .never
         rootView = SKHistoryView(
             viewModel: viewModel,
-            usesSystemSearchController: Self.usesSystemSearchController,
+            mode: mode,
             onWordSelected: { [weak self] word, entryPoint in
                 self?.openWord(word, entryPoint: entryPoint)
             }
         )
-        if Self.usesSystemSearchController {
+        if mode == .searchOnly {
             configureSearchController()
         }
     }
@@ -53,20 +50,17 @@ class SKHistoryViewController: UIHostingController<SKHistoryView> {
 
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        if let sceneDelegate = view.window?.windowScene?.delegate as? SceneDelegate,
+        // The widget opens words from the start tab only (the search tab is created lazily).
+        if mode != .searchOnly,
+           let sceneDelegate = view.window?.windowScene?.delegate as? SceneDelegate,
            let word = sceneDelegate.pendingWord {
             sceneDelegate.pendingWord = nil
             openWord(word, entryPoint: "widget")
         }
     }
 
-    /// Focuses the search field and shows the keyboard (Search tab re-tap).
+    /// Focuses the search field and shows the keyboard (Search tab re-tap on iOS 17–25).
     func activateSearch() {
-        if let searchController {
-            searchController.isActive = true
-            Task { @MainActor in searchController.searchBar.becomeFirstResponder() }
-            return
-        }
         if !viewModel.isSearchPresented {
             // SwiftUI drives the field through `.searchable(isPresented:)`.
             viewModel.activateSearch()

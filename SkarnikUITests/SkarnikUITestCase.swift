@@ -20,6 +20,8 @@ class SkarnikUITestCase: XCTestCase {
     var app: XCUIApplication!
 
     enum Tab: String {
+        /// iOS 26 only: history has its own start tab (see `hasSeparateSearchTab`).
+        case history = "Гісторыя"
         case search = "Пошук"
         case bookmarks = "Закладкі"
         case dictionaries = "Слоўнікі"
@@ -130,10 +132,31 @@ class SkarnikUITestCase: XCTestCase {
 
     // MARK: - Search
 
+    /// iOS 26: Гісторыя is the start tab and search is a separate tab with the field at the bottom.
+    /// iOS 17–25: one Пошук tab shows history and the search field at the top.
+    var hasSeparateSearchTab: Bool {
+        if #available(iOS 26.0, *) { return true }
+        return false
+    }
+
+    /// The tabs in tab bar order.
+    var allTabs: [Tab] {
+        hasSeparateSearchTab ? [.history, .bookmarks, .dictionaries, .settings, .search]
+                             : [.search, .bookmarks, .dictionaries, .settings]
+    }
+
     var searchField: XCUIElement { app.searchFields.firstMatch }
+
+    /// The search screen always shows either results or the search hint.
+    private var isOnSearchScreen: Bool {
+        element("search.result").exists || element("search.noResults").exists
+    }
 
     /// Replaces whatever is in the search field with `text`.
     func search(_ text: String) {
+        if hasSeparateSearchTab && !isOnSearchScreen {
+            openTab(.search)
+        }
         waitFor(searchField, "Search field missing")
         searchField.tap()
         if let current = searchField.value as? String, !current.isEmpty,
@@ -161,6 +184,14 @@ class SkarnikUITestCase: XCTestCase {
         }
         XCTFail("No result «\(word)» in \(dictionary.rowCaption)")
         return byLabel
+    }
+
+    /// Leaves search and shows the history list (on iOS 26 that is the Гісторыя tab).
+    func showHistory() {
+        cancelSearch()
+        if hasSeparateSearchTab {
+            openTab(.history)
+        }
     }
 
     /// Cancels search mode so the history list shows again.

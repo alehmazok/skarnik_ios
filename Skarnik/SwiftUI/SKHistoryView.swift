@@ -105,18 +105,33 @@ final class SKHistoryViewModel {
     }
 }
 
+// MARK: - Screen mode
+
+/// What the history/search screen shows.
+enum SKHistoryScreenMode {
+    /// iOS 17–25: one Пошук tab with history and SwiftUI's `.searchable` drawer at the top.
+    case historyAndSearch
+    /// iOS 26 Гісторыя tab: the history list only, no search field.
+    case historyOnly
+    /// iOS 26 search tab: results only. The field is a UIKit `UISearchController` that the
+    /// `UISearchTab` shows at the bottom, so search mode comes from the view model.
+    case searchOnly
+}
+
 // MARK: - Content view (reads isSearching from environment)
 
 private struct SKHistoryContentView: View {
     let viewModel: SKHistoryViewModel
-    /// `true` when a UIKit `UISearchController` owns the field (iOS 26 bottom search):
-    /// SwiftUI's `isSearching` is then never set, so search mode comes from the view model.
-    let usesSystemSearchController: Bool
+    let mode: SKHistoryScreenMode
     @Environment(\.isSearching) private var swiftUiIsSearching
     var onWordSelected: (SKWord, String) -> Void
 
     private var isSearching: Bool {
-        usesSystemSearchController ? viewModel.isSearchPresented : swiftUiIsSearching
+        switch mode {
+        case .historyAndSearch: return swiftUiIsSearching
+        case .historyOnly: return false
+        case .searchOnly: return viewModel.isSearchPresented
+        }
     }
 
     private static let rusKeyboardChars = ["и", "щ", "ъ"]
@@ -136,7 +151,7 @@ private struct SKHistoryContentView: View {
 
     @ViewBuilder
     private var mainContent: some View {
-        if isSearching {
+        if mode == .searchOnly || isSearching {
             searchContent
         } else if viewModel.words.isEmpty {
             emptyState
@@ -262,12 +277,11 @@ private struct SKHistoryContentView: View {
 
 struct SKHistoryView: View {
     @Bindable var viewModel: SKHistoryViewModel
-    /// See `SKHistoryContentView.usesSystemSearchController`.
-    var usesSystemSearchController = false
+    var mode: SKHistoryScreenMode = .historyAndSearch
     var onWordSelected: (SKWord, String) -> Void = { _, _ in }
 
     var body: some View {
-        if usesSystemSearchController {
+        if mode != .historyAndSearch {
             content
         } else {
             content
@@ -284,7 +298,7 @@ struct SKHistoryView: View {
     private var content: some View {
         SKHistoryContentView(
             viewModel: viewModel,
-            usesSystemSearchController: usesSystemSearchController,
+            mode: mode,
             onWordSelected: onWordSelected
         )
         .navigationBarTitleDisplayMode(.inline)

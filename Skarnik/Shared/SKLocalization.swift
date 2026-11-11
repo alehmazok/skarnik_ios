@@ -15,6 +15,8 @@ class SKLocalization: Any {
 
     class var vocabulariesAdvancedSearch: String { "Спецпошук" }
     class var tabHistory: String { "Пошук" }
+    /// iOS 26 only: history has its own tab, search moves to the bottom search tab.
+    class var tabHistoryList: String { "Гісторыя" }
     class var tabFavorites: String { "Закладкі" }
     class var tabVocabularies: String { "Слоўнікі" }
     class var tabSettings: String { "Налады" }

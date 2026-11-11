@@ -19,12 +19,12 @@ signal and battery, switches the simulator to a Russian software keyboard, and t
 
 | File | Screen |
 |------|--------|
-| `01-search` | Search with the і / ў / ʼ key row and the keyboard |
+| `01-search` | Search with the і / ў / ʼ key row and the keyboard (on iOS 26 the field is at the bottom, in the search tab) |
 | `02-article` | Article with colours |
 | `03-stress` | Stress table (націск) |
 | `04-offline` | Settings with the ТСБМ dictionary downloaded |
 | `05-fuzzy-search` | «слоунік» still finds «слоўнік» |
-| `06-history` | History |
+| `06-history` | History (its own Гісторыя tab on iOS 26) |
 | `07-bookmarks` | Bookmarks |
 
 The words are constants at the top of the test. The Home Screen widget shot is not automated:

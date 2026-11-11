@@ -77,7 +77,7 @@ final class AppStoreScreenshotsUITests: SkarnikUITestCase {
         snapshot("05-fuzzy-search")
 
         // 6. History and bookmarks.
-        cancelSearch()
+        showHistory()
         waitFor(element("history.row"), "History is empty")
         snapshot("06-history")
         openTab(.bookmarks)
