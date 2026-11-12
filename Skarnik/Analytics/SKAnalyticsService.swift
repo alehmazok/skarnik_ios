@@ -28,6 +28,8 @@ protocol SKAnalyticsService {
     func logSearchResultTapped(word: SKWord, position: Int, query: String)
 
     func setInstallSource(_ source: SKInstallSource)
+
+    func setSearchBarPlacement(_ placement: SKSearchBarPlacement)
 }
 
 enum SKAnalyticsEvent: String {

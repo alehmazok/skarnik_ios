@@ -77,7 +77,7 @@ final class AppStoreScreenshotsUITests: SkarnikUITestCase {
         snapshot("05-fuzzy-search")
 
         // 6. History and bookmarks.
-        cancelSearch()
+        showHistory()
         waitFor(element("history.row"), "History is empty")
         snapshot("06-history")
         openTab(.bookmarks)
@@ -121,7 +121,7 @@ final class AppStoreScreenshotsUITests: SkarnikUITestCase {
     }
 
     private func downloadOfflineDictionary() {
-        openTab(.settings)
+        openSettings()
         let status = element("settings.offline.tsbm.status")
         waitFor(element("settings.offline.tsbm.name"), "No ТСБМ offline row").tap()
         let downloaded = XCTNSPredicateExpectation(predicate: NSPredicate(format: "label BEGINSWITH %@", "Спампавана"),

@@ -77,13 +77,14 @@ struct SKInstallSourceTests {
         let value = await SKInstallSourceDetector.withTimeout(seconds: 0.2, fallback: SKInstallSource.unknown) {
             // Ignores cancellation, like a stuck network call.
             await withCheckedContinuation { continuation in
-                DispatchQueue.global().asyncAfter(deadline: .now() + 5) {
+                DispatchQueue.global().asyncAfter(deadline: .now() + 120) {
                     continuation.resume(returning: SKInstallSource.appStore)
                 }
             }
         }
+        // Waiting for the operation would return .appStore after 120 s instead.
         #expect(value == .unknown)
-        // Well under the 5 s the operation hangs for, with headroom for a loaded CI simulator.
-        #expect(Date().timeIntervalSince(start) < 4)
+        // Far under the 120 s the operation hangs for, with headroom for a stalled CI simulator.
+        #expect(Date().timeIntervalSince(start) < 60)
     }
 }

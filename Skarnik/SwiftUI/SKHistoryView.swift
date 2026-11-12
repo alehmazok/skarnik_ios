@@ -95,28 +95,53 @@ final class SKHistoryViewModel {
         isSearchPresented = true
     }
 
+    /// Appends a letter from the extra key row (і, ў, ʼ, и, щ, ъ) to the query.
+    func insertCharacter(_ char: String) {
+        searchText += char
+    }
+
     func resultTapped(_ word: SKWord, position: Int) {
         onSearchResultTapped(word, position, searchText)
     }
+}
+
+// MARK: - Screen mode
+
+/// What the history/search screen shows.
+enum SKHistoryScreenMode {
+    /// iOS 17–25: one Пошук tab with history and SwiftUI's `.searchable` drawer at the top.
+    case historyAndSearch
+    /// iOS 26 Гісторыя tab: the history list only, no search field.
+    case historyOnly
+    /// iOS 26 search tab: results only. The field is a UIKit `UISearchController` that the
+    /// `UISearchTab` shows at the bottom, so search mode comes from the view model.
+    case searchOnly
 }
 
 // MARK: - Content view (reads isSearching from environment)
 
 private struct SKHistoryContentView: View {
     let viewModel: SKHistoryViewModel
-    @Environment(\.isSearching) private var isSearching
+    let mode: SKHistoryScreenMode
+    @Environment(\.isSearching) private var swiftUiIsSearching
     var onWordSelected: (SKWord, String) -> Void
 
-    private static let rusKeyboardChars = ["и", "щ", "ъ"]
-    private static let belKeyboardChars = ["і", "ў", "'"]
-    private static let keyboardKeySpacing: CGFloat = 8
+    private var isSearching: Bool {
+        switch mode {
+        case .historyAndSearch: return swiftUiIsSearching
+        case .historyOnly: return false
+        case .searchOnly: return viewModel.isSearchPresented
+        }
+    }
 
     var body: some View {
         mainContent
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(Color.appBackground.ignoresSafeArea())
             .safeAreaInset(edge: .bottom) {
-                if isSearching { belarusianKeyboardRow }
+                // In `.searchOnly` the row is the search bar's input accessory instead, so it sits
+                // on the keyboard below the floating iOS 26 field rather than under it.
+                if isSearching && mode != .searchOnly { belarusianKeyboardRow }
             }
     }
 
@@ -124,7 +149,7 @@ private struct SKHistoryContentView: View {
 
     @ViewBuilder
     private var mainContent: some View {
-        if isSearching {
+        if mode == .searchOnly || isSearching {
             searchContent
         } else if viewModel.words.isEmpty {
             emptyState
@@ -199,36 +224,7 @@ private struct SKHistoryContentView: View {
     // MARK: Belarusian character row
 
     private var belarusianKeyboardRow: some View {
-        HStack(spacing: 0) {
-            HStack(spacing: Self.keyboardKeySpacing) {
-                ForEach(Self.rusKeyboardChars, id: \.self) { keyboardKey($0, tint: .secondary) }
-            }
-            Spacer()
-            HStack(spacing: Self.keyboardKeySpacing) {
-                ForEach(Self.belKeyboardChars, id: \.self) { keyboardKey($0, tint: .accentColor) }
-            }
-        }
-        .padding(.horizontal, 6)
-        .frame(height: 52)
-        .padding(.bottom, 6)
-    }
-
-    @ViewBuilder
-    private func keyboardKey(_ char: String, tint: Color) -> some View {
-        let button = Button(action: { viewModel.searchText += char }) {
-            Text(char)
-                .font(.system(size: 17))
-                .frame(width: 24, height: 24)
-        }
-        .buttonBorderShape(.circle)
-        .tint(tint)
-        .accessibilityIdentifier("search.key.\(char)")
-
-        if #available(iOS 26.0, *) {
-            button.buttonStyle(.glass)
-        } else {
-            button.buttonStyle(.borderedProminent)
-        }
+        SKSearchKeyRow { viewModel.insertCharacter($0) }
     }
 
     // MARK: Cell helper
@@ -246,21 +242,80 @@ private struct SKHistoryContentView: View {
     }
 }
 
+// MARK: - Extra letter row
+
+/// The и щ ъ / і ў ʼ keys shown above the keyboard while searching.
+struct SKSearchKeyRow: View {
+    var onInsert: (String) -> Void
+
+    static let height: CGFloat = 58
+
+    private static let rusKeyboardChars = ["и", "щ", "ъ"]
+    private static let belKeyboardChars = ["і", "ў", "'"]
+    private static let keyboardKeySpacing: CGFloat = 8
+
+    var body: some View {
+        HStack(spacing: 0) {
+            HStack(spacing: Self.keyboardKeySpacing) {
+                ForEach(Self.rusKeyboardChars, id: \.self) { keyboardKey($0, tint: .secondary) }
+            }
+            Spacer()
+            HStack(spacing: Self.keyboardKeySpacing) {
+                ForEach(Self.belKeyboardChars, id: \.self) { keyboardKey($0, tint: .accentColor) }
+            }
+        }
+        .padding(.horizontal, 6)
+        .frame(height: 52)
+        .padding(.bottom, 6)
+    }
+
+    @ViewBuilder
+    private func keyboardKey(_ char: String, tint: Color) -> some View {
+        let button = Button(action: { onInsert(char) }) {
+            Text(char)
+                .font(.system(size: 17))
+                .frame(width: 24, height: 24)
+        }
+        .buttonBorderShape(.circle)
+        .tint(tint)
+        .accessibilityIdentifier("search.key.\(char)")
+
+        if #available(iOS 26.0, *) {
+            button.buttonStyle(.glass)
+        } else {
+            button.buttonStyle(.borderedProminent)
+        }
+    }
+}
+
 // MARK: - Main view
 
 struct SKHistoryView: View {
     @Bindable var viewModel: SKHistoryViewModel
+    var mode: SKHistoryScreenMode = .historyAndSearch
     var onWordSelected: (SKWord, String) -> Void = { _, _ in }
 
     var body: some View {
-        SKHistoryContentView(viewModel: viewModel, onWordSelected: onWordSelected)
-            .navigationBarTitleDisplayMode(.inline)
-            .searchable(
-                text: $viewModel.searchText,
-                isPresented: $viewModel.isSearchPresented,
-                placement: .navigationBarDrawer(displayMode: .always),
-                prompt: SKLocalization.searchbarSearchWords
-            )
-            .opaqueTabBar()
+        if mode != .historyAndSearch {
+            content
+        } else {
+            content
+                .searchable(
+                    text: $viewModel.searchText,
+                    isPresented: $viewModel.isSearchPresented,
+                    placement: .navigationBarDrawer(displayMode: .always),
+                    prompt: SKLocalization.searchbarSearchWords
+                )
+                .opaqueTabBar()
+        }
+    }
+
+    private var content: some View {
+        SKHistoryContentView(
+            viewModel: viewModel,
+            mode: mode,
+            onWordSelected: onWordSelected
+        )
+        .navigationBarTitleDisplayMode(.inline)
     }
 }

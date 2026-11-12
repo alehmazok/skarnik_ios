@@ -54,4 +54,8 @@ class SKDebugAnalytics: SKAnalyticsService {
     func setInstallSource(_ source: SKInstallSource) {
         print("📊 User property: \(SKInstallSource.userPropertyName)=\(source.rawValue)")
     }
+
+    func setSearchBarPlacement(_ placement: SKSearchBarPlacement) {
+        print("📊 User property: \(SKSearchBarPlacement.userPropertyName)=\(placement.rawValue)")
+    }
 }

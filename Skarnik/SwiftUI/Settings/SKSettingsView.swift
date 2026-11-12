@@ -15,6 +15,7 @@ struct SKSettingsView: View {
     @AppStorage(SKArticleColorTheme.userDefaultsKey) private var articleColorTheme = SKArticleColorTheme.system.rawValue
     /// Mirrors the consent controller, which is not observable, so the toggle redraws when flipped.
     @State private var analyticsGranted = SKAnalyticsConsentController.shared.analyticsConsentGranted
+    @AppStorage(SKSearchBarPlacement.userDefaultsKey) private var searchBarAtBottom = true
 
     var onAboutTapped: (() -> Void)?
     var onWhatsNewTapped: (() -> Void)?
@@ -43,6 +44,23 @@ struct SKSettingsView: View {
                 .accessibilityIdentifier("settings.articleColors")
             } footer: {
                 Text(SKLocalization.articleColorsFooter)
+            }
+
+            if SKSearchBarPlacement.isBottomAvailable {
+                Section {
+                    Toggle(SKLocalization.searchBarAtBottomRowTitle, isOn: Binding(
+                        get: { searchBarAtBottom },
+                        set: { atBottom in
+                            searchBarAtBottom = atBottom
+                            NotificationCenter.default.post(name: .skSearchBarPlacementChanged, object: nil)
+                            SKAnalyticsManager.reportSearchBarPlacement()
+                        }
+                    ))
+                    .font(.system(size: 16, weight: .medium))
+                    .accessibilityIdentifier("settings.searchBarAtBottom")
+                } footer: {
+                    Text(SKLocalization.searchBarAtBottomFooter)
+                }
             }
 
             Section {

@@ -10,7 +10,7 @@ import XCTest
 final class SettingsUITests: SkarnikUITestCase {
 
     func testSettingsRows() {
-        openTab(.settings)
+        openSettings()
 
         // Nothing is downloaded on a fresh install.
         for path in ["rusbel", "belrus", "tsbm"] {
@@ -32,8 +32,8 @@ final class SettingsUITests: SkarnikUITestCase {
         colors.tap()
         waitFor(app.buttons["Чырвоныя Скарніка"], "No «Чырвоныя Скарніка» option").tap()
         XCTAssertTrue(describe(colors).contains("Чырвоныя Скарніка"), "Picker shows «\(describe(colors))»")
-        openTab(.bookmarks)
-        openTab(.settings)
+        closeSettings()
+        openSettings()
         XCTAssertTrue(describe(element("settings.articleColors")).contains("Чырвоныя Скарніка"))
 
         // About opens and goes back.
@@ -41,6 +41,43 @@ final class SettingsUITests: SkarnikUITestCase {
         waitFor(app.navigationBars["Пра Скарнік"], "About did not open")
         goBack()
         waitFor(element("settings.articleColors"), "Did not return to Settings")
+    }
+
+    /// iOS 26: «Радок пошуку ўнізе» switches back to one Пошук tab with the field at the top, and on again.
+    func testSearchBarPlacementSwitch() throws {
+        guard hasSeparateSearchTab else {
+            throw XCTSkip("The bottom search tab and its switch exist only on iOS 26")
+        }
+        let tabBar = app.tabBars.firstMatch
+        func tab(_ tab: Tab) -> XCUIElement {
+            tabBar.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", tab.rawValue)).firstMatch
+        }
+        waitFor(tab(.history), "No Гісторыя tab by default")
+
+        openSettings()
+        let toggle = waitFor(app.switches["settings.searchBarAtBottom"], "No search bar placement switch")
+        XCTAssertEqual(toggle.value as? String, "1")
+        flip(toggle)
+        XCTAssertTrue(waitForValue(toggle, "0"), "Switch did not turn off")
+        closeSettings()
+
+        // Old layout: Пошук is the start tab, with the field at the top and history below it.
+        XCTAssertTrue(waitUntilGone(tab(.history), timeout: 5), "Гісторыя tab still shown")
+        XCTAssertEqual(tabBar.buttons.count, 3)
+        waitFor(searchField, "No search field on the start screen")
+        waitFor(element("history.empty"), "No history on the start screen")
+
+        // The choice survives a relaunch.
+        relaunchKeepingState()
+        XCTAssertFalse(tab(.history).waitForExistence(timeout: 3), "Гісторыя tab back after relaunch")
+
+        openSettings()
+        let toggleAgain = waitFor(app.switches["settings.searchBarAtBottom"], "No search bar placement switch")
+        flip(toggleAgain)
+        XCTAssertTrue(waitForValue(toggleAgain, "1"), "Switch did not turn on")
+        closeSettings()
+        waitFor(tab(.history), "Гісторыя tab did not come back")
+        XCTAssertEqual(tabBar.buttons.count, allTabs.count)
     }
 
     /// A SwiftUI Toggle's element spans the whole row; tapping its centre hits the label, not the

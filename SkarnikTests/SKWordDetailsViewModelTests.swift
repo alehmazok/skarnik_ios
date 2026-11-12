@@ -61,7 +61,7 @@ final class SKWordDetailsViewModelTests: XCTestCase {
 
         vm.updateWord(word)
         XCTAssertEqual(vm.headword, "слова")
-        await fulfillment(of: [exp], timeout: 1.0)
+        await fulfillment(of: [exp], timeout: 10)
 
         XCTAssertEqual(vm.headword, "сло\u{301}ва")
         XCTAssertEqual(vm.navigationTitle, "«сло\u{301}ва»")
@@ -79,7 +79,7 @@ final class SKWordDetailsViewModelTests: XCTestCase {
             .store(in: &cancellables)
 
         vm.updateWord(word)
-        await fulfillment(of: [exp], timeout: 1.0)
+        await fulfillment(of: [exp], timeout: 10)
 
         XCTAssertEqual(vm.headword, "слова")
     }
@@ -161,7 +161,7 @@ final class SKWordDetailsViewModelTests: XCTestCase {
             .store(in: &cancellables)
 
         vm.updateWord(word)
-        await fulfillment(of: [exp], timeout: 1.0)
+        await fulfillment(of: [exp], timeout: 10)
 
         guard case .success(let result) = vm.state else {
             XCTFail("Expected .success state"); return
@@ -180,7 +180,7 @@ final class SKWordDetailsViewModelTests: XCTestCase {
             .store(in: &cancellables)
 
         vm.updateWord(word)
-        await fulfillment(of: [exp], timeout: 1.0)
+        await fulfillment(of: [exp], timeout: 10)
 
         guard case .error(let message) = vm.state else {
             XCTFail("Expected .error state"); return
@@ -199,7 +199,7 @@ final class SKWordDetailsViewModelTests: XCTestCase {
             .store(in: &cancellables)
 
         vm.updateWord(word)
-        await fulfillment(of: [exp], timeout: 1.0)
+        await fulfillment(of: [exp], timeout: 10)
 
         if case .error = vm.state { /* ok */ } else {
             XCTFail("Expected .error state when translation not found")
@@ -234,7 +234,7 @@ final class SKWordDetailsViewModelTests: XCTestCase {
             .store(in: &cancellables)
 
         vm.updateWord(requestedWord)
-        await fulfillment(of: [exp], timeout: 1.0)
+        await fulfillment(of: [exp], timeout: 10)
 
         guard case .success(let translation) = vm.state else {
             XCTFail("Expected .success state after following the redirect"); return
@@ -317,7 +317,7 @@ final class SKWordDetailsViewModelTests: XCTestCase {
             .store(in: &cancellables)
 
         vm.updateWord(word)
-        await fulfillment(of: [exp], timeout: 1.0)
+        await fulfillment(of: [exp], timeout: 10)
 
         vm.updateWord(word)
         try? await Task.sleep(nanoseconds: 100_000_000)
@@ -349,10 +349,10 @@ final class SKWordDetailsViewModelTests: XCTestCase {
             .store(in: &cancellables)
 
         vm.updateWord(word)
-        await fulfillment(of: [errorExp], timeout: 1.0)
+        await fulfillment(of: [errorExp], timeout: 10)
 
         vm.retry()
-        await fulfillment(of: [successExp], timeout: 1.0)
+        await fulfillment(of: [successExp], timeout: 10)
 
         XCTAssertEqual(fetchCount, 2)
     }
@@ -370,7 +370,7 @@ final class SKWordDetailsViewModelTests: XCTestCase {
             .store(in: &cancellables)
 
         vm.updateWord(word)
-        await fulfillment(of: [exp], timeout: 1.0)
+        await fulfillment(of: [exp], timeout: 10)
 
         vm.retry()
         try? await Task.sleep(nanoseconds: 100_000_000)

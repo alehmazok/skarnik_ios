@@ -57,4 +57,21 @@ final class SKHistoryViewModelTests: XCTestCase {
 
         XCTAssertEqual(viewModel.searchText, "")
     }
+
+    func testInsertCharacter_appendsToQuery() {
+        let viewModel = makeViewModel()
+        viewModel.searchText = "сло"
+
+        viewModel.insertCharacter("ў")
+
+        XCTAssertEqual(viewModel.searchText, "слоў")
+    }
+
+    func testInsertCharacter_intoEmptyQuery() {
+        let viewModel = makeViewModel()
+
+        viewModel.insertCharacter("і")
+
+        XCTAssertEqual(viewModel.searchText, "і")
+    }
 }

@@ -20,10 +20,11 @@ class SkarnikUITestCase: XCTestCase {
     var app: XCUIApplication!
 
     enum Tab: String {
+        /// iOS 26 only: history has its own start tab (see `hasSeparateSearchTab`).
+        case history = "Гісторыя"
         case search = "Пошук"
         case bookmarks = "Закладкі"
         case dictionaries = "Слоўнікі"
-        case settings = "Налады"
     }
 
     /// Dictionary names as the app shows them: the search row caption and the word screen subtitle.
@@ -123,6 +124,25 @@ class SkarnikUITestCase: XCTestCase {
         waitFor(button, "Missing tab «\(tab.rawValue)»").tap()
     }
 
+    // MARK: - Settings
+
+    /// Opens Налады from the gear at the top right of the start screen (Гісторыя / Пошук).
+    func openSettings() {
+        let gear = app.buttons["settings.open"]
+        if !gear.exists {
+            // Not re-tapped when already on the start tab: on iOS 17–25 that would focus search.
+            openTab(hasSeparateSearchTab ? .history : .search)
+        }
+        waitFor(gear, "No settings button").tap()
+        waitFor(element("settings.articleColors"), "Settings did not open")
+    }
+
+    /// Closes the Налады sheet.
+    func closeSettings() {
+        waitFor(app.buttons["settings.done"], "No Done button on Settings").tap()
+        XCTAssertTrue(waitUntilGone(element("settings.articleColors"), timeout: 5), "Settings did not close")
+    }
+
     func goBack() {
         let back = app.navigationBars.firstMatch.buttons.element(boundBy: 0)
         waitFor(back, "No back button").tap()
@@ -130,10 +150,31 @@ class SkarnikUITestCase: XCTestCase {
 
     // MARK: - Search
 
+    /// iOS 26: Гісторыя is the start tab and search is a separate tab with the field at the bottom.
+    /// iOS 17–25: one Пошук tab shows history and the search field at the top.
+    var hasSeparateSearchTab: Bool {
+        if #available(iOS 26.0, *) { return true }
+        return false
+    }
+
+    /// The tabs in tab bar order.
+    var allTabs: [Tab] {
+        hasSeparateSearchTab ? [.history, .bookmarks, .dictionaries, .search]
+                             : [.search, .bookmarks, .dictionaries]
+    }
+
     var searchField: XCUIElement { app.searchFields.firstMatch }
+
+    /// The search screen always shows either results or the search hint.
+    private var isOnSearchScreen: Bool {
+        element("search.result").exists || element("search.noResults").exists
+    }
 
     /// Replaces whatever is in the search field with `text`.
     func search(_ text: String) {
+        if hasSeparateSearchTab && !isOnSearchScreen {
+            openTab(.search)
+        }
         waitFor(searchField, "Search field missing")
         searchField.tap()
         if let current = searchField.value as? String, !current.isEmpty,
@@ -161,6 +202,14 @@ class SkarnikUITestCase: XCTestCase {
         }
         XCTFail("No result «\(word)» in \(dictionary.rowCaption)")
         return byLabel
+    }
+
+    /// Leaves search and shows the history list (on iOS 26 that is the Гісторыя tab).
+    func showHistory() {
+        cancelSearch()
+        if hasSeparateSearchTab {
+            openTab(.history)
+        }
     }
 
     /// Cancels search mode so the history list shows again.

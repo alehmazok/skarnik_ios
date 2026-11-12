@@ -15,6 +15,8 @@ class SKLocalization: Any {
 
     class var vocabulariesAdvancedSearch: String { "Спецпошук" }
     class var tabHistory: String { "Пошук" }
+    /// iOS 26 only: history has its own tab, search moves to the bottom search tab.
+    class var tabHistoryList: String { "Гісторыя" }
     class var tabFavorites: String { "Закладкі" }
     class var tabVocabularies: String { "Слоўнікі" }
     class var tabSettings: String { "Налады" }
@@ -89,6 +91,8 @@ class SKLocalization: Any {
     class var analyticsConsentAccept: String { "Дазволіць" }
     class var analyticsConsentDecline: String { "Не дазваляць" }
     class var analyticsConsentSettingsRowTitle: String { "Аналітыка выкарыстання" }
+    class var searchBarAtBottomRowTitle: String { "Радок пошуку ўнізе" }
+    class var searchBarAtBottomFooter: String { "Выключыце, каб пошук быў уверсе, над гісторыяй." }
 
     class var offlineSectionTitle: String { "Афлайн доступ" }
     class var offlineNotDownloadedSubtitle: String { "Спампаваць для афлайн доступу" }

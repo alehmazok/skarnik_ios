@@ -11,13 +11,15 @@ final class SearchUITests: SkarnikUITestCase {
 
     func testLaunchShowsTabsAndSearchOpensWord() {
         let tabBar = app.tabBars.firstMatch
-        XCTAssertEqual(tabBar.buttons.count, 4)
-        for tab in [Tab.search, .bookmarks, .dictionaries, .settings] {
+        XCTAssertEqual(tabBar.buttons.count, allTabs.count)
+        for tab in allTabs {
             let button = tabBar.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", tab.rawValue)).firstMatch
             XCTAssertTrue(button.exists, "Missing tab «\(tab.rawValue)»")
         }
-        // Search is the start tab and a fresh install has no history.
-        waitFor(searchField, "Search field missing")
+        // History is the start screen (with the search field on iOS 17–25), and a fresh install has no history.
+        if !hasSeparateSearchTab {
+            waitFor(searchField, "Search field missing")
+        }
         waitFor(element("history.empty"), "History placeholder missing on a fresh install")
 
         openWord("мова", in: .belRus)
@@ -67,7 +69,7 @@ final class SearchUITests: SkarnikUITestCase {
         goBack()
         openWord("мова", in: .belRus)
         goBack()
-        cancelSearch()
+        showHistory()
 
         waitFor(element("history.row"), "History is empty")
         assertHistory(["мова", "кара"])

@@ -20,7 +20,10 @@ final class SKAnalyticsConsentController {
     /// `install_source` user property) are not missing until the next launch.
     init(
         userDefaults: UserDefaults = .standard,
-        onConsentGranted: @escaping () -> Void = { SKAnalyticsManager.reportInstallSource() }
+        onConsentGranted: @escaping () -> Void = {
+            SKAnalyticsManager.reportInstallSource()
+            SKAnalyticsManager.reportSearchBarPlacement()
+        }
     ) {
         self.userDefaults = userDefaults
         self.onConsentGranted = onConsentGranted
