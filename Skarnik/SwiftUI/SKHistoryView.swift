@@ -234,7 +234,7 @@ private struct SKHistoryContentView: View {
             .listStyle(.plain)
             .appListBackground()
             // Search stays open with the query in the field; tapping the field brings the keyboard back.
-            .scrollDismissesKeyboard(.immediately)
+            .modifier(HideKeyboardOnDrag())
         }
     }
 
@@ -260,6 +260,31 @@ private struct SKHistoryContentView: View {
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
+        }
+    }
+}
+
+// MARK: - Hide keyboard on drag
+
+/// Hides the keyboard once the user drags the list.
+///
+/// `.scrollDismissesKeyboard` only reaches SwiftUI-owned fields such as `.searchable`. The iOS 26
+/// bottom search field belongs to a UIKit `UISearchController`, so from iOS 18 a drag also resigns
+/// whatever field holds the keyboard.
+private struct HideKeyboardOnDrag: ViewModifier {
+    func body(content: Content) -> some View {
+        if #available(iOS 18.0, *) {
+            content
+                .scrollDismissesKeyboard(.immediately)
+                .onScrollPhaseChange { _, phase in
+                    if phase == .interacting {
+                        UIApplication.shared.sendAction(
+                            #selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil
+                        )
+                    }
+                }
+        } else {
+            content.scrollDismissesKeyboard(.immediately)
         }
     }
 }
