@@ -63,15 +63,13 @@ struct SKSkarnikTranslation {
     /// The translation as styled text (SwiftSoup, no WebKit), built off the main thread.
     /// Pass `traits` from the view so the text follows Dynamic Type and Bold Text; colours are
     /// dynamic and follow dark mode and Increase Contrast on their own.
+    nonisolated(nonsending)
     func renderedText(theme: SKArticleColorTheme = .current,
                       traits: UITraitCollection? = nil) async -> NSAttributedString {
-        let html = self.html
-        return await Task.detached(priority: .userInitiated) {
-            SKTranslationRenderer.render(html: html, theme: theme, traits: traits)
-        }.value
+        await SKTranslationRenderer.renderAsync(html: html, theme: theme, traits: traits)
     }
 
-    var attributedString: NSAttributedString? {
+    nonisolated(nonsending) var attributedString: NSAttributedString? {
         get async { await renderedText() }
     }
 

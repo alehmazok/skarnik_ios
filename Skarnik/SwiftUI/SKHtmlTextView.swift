@@ -58,16 +58,13 @@ struct SKHtmlLabelView: UIViewRepresentable {
         // updateUIView can be re-invoked before the previous render finishes (e.g. a Dynamic
         // Type change): cancel any in-flight task so an older render can't overwrite a newer one.
         context.coordinator.task?.cancel()
-        context.coordinator.task = Task.detached(priority: .userInitiated) {
-            let attributedString = SKTranslationRenderer.render(html: html, traits: traits, layout: .compact)
+        context.coordinator.task = Task { @MainActor in
+            let attributedString = await SKTranslationRenderer.renderAsync(html: html, traits: traits, layout: .compact)
             guard !Task.isCancelled else { return }
-            await MainActor.run {
-                guard !Task.isCancelled else { return }
-                uiView.attributedText = attributedString
-                let newHeight = uiView.sizeThatFits(CGSize(width: uiView.bounds.width, height: .greatestFiniteMagnitude)).height
-                if dynamicHeight != newHeight {
-                    dynamicHeight = newHeight
-                }
+            uiView.attributedText = attributedString
+            let newHeight = uiView.sizeThatFits(CGSize(width: uiView.bounds.width, height: .greatestFiniteMagnitude)).height
+            if dynamicHeight != newHeight {
+                dynamicHeight = newHeight
             }
         }
     }

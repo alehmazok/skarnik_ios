@@ -116,6 +116,17 @@ enum SKTranslationRenderer {
         return builder.finish(layout: layout)
     }
 
+    /// `render(html:...)` on the concurrent pool, off the caller's actor. The result is a fresh
+    /// value nothing else references, so it is handed back as `sending` (safe for any isolation).
+    @concurrent
+    static func renderAsync(html: String,
+                            theme: SKArticleColorTheme = .current,
+                            traits: UITraitCollection? = nil,
+                            textStyle: UIFont.TextStyle = .body,
+                            layout: SKTranslationLayout = .article) async -> sending NSAttributedString {
+        render(html: html, theme: theme, traits: traits, textStyle: textStyle, layout: layout)
+    }
+
     // MARK: - Builder
 
     fileprivate struct Style {

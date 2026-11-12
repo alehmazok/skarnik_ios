@@ -55,10 +55,14 @@ final class SKTranslationRendererTests: XCTestCase {
     private static let appearances: [UITraitCollection] = [
         UITraitCollection(userInterfaceStyle: .light),
         UITraitCollection(userInterfaceStyle: .dark),
-        UITraitCollection(traitsFrom: [UITraitCollection(userInterfaceStyle: .light),
-                                       UITraitCollection(accessibilityContrast: .high)]),
-        UITraitCollection(traitsFrom: [UITraitCollection(userInterfaceStyle: .dark),
-                                       UITraitCollection(accessibilityContrast: .high)])
+        UITraitCollection {
+            $0.userInterfaceStyle = .light
+            $0.accessibilityContrast = .high
+        },
+        UITraitCollection {
+            $0.userInterfaceStyle = .dark
+            $0.accessibilityContrast = .high
+        }
     ]
 
     /// Same colour in light, dark and both with Increase Contrast.
