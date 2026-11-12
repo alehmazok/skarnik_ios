@@ -2,7 +2,7 @@
 //  SettingsUITests.swift
 //  SkarnikUITests
 //
-//  Налады: offline dictionary rows, article colours, analytics toggle, About. Offline-safe.
+//  Налады: offline dictionary rows, article colours, analytics toggle, privacy link, About. Offline-safe.
 //
 
 import XCTest
@@ -36,11 +36,18 @@ final class SettingsUITests: SkarnikUITestCase {
         openSettings()
         XCTAssertTrue(describe(element("settings.articleColors")).contains("Чырвоныя Скарніка"))
 
+        // Privacy and about rows sit at the bottom: scroll so the lazy list builds them on small phones.
+        // The links are not tapped: they leave the app.
+        app.swipeUp()
+        waitFor(element("settings.privacyPolicy"), "No privacy policy link")
+        waitFor(element("settings.rateApp"), "No rate app link")
+        XCTAssertTrue(describe(waitFor(element("settings.version"), "No version footer")).contains("Версія"))
+
         // About opens and goes back.
-        waitFor(app.staticTexts["Пра Скарнік"], "No About row").tap()
+        waitFor(element("settings.about"), "No About row").tap()
         waitFor(app.navigationBars["Пра Скарнік"], "About did not open")
         goBack()
-        waitFor(element("settings.articleColors"), "Did not return to Settings")
+        waitFor(element("settings.about"), "Did not return to Settings")
     }
 
     /// iOS 26: «Радок пошуку ўнізе» switches back to one Пошук tab with the field at the top, and on again.

@@ -43,7 +43,7 @@ struct SKAboutView: View {
                 }
                 .buttonStyle(.borderedProminent)
 
-                if let versionString {
+                if let versionString = Self.versionString {
                     Text(versionString)
                         .font(.system(size: 12, design: .monospaced))
                         .foregroundStyle(Color(UIColor.tertiaryLabel))
@@ -54,7 +54,8 @@ struct SKAboutView: View {
         .background(Color.appBackground.ignoresSafeArea())
     }
 
-    private var versionString: String? {
+    /// «Версія 3.8.0 (77)», also the last footer in Налады.
+    static var versionString: String? {
         guard
             let shortVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String,
             let buildVersion = Bundle.main.infoDictionary?["CFBundleVersion"] as? String

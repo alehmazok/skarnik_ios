@@ -59,7 +59,7 @@ class SKLocalization: Any {
     class var aboutSubscriptionDesigner: String { "UI/UX дапамога" }
     class var aboutDescription: String { "Skarnik - электронны руска-беларускі слоўнік. За аснову ўзяты акадэмічны слоўнік, які быў выпушчаны ў 1953 годзе (пад рэдакцыяй Я. Коласа, К. Крапівы і П. Глебкі) і затым некалькі разоў перавыдаваўся з выпраўленнямі і дапаўненнямі.\n\nСайт skarnik.by пачаў працаваць 7 жніўня 2012 года." }
     class var aboutSupportButtonTitle: String { "Напісаць распрацоўшчыкам" }
-    class var aboutSupportMailto: String { "mailto:belanghelp@gmail.com?bcc=skarnikapp@gmail.com" }
+    class var aboutSupportMailto: String { "mailto:skarnikapp@gmail.com" }
     class var aboutRowTitle: String { "Пра Скарнік" }
     class var whatsNewRowTitle: String { "Што новага" }
     class var whatsNewTitle: String { "Што новага ў Скарніку" }
@@ -92,9 +92,17 @@ class SKLocalization: Any {
     class var analyticsConsentDecline: String { "Не дазваляць" }
     class var analyticsConsentSettingsRowTitle: String { "Аналітыка выкарыстання" }
     class var searchBarAtBottomRowTitle: String { "Радок пошуку ўнізе" }
-    class var searchBarAtBottomFooter: String { "Выключыце, каб пошук быў уверсе, над гісторыяй." }
+    class var analyticsSettingsFooter: String { "Ананімная статыстыка пра тое, як карыстаюцца праграмай. Справаздачы пра збоі адпраўляюцца заўсёды, без асабістых даных." }
+    class var privacyPolicyRowTitle: String { "Палітыка прыватнасці" }
+    class var privacyPolicyURLString: String { "https://skarnik.app/privacy" }
+    class var settingsAppearanceSectionTitle: String { "Выгляд" }
+    class var settingsPrivacySectionTitle: String { "Прыватнасць" }
+    class var settingsAboutSectionTitle: String { "Пра праграму" }
 
-    class var offlineSectionTitle: String { "Афлайн доступ" }
+    class var offlineSectionTitle: String { "Афлайн слоўнікі" }
+    class var offlineSectionFooter: String { "Спампаваныя слоўнікі працуюць без інтэрнэту." }
+    class var offlineDownloadButtonTitle: String { "Спампаваць" }
+    class var offlineDeleteButtonTitle: String { "Выдаліць" }
     class var offlineNotDownloadedSubtitle: String { "Спампаваць для афлайн доступу" }
     class var offlineFailedSubtitle: String { "Адбылася памылка падчас спампоўкі слоўніка." }
     class var offlineDownloadingSubtitle: String { "Спампоўваецца…" }

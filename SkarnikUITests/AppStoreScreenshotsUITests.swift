@@ -123,7 +123,7 @@ final class AppStoreScreenshotsUITests: SkarnikUITestCase {
     private func downloadOfflineDictionary() {
         openSettings()
         let status = element("settings.offline.tsbm.status")
-        waitFor(element("settings.offline.tsbm.name"), "No ТСБМ offline row").tap()
+        waitFor(element("settings.offline.tsbm.download"), "No ТСБМ download button").tap()
         let downloaded = XCTNSPredicateExpectation(predicate: NSPredicate(format: "label BEGINSWITH %@", "Спампавана"),
                                                    object: status)
         XCTAssertEqual(XCTWaiter().wait(for: [downloaded], timeout: 600), .completed,
