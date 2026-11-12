@@ -35,13 +35,6 @@ struct SKSettingsView: View {
             }
 
             Section {
-                Picker(SKLocalization.articleColorsTitle, selection: $articleColorTheme) {
-                    Text(SKLocalization.articleColorsSystem).tag(SKArticleColorTheme.system.rawValue)
-                    Text(SKLocalization.articleColorsSkarnikRed).tag(SKArticleColorTheme.skarnikRed.rawValue)
-                }
-                .pickerStyle(.menu)
-                .accessibilityIdentifier("settings.articleColors")
-
                 if SKSearchBarPlacement.isBottomAvailable {
                     Toggle(SKLocalization.searchBarAtBottomRowTitle, isOn: Binding(
                         get: { searchBarAtBottom },
@@ -53,6 +46,13 @@ struct SKSettingsView: View {
                     ))
                     .accessibilityIdentifier("settings.searchBarAtBottom")
                 }
+
+                Picker(SKLocalization.articleColorsTitle, selection: $articleColorTheme) {
+                    Text(SKLocalization.articleColorsSystem).tag(SKArticleColorTheme.system.rawValue)
+                    Text(SKLocalization.articleColorsSkarnikRed).tag(SKArticleColorTheme.skarnikRed.rawValue)
+                }
+                .pickerStyle(.menu)
+                .accessibilityIdentifier("settings.articleColors")
             } header: {
                 Text(SKLocalization.settingsAppearanceSectionTitle)
             } footer: {

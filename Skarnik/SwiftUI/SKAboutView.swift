@@ -34,7 +34,7 @@ struct SKAboutView: View {
                 Divider()
 
                 Button {
-                    guard let url = URL(string: SKLocalization.aboutSupportMailto) else { return }
+                    guard let url = SKSupportMail.url(subject: nil, body: "\n\n" + SKSupportMail.currentFooter()) else { return }
                     UIApplication.shared.open(url)
                 } label: {
                     Label(SKLocalization.aboutSupportButtonTitle, systemImage: "envelope")
