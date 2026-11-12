@@ -109,4 +109,8 @@ class SKFirebaseAnalytics: SKAnalyticsService {
     func setInstallSource(_ source: SKInstallSource) {
         Analytics.setUserProperty(source.rawValue, forName: SKInstallSource.userPropertyName)
     }
+
+    func setSearchBarPlacement(_ placement: SKSearchBarPlacement) {
+        Analytics.setUserProperty(placement.rawValue, forName: SKSearchBarPlacement.userPropertyName)
+    }
 }

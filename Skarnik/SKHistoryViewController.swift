@@ -98,7 +98,10 @@ class SKHistoryViewController: UIHostingController<SKHistoryView> {
         let nav = UINavigationController(rootViewController: settingsVC)
         // A card on iPad and Mac, a sheet on iPhone.
         nav.modalPresentationStyle = .formSheet
-        present(nav, animated: true)
+        // From the window's root, not from this screen: switching «Радок пошуку ўнізе» rebuilds the
+        // tabs, and with them this controller, while the sheet stays open.
+        let presenter = view.window?.rootViewController ?? self
+        presenter.present(nav, animated: true)
     }
 
     private func configureSearchController() {

@@ -75,4 +75,12 @@ class SKAnalyticsManager {
             shared.service.setInstallSource(source)
         }
     }
+
+    /// Sets the `search_bar_position` user property (`bottom` / `top`) on iOS 26, where the user
+    /// can choose. Call at launch, when consent is granted and when the setting changes; does nothing
+    /// while analytics consent is not granted.
+    static func reportSearchBarPlacement(consent: SKAnalyticsConsentController = .shared) {
+        guard consent.isCollectionEnabled, SKSearchBarPlacement.isBottomAvailable else { return }
+        shared.service.setSearchBarPlacement(SKSearchBarPlacement.current())
+    }
 }

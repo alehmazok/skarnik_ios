@@ -37,6 +37,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
         SKAnalyticsConsentController.shared.applyStoredConsent()
         SKAnalyticsManager.reportInstallSource()
+        SKAnalyticsManager.reportSearchBarPlacement()
 
         SKAnalyticsManager.logAppOpen()
 
