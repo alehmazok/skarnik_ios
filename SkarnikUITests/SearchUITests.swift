@@ -63,7 +63,14 @@ final class SearchUITests: SkarnikUITestCase {
 
         // Tapping the field brings the keyboard and the letter row back.
         searchField.tap()
-        waitFor(element("search.key.ў"), "Extra letter row did not come back")
+        if !element("search.key.ў").waitForExistence(timeout: 10) {
+            // Diagnostics for CI: is the keyboard up without the row, or did the field not take focus?
+            print("DRAG-TEST keyboards=\(app.keyboards.count) " +
+                  "focus=\(String(describing: searchField.value(forKey: "hasKeyboardFocus"))) " +
+                  "fields=\(app.searchFields.count)")
+            print("DRAG-TEST hierarchy:\n\(app.debugDescription)")
+            XCTFail("Extra letter row did not come back")
+        }
     }
 
     /// With no results nothing scrolls, so a tap on the hint area hides the keyboard.
