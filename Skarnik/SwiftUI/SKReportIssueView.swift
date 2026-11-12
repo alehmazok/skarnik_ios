@@ -99,8 +99,7 @@ struct SKReportIssueView: View {
         .compactMap { $0 }
         .joined(separator: "\n")
 
-        let query = "subject=\(Self.mailtoEncoded(subject))&body=\(Self.mailtoEncoded(body))"
-        if let url = URL(string: "mailto:skarnikapp@gmail.com?\(query)") {
+        if let url = SKSupportMail.url(subject: subject, body: body + "\n\n" + SKSupportMail.currentFooter()) {
             UIApplication.shared.open(url)
         }
         dismiss()
@@ -112,5 +111,51 @@ struct SKReportIssueView: View {
         var allowed = CharacterSet.urlQueryAllowed
         allowed.remove(charactersIn: "&=+?#")
         return value.addingPercentEncoding(withAllowedCharacters: allowed) ?? ""
+    }
+}
+
+// MARK: - Support mail
+
+/// Mail to the developers: «Напісаць распрацоўшчыкам» in Пра Скарнік and the issue report.
+/// The body ends with app and device details, which the user sees before sending.
+enum SKSupportMail {
+    static let address = "skarnikapp@gmail.com"
+
+    static func url(subject: String?, body: String) -> URL? {
+        var query: [String] = []
+        if let subject { query.append("subject=\(SKReportIssueView.mailtoEncoded(subject))") }
+        query.append("body=\(SKReportIssueView.mailtoEncoded(body))")
+        return URL(string: "mailto:\(address)?\(query.joined(separator: "&"))")
+    }
+
+    /// «Скарнік 3.8.0 (77)» / «iOS 26.1 · iPhone17,1» under a separator line.
+    static func footer(appVersion: String, build: String, systemName: String, systemVersion: String,
+                       deviceModel: String) -> String {
+        "—\nСкарнік \(appVersion) (\(build))\n\(systemName) \(systemVersion) · \(deviceModel)"
+    }
+
+    @MainActor
+    static func currentFooter() -> String {
+        let info = Bundle.main.infoDictionary
+        let device = UIDevice.current
+        return footer(
+            appVersion: info?["CFBundleShortVersionString"] as? String ?? "?",
+            build: info?["CFBundleVersion"] as? String ?? "?",
+            systemName: device.systemName,
+            systemVersion: device.systemVersion,
+            deviceModel: modelIdentifier()
+        )
+    }
+
+    /// Hardware id such as «iPhone17,1» (UIDevice.model only says «iPhone»); the simulated model on a simulator.
+    static func modelIdentifier() -> String {
+        if let simulated = ProcessInfo.processInfo.environment["SIMULATOR_MODEL_IDENTIFIER"] {
+            return simulated
+        }
+        var systemInfo = utsname()
+        uname(&systemInfo)
+        return withUnsafeBytes(of: &systemInfo.machine) { buffer in
+            String(decoding: buffer.prefix { $0 != 0 }, as: UTF8.self)
+        }
     }
 }
