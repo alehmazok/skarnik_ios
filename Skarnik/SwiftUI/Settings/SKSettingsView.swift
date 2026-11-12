@@ -30,24 +30,19 @@ struct SKSettingsView: View {
                 }
             } header: {
                 Text(SKLocalization.offlineSectionTitle)
+            } footer: {
+                Text(SKLocalization.offlineSectionFooter)
             }
 
             Section {
-                Picker(selection: $articleColorTheme) {
+                Picker(SKLocalization.articleColorsTitle, selection: $articleColorTheme) {
                     Text(SKLocalization.articleColorsSystem).tag(SKArticleColorTheme.system.rawValue)
                     Text(SKLocalization.articleColorsSkarnikRed).tag(SKArticleColorTheme.skarnikRed.rawValue)
-                } label: {
-                    Text(SKLocalization.articleColorsTitle)
-                        .font(.system(size: 16, weight: .medium))
                 }
                 .pickerStyle(.menu)
                 .accessibilityIdentifier("settings.articleColors")
-            } footer: {
-                Text(SKLocalization.articleColorsFooter)
-            }
 
-            if SKSearchBarPlacement.isBottomAvailable {
-                Section {
+                if SKSearchBarPlacement.isBottomAvailable {
                     Toggle(SKLocalization.searchBarAtBottomRowTitle, isOn: Binding(
                         get: { searchBarAtBottom },
                         set: { atBottom in
@@ -56,11 +51,12 @@ struct SKSettingsView: View {
                             SKAnalyticsManager.reportSearchBarPlacement()
                         }
                     ))
-                    .font(.system(size: 16, weight: .medium))
                     .accessibilityIdentifier("settings.searchBarAtBottom")
-                } footer: {
-                    Text(SKLocalization.searchBarAtBottomFooter)
                 }
+            } header: {
+                Text(SKLocalization.settingsAppearanceSectionTitle)
+            } footer: {
+                Text(SKLocalization.articleColorsFooter)
             }
 
             Section {
@@ -75,14 +71,34 @@ struct SKSettingsView: View {
                         }
                     }
                 ))
-                .font(.system(size: 16, weight: .medium))
                 .accessibilityIdentifier("settings.analytics")
+
+                externalLinkRow(SKLocalization.privacyPolicyRowTitle,
+                                urlString: SKLocalization.privacyPolicyURLString,
+                                identifier: "settings.privacyPolicy")
+            } header: {
+                Text(SKLocalization.settingsPrivacySectionTitle)
+            } footer: {
+                Text(SKLocalization.analyticsSettingsFooter)
             }
 
             Section {
-                rateAppRow
-                whatsNewRow
-                aboutRow
+                navigationRow(SKLocalization.whatsNewRowTitle, identifier: "settings.whatsNew") {
+                    onWhatsNewTapped?()
+                }
+                navigationRow(SKLocalization.aboutRowTitle, identifier: "settings.about") {
+                    onAboutTapped?()
+                }
+                externalLinkRow(SKLocalization.rateAppRowTitle,
+                                urlString: SKLocalization.rateAppURLString,
+                                identifier: "settings.rateApp")
+            } header: {
+                Text(SKLocalization.settingsAboutSectionTitle)
+            } footer: {
+                if let version = SKAboutView.versionString {
+                    Text(version)
+                        .accessibilityIdentifier("settings.version")
+                }
             }
         }
         .listStyle(.insetGrouped)
@@ -118,110 +134,108 @@ struct SKSettingsView: View {
         }
     }
 
-    private var rateAppRow: some View {
-        HStack {
-            Text(SKLocalization.rateAppRowTitle)
-                .font(.system(size: 16, weight: .medium))
-
-            Spacer()
-
-            Image(systemName: "chevron.right")
-                .font(.system(size: 13, weight: .semibold))
-                .foregroundStyle(Color(UIColor.tertiaryLabel))
+    /// Pushes a screen inside the sheet: a system-style chevron, highlight and button trait.
+    private func navigationRow(_ title: String, identifier: String, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            HStack {
+                Text(title)
+                    .foregroundStyle(Color(UIColor.label))
+                Spacer()
+                Image(systemName: "chevron.forward")
+                    .font(.footnote.weight(.semibold))
+                    .foregroundStyle(Color(UIColor.tertiaryLabel))
+                    .accessibilityHidden(true)
+            }
+            .contentShape(Rectangle())
         }
-        .contentShape(Rectangle())
-        .onTapGesture {
-            guard let url = URL(string: SKLocalization.rateAppURLString) else { return }
-            UIApplication.shared.open(url)
-        }
-        .padding(.vertical, 4)
+        .accessibilityIdentifier(identifier)
     }
 
-    private var aboutRow: some View {
-        HStack {
-            Text(SKLocalization.aboutRowTitle)
-                .font(.system(size: 16, weight: .medium))
-
-            Spacer()
-
-            Image(systemName: "chevron.right")
-                .font(.system(size: 13, weight: .semibold))
-                .foregroundStyle(Color(UIColor.tertiaryLabel))
+    /// Leaves the app (Safari, App Store): an outward arrow instead of a chevron.
+    @ViewBuilder
+    private func externalLinkRow(_ title: String, urlString: String, identifier: String) -> some View {
+        if let url = URL(string: urlString) {
+            Link(destination: url) {
+                HStack {
+                    Text(title)
+                        .foregroundStyle(Color(UIColor.label))
+                    Spacer()
+                    Image(systemName: "arrow.up.forward")
+                        .font(.footnote.weight(.semibold))
+                        .foregroundStyle(Color(UIColor.tertiaryLabel))
+                        .accessibilityHidden(true)
+                }
+                .contentShape(Rectangle())
+            }
+            .accessibilityIdentifier(identifier)
         }
-        .contentShape(Rectangle())
-        .onTapGesture {
-            onAboutTapped?()
-        }
-        .padding(.vertical, 4)
-    }
-
-    private var whatsNewRow: some View {
-        HStack {
-            Text(SKLocalization.whatsNewRowTitle)
-                .font(.system(size: 16, weight: .medium))
-
-            Spacer()
-
-            Image(systemName: "chevron.right")
-                .font(.system(size: 13, weight: .semibold))
-                .foregroundStyle(Color(UIColor.tertiaryLabel))
-        }
-        .contentShape(Rectangle())
-        .onTapGesture {
-            onWhatsNewTapped?()
-        }
-        .padding(.vertical, 4)
-        .accessibilityAddTraits(.isButton)
-        .accessibilityIdentifier("settings.whatsNew")
     }
 
     @ViewBuilder
     private func row(for dictionary: ESKVocabularyType) -> some View {
         let state = manager.states[dictionary] ?? .notDownloaded
+        let id = dictionary.skarnikId ?? ""
 
-        HStack(alignment: .top, spacing: 12) {
+        HStack(alignment: .center, spacing: 12) {
             leadingIcon(for: state)
                 .frame(width: 24)
+                .accessibilityHidden(true)
 
             VStack(alignment: .leading, spacing: 4) {
                 Text(shortName(for: dictionary))
-                    .font(.system(size: 16, weight: .medium))
-                    .accessibilityIdentifier("settings.offline.\(dictionary.skarnikId ?? "").name")
+                    .accessibilityIdentifier("settings.offline.\(id).name")
 
                 subtitle(for: state)
-                    .accessibilityIdentifier("settings.offline.\(dictionary.skarnikId ?? "").status")
+                    .accessibilityIdentifier("settings.offline.\(id).status")
 
                 if case .downloading(let done, let total) = state {
                     ProgressView(value: total > 0 ? Double(done) / Double(total) : 0)
                     Text(SKLocalization.offlineProgressLabel(done: done, total: total))
-                        .font(.system(size: 12))
+                        .font(.caption)
                         .foregroundStyle(Color(UIColor.secondaryLabel))
                 }
             }
 
             Spacer()
 
-            if case .downloaded = state {
-                Button {
+            switch state {
+            case .notDownloaded, .failed:
+                Button(SKLocalization.offlineDownloadButtonTitle) {
+                    manager.startDownload(dictionary)
+                }
+                .buttonStyle(.bordered)
+                .buttonBorderShape(.capsule)
+                .controlSize(.small)
+                .accessibilityIdentifier("settings.offline.\(id).download")
+            case .downloading:
+                EmptyView()
+            case .downloaded:
+                Button(role: .destructive) {
                     dictionaryPendingDelete = dictionary
                 } label: {
                     Image(systemName: "trash")
                         .foregroundStyle(.red)
                 }
-                .buttonStyle(.plain)
-                .accessibilityIdentifier("settings.offline.\(dictionary.skarnikId ?? "").delete")
-            }
-        }
-        .contentShape(Rectangle())
-        .onTapGesture {
-            switch state {
-            case .notDownloaded, .failed:
-                manager.startDownload(dictionary)
-            case .downloading, .downloaded:
-                break
+                .buttonStyle(.borderless)
+                .accessibilityLabel(SKLocalization.offlineDeleteButtonTitle)
+                .accessibilityIdentifier("settings.offline.\(id).delete")
             }
         }
         .padding(.vertical, 4)
+        .swipeActions(edge: .trailing) {
+            if case .downloaded = state {
+                Button(SKLocalization.offlineDeleteButtonTitle, role: .destructive) {
+                    dictionaryPendingDelete = dictionary
+                }
+            }
+        }
+        .contextMenu {
+            if case .downloaded = state {
+                Button(SKLocalization.offlineDeleteButtonTitle, systemImage: "trash", role: .destructive) {
+                    dictionaryPendingDelete = dictionary
+                }
+            }
+        }
     }
 
     @ViewBuilder
@@ -243,19 +257,19 @@ struct SKSettingsView: View {
         switch state {
         case .notDownloaded:
             Text(SKLocalization.offlineNotDownloadedSubtitle)
-                .font(.system(size: 13))
+                .font(.footnote)
                 .foregroundStyle(Color(UIColor.secondaryLabel))
         case .failed:
             Text(SKLocalization.offlineFailedSubtitle)
-                .font(.system(size: 13))
+                .font(.footnote)
                 .foregroundStyle(.red)
         case .downloading:
             Text(SKLocalization.offlineDownloadingSubtitle)
-                .font(.system(size: 13))
+                .font(.footnote)
                 .foregroundStyle(Color(UIColor.secondaryLabel))
         case .downloaded(let count):
             Text(SKLocalization.offlineDownloadedSubtitle(count: count))
-                .font(.system(size: 13))
+                .font(.footnote)
                 .foregroundStyle(Color(UIColor.secondaryLabel))
         }
     }

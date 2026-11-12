@@ -12,11 +12,10 @@ final class OfflineDictionaryUITests: SkarnikUITestCase {
 
     func testDownloadReadOfflineCopyAndDelete() {
         openSettings()
-        let name = waitFor(element("settings.offline.tsbm.name"), "No ТСБМ offline row")
-        let status = element("settings.offline.tsbm.status")
+        let status = waitFor(element("settings.offline.tsbm.status"), "No ТСБМ offline row")
         XCTAssertEqual(status.label, "Спампаваць для афлайн доступу")
 
-        name.tap()
+        waitFor(element("settings.offline.tsbm.download"), "No download button").tap()
         let downloaded = XCTNSPredicateExpectation(predicate: NSPredicate(format: "label BEGINSWITH %@", "Спампавана"), object: status)
         XCTAssertEqual(XCTWaiter().wait(for: [downloaded], timeout: 600), .completed,
                        "Download did not finish: «\(status.label)»")
