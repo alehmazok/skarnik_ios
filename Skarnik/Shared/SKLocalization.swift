@@ -92,7 +92,7 @@ class SKLocalization: Any {
     class var analyticsConsentDecline: String { "Не дазваляць" }
     class var analyticsConsentSettingsRowTitle: String { "Аналітыка выкарыстання" }
     class var searchBarAtBottomRowTitle: String { "Радок пошуку ўнізе" }
-    class var searchBarAtBottomFooter: String { "Пошук на асобнай укладцы, поле ўнізе экрана. Выключыце, каб пошук быў уверсе, над гісторыяй." }
+    class var searchBarAtBottomFooter: String { "Выключыце, каб пошук быў уверсе, над гісторыяй." }
 
     class var offlineSectionTitle: String { "Афлайн доступ" }
     class var offlineNotDownloadedSubtitle: String { "Спампаваць для афлайн доступу" }
