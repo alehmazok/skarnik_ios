@@ -30,6 +30,28 @@ struct SKWhatsNewRelease: Equatable, Identifiable {
 /// under the version that will ship it. A version without an entry shows no sheet.
 enum SKWhatsNewCatalog {
     static let releases: [SKWhatsNewRelease] = [
+        SKWhatsNewRelease(version: "3.8.0", items: [
+            SKWhatsNewItem(
+                symbol: "magnifyingglass",
+                title: "Пошук унізе экрана",
+                text: "На iOS 26 радок пошуку стаіць унізе, пад вялікім пальцам, а гісторыя адкрываецца на асобнай укладцы «Гісторыя». Звыклы радок уверсе можна вярнуць у Наладах."
+            ),
+            SKWhatsNewItem(
+                symbol: "gearshape",
+                title: "Налады пад шасцярэнькай",
+                text: "Налады больш не займаюць укладку: націсніце на шасцярэньку ўверсе справа на пачатковым экране."
+            ),
+            SKWhatsNewItem(
+                symbol: "slider.horizontal.3",
+                title: "Новыя Налады",
+                text: "Усё сабрана ў чатыры раздзелы: слоўнікі без інтэрнэту, выгляд, прыватнасць і звесткі пра праграму."
+            ),
+            SKWhatsNewItem(
+                symbol: "keyboard.chevron.compact.down",
+                title: "Клавіятура не замінае",
+                text: "Пачніце гартаць вынікі пошуку, і клавіятура схаваецца, каб паказаць больш слоў."
+            ),
+        ]),
         SKWhatsNewRelease(version: "3.7.0", items: [
             SKWhatsNewItem(
                 symbol: "textformat.size",
