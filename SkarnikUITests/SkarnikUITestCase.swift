@@ -25,7 +25,6 @@ class SkarnikUITestCase: XCTestCase {
         case search = "Пошук"
         case bookmarks = "Закладкі"
         case dictionaries = "Слоўнікі"
-        case settings = "Налады"
     }
 
     /// Dictionary names as the app shows them: the search row caption and the word screen subtitle.
@@ -125,6 +124,25 @@ class SkarnikUITestCase: XCTestCase {
         waitFor(button, "Missing tab «\(tab.rawValue)»").tap()
     }
 
+    // MARK: - Settings
+
+    /// Opens Налады from the gear at the top right of the start screen (Гісторыя / Пошук).
+    func openSettings() {
+        let gear = app.buttons["settings.open"]
+        if !gear.exists {
+            // Not re-tapped when already on the start tab: on iOS 17–25 that would focus search.
+            openTab(hasSeparateSearchTab ? .history : .search)
+        }
+        waitFor(gear, "No settings button").tap()
+        waitFor(element("settings.articleColors"), "Settings did not open")
+    }
+
+    /// Closes the Налады sheet.
+    func closeSettings() {
+        waitFor(app.buttons["settings.done"], "No Done button on Settings").tap()
+        XCTAssertTrue(waitUntilGone(element("settings.articleColors"), timeout: 5), "Settings did not close")
+    }
+
     func goBack() {
         let back = app.navigationBars.firstMatch.buttons.element(boundBy: 0)
         waitFor(back, "No back button").tap()
@@ -141,8 +159,8 @@ class SkarnikUITestCase: XCTestCase {
 
     /// The tabs in tab bar order.
     var allTabs: [Tab] {
-        hasSeparateSearchTab ? [.history, .bookmarks, .dictionaries, .settings, .search]
-                             : [.search, .bookmarks, .dictionaries, .settings]
+        hasSeparateSearchTab ? [.history, .bookmarks, .dictionaries, .search]
+                             : [.search, .bookmarks, .dictionaries]
     }
 
     var searchField: XCUIElement { app.searchFields.firstMatch }

@@ -42,6 +42,8 @@ class SKHistoryViewController: UIHostingController<SKHistoryView> {
         )
         if mode == .searchOnly {
             configureSearchController()
+        } else {
+            navigationItem.rightBarButtonItem = makeSettingsButton()
         }
     }
 
@@ -73,6 +75,31 @@ class SKHistoryViewController: UIHostingController<SKHistoryView> {
     }
 
     // MARK: - Private
+
+    /// Налады open from the gear at the top right of the start screen, not from a tab.
+    private func makeSettingsButton() -> UIBarButtonItem {
+        let item = UIBarButtonItem(
+            image: UIImage(systemName: "gearshape"),
+            primaryAction: UIAction { [weak self] _ in self?.presentSettings() }
+        )
+        item.accessibilityLabel = SKLocalization.tabSettings
+        item.accessibilityIdentifier = "settings.open"
+        return item
+    }
+
+    private func presentSettings() {
+        let settingsVC = SKSettingsViewController()
+        let done = UIBarButtonItem(
+            systemItem: .done,
+            primaryAction: UIAction { [weak settingsVC] _ in settingsVC?.dismiss(animated: true) }
+        )
+        done.accessibilityIdentifier = "settings.done"
+        settingsVC.navigationItem.rightBarButtonItem = done
+        let nav = UINavigationController(rootViewController: settingsVC)
+        // A card on iPad and Mac, a sheet on iPhone.
+        nav.modalPresentationStyle = .formSheet
+        present(nav, animated: true)
+    }
 
     private func configureSearchController() {
         let controller = UISearchController(searchResultsController: nil)

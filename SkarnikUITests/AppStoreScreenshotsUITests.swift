@@ -121,7 +121,7 @@ final class AppStoreScreenshotsUITests: SkarnikUITestCase {
     }
 
     private func downloadOfflineDictionary() {
-        openTab(.settings)
+        openSettings()
         let status = element("settings.offline.tsbm.status")
         waitFor(element("settings.offline.tsbm.name"), "No ТСБМ offline row").tap()
         let downloaded = XCTNSPredicateExpectation(predicate: NSPredicate(format: "label BEGINSWITH %@", "Спампавана"),

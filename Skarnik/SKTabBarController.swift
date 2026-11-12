@@ -19,10 +19,9 @@ class SKTabBarController: UITabBarController, UITabBarControllerDelegate {
     private func setupTabs() {
         let favoritesNav = UINavigationController(rootViewController: SKFavoritesViewController())
         let vocabNav = UINavigationController(rootViewController: SKVocabulariesTableViewController())
-        let settingsNav = UINavigationController(rootViewController: SKSettingsViewController())
 
         if #available(iOS 26.0, *) {
-            setupTabsWithSearchTab(favoritesNav: favoritesNav, vocabNav: vocabNav, settingsNav: settingsNav)
+            setupTabsWithSearchTab(favoritesNav: favoritesNav, vocabNav: vocabNav)
             return
         }
 
@@ -46,13 +45,8 @@ class SKTabBarController: UITabBarController, UITabBarControllerDelegate {
             image: UIImage(systemName: "text.book.closed"),
             tag: 2
         )
-        settingsNav.tabBarItem = UITabBarItem(
-            title: SKLocalization.tabSettings,
-            image: UIImage(systemName: "gearshape"),
-            tag: 3
-        )
-
-        viewControllers = [historyNav, favoritesNav, vocabNav, settingsNav]
+        // Налады open from the gear on the start screen (SKHistoryViewController).
+        viewControllers = [historyNav, favoritesNav, vocabNav]
         selectedIndex = 0
     }
 
@@ -62,8 +56,7 @@ class SKTabBarController: UITabBarController, UITabBarControllerDelegate {
     @available(iOS 26.0, *)
     private func setupTabsWithSearchTab(
         favoritesNav: UINavigationController,
-        vocabNav: UINavigationController,
-        settingsNav: UINavigationController
+        vocabNav: UINavigationController
     ) {
         let historyNav = UINavigationController(rootViewController: SKHistoryViewController(mode: .historyOnly))
         let searchNav = UINavigationController(rootViewController: SKHistoryViewController(mode: .searchOnly))
@@ -83,16 +76,11 @@ class SKTabBarController: UITabBarController, UITabBarControllerDelegate {
             image: UIImage(systemName: "text.book.closed"),
             identifier: "vocabularies"
         ) { _ in vocabNav }
-        let settingsTab = UITab(
-            title: SKLocalization.tabSettings,
-            image: UIImage(systemName: "gearshape"),
-            identifier: "settings"
-        ) { _ in settingsNav }
         let searchTab = UISearchTab { _ in searchNav }
         searchTab.title = SKLocalization.tabHistory
         searchTab.automaticallyActivatesSearch = true
 
-        tabs = [historyTab, favoritesTab, vocabTab, settingsTab, searchTab]
+        tabs = [historyTab, favoritesTab, vocabTab, searchTab]
         selectedTab = historyTab
     }
 

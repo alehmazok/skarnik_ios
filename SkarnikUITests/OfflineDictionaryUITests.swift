@@ -11,7 +11,7 @@ import XCTest
 final class OfflineDictionaryUITests: SkarnikUITestCase {
 
     func testDownloadReadOfflineCopyAndDelete() {
-        openTab(.settings)
+        openSettings()
         let name = waitFor(element("settings.offline.tsbm.name"), "No ТСБМ offline row")
         let status = element("settings.offline.tsbm.status")
         XCTAssertEqual(status.label, "Спампаваць для афлайн доступу")
@@ -21,12 +21,13 @@ final class OfflineDictionaryUITests: SkarnikUITestCase {
         XCTAssertEqual(XCTWaiter().wait(for: [downloaded], timeout: 600), .completed,
                        "Download did not finish: «\(status.label)»")
 
+        closeSettings()
         // The offline copy is the first source in the chain (offline db → Supabase → admin API).
         openFirstDictionaryWord(.tsbm)
         XCTAssertEqual(waitForTranslation(), "local", "The word was not read from the offline copy")
         goBack()
 
-        openTab(.settings)
+        openSettings()
         waitFor(element("settings.offline.tsbm.delete"), "No delete button").tap()
         let alert = waitFor(app.alerts.firstMatch, "No delete confirmation")
         alert.buttons["Так"].tap()

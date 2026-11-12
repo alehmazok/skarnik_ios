@@ -10,7 +10,7 @@ import XCTest
 final class SettingsUITests: SkarnikUITestCase {
 
     func testSettingsRows() {
-        openTab(.settings)
+        openSettings()
 
         // Nothing is downloaded on a fresh install.
         for path in ["rusbel", "belrus", "tsbm"] {
@@ -32,8 +32,8 @@ final class SettingsUITests: SkarnikUITestCase {
         colors.tap()
         waitFor(app.buttons["Чырвоныя Скарніка"], "No «Чырвоныя Скарніка» option").tap()
         XCTAssertTrue(describe(colors).contains("Чырвоныя Скарніка"), "Picker shows «\(describe(colors))»")
-        openTab(.bookmarks)
-        openTab(.settings)
+        closeSettings()
+        openSettings()
         XCTAssertTrue(describe(element("settings.articleColors")).contains("Чырвоныя Скарніка"))
 
         // About opens and goes back.
