@@ -5,6 +5,7 @@
 
 import Combine
 import SwiftUI
+import UIKit
 
 // MARK: - ViewModel
 
@@ -124,6 +125,9 @@ private struct SKHistoryContentView: View {
     let viewModel: SKHistoryViewModel
     let mode: SKHistoryScreenMode
     @Environment(\.isSearching) private var swiftUiIsSearching
+    /// Whether the search field has the keyboard. Search stays open after a drag hides the
+    /// keyboard, so the pinned letter row follows the field instead of `isSearching`.
+    @State private var isSearchFieldEditing = false
     var onWordSelected: (SKWord, String) -> Void
 
     private var isSearching: Bool {
@@ -140,8 +144,15 @@ private struct SKHistoryContentView: View {
             .background(Color.appBackground.ignoresSafeArea())
             .safeAreaInset(edge: .bottom) {
                 // In `.searchOnly` the row is the search bar's input accessory instead, so it sits
-                // on the keyboard below the floating iOS 26 field rather than under it.
-                if isSearching && mode != .searchOnly { belarusianKeyboardRow }
+                // on the keyboard below the floating iOS 26 field rather than under it, and hides
+                // with the keyboard on its own.
+                if isSearching && isSearchFieldEditing && mode != .searchOnly { belarusianKeyboardRow }
+            }
+            .onReceive(NotificationCenter.default.publisher(for: UITextField.textDidBeginEditingNotification)) {
+                if $0.object is UISearchTextField { isSearchFieldEditing = true }
+            }
+            .onReceive(NotificationCenter.default.publisher(for: UITextField.textDidEndEditingNotification)) {
+                if $0.object is UISearchTextField { isSearchFieldEditing = false }
             }
     }
 
@@ -205,6 +216,10 @@ private struct SKHistoryContentView: View {
                     .accessibilityIdentifier("search.noResults")
                 Spacer()
             }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            // Nothing scrolls here, so a tap anywhere below the field hides the keyboard instead.
+            .contentShape(Rectangle())
+            .onTapGesture { Self.hideKeyboard() }
         } else {
             List(Array(viewModel.searchResults.enumerated()), id: \.element.uniqueId) { position, word in
                 Button {
@@ -218,7 +233,14 @@ private struct SKHistoryContentView: View {
             }
             .listStyle(.plain)
             .appListBackground()
+            // Search stays open with the query in the field; tapping the field brings the keyboard back.
+            .modifier(HideKeyboardOnDrag())
         }
+    }
+
+    /// Takes the keyboard from the search field without leaving search mode.
+    private static func hideKeyboard() {
+        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
     }
 
     // MARK: Belarusian character row
@@ -238,6 +260,31 @@ private struct SKHistoryContentView: View {
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
+        }
+    }
+}
+
+// MARK: - Hide keyboard on drag
+
+/// Hides the keyboard once the user drags the list.
+///
+/// `.scrollDismissesKeyboard` only reaches SwiftUI-owned fields such as `.searchable`. The iOS 26
+/// bottom search field belongs to a UIKit `UISearchController`, so from iOS 18 a drag also resigns
+/// whatever field holds the keyboard.
+private struct HideKeyboardOnDrag: ViewModifier {
+    func body(content: Content) -> some View {
+        if #available(iOS 18.0, *) {
+            content
+                .scrollDismissesKeyboard(.immediately)
+                .onScrollPhaseChange { _, phase in
+                    if phase == .interacting {
+                        UIApplication.shared.sendAction(
+                            #selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil
+                        )
+                    }
+                }
+        } else {
+            content.scrollDismissesKeyboard(.immediately)
         }
     }
 }

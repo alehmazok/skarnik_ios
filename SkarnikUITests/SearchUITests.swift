@@ -49,6 +49,48 @@ final class SearchUITests: SkarnikUITestCase {
         }
     }
 
+    /// Dragging the results hides the keyboard and the letter row, but search stays open with the query.
+    func testDraggingResultsHidesKeyboard() {
+        search("а")
+        _ = searchResult("а", in: .belRus)
+        waitFor(element("search.key.ў"), "Extra letter row missing")
+
+        // Swipe on a result row: `collectionViews.firstMatch` can be another list (or the iOS 26 tab bar).
+        elements("search.result").element(boundBy: 1).swipeUp()
+
+        assertKeyboardHidden(query: "а")
+        XCTAssertTrue(element("search.result").exists, "Search closed instead of only hiding the keyboard")
+
+        // Tapping the field brings the keyboard and the letter row back.
+        searchField.tap()
+        if !element("search.key.ў").waitForExistence(timeout: 10) {
+            // Diagnostics for CI: is the keyboard up without the row, or did the field not take focus?
+            print("DRAG-TEST keyboards=\(app.keyboards.count) " +
+                  "focus=\(String(describing: searchField.value(forKey: "hasKeyboardFocus"))) " +
+                  "fields=\(app.searchFields.count)")
+            print("DRAG-TEST hierarchy:\n\(app.debugDescription)")
+            XCTFail("Extra letter row did not come back")
+        }
+    }
+
+    /// With no results nothing scrolls, so a tap on the hint area hides the keyboard.
+    func testTappingSearchHintHidesKeyboard() {
+        search("qzxqzxqzx")
+        waitFor(element("search.noResults"), "No-results hint missing").tap()
+
+        assertKeyboardHidden(query: "qzxqzxqzx")
+        XCTAssertTrue(element("search.noResults").exists, "Search closed instead of only hiding the keyboard")
+    }
+
+    private func assertKeyboardHidden(query: String, file: StaticString = #filePath, line: UInt = #line) {
+        // The letter row shows only while the field has the keyboard, in both search layouts.
+        XCTAssertTrue(waitUntilGone(element("search.key.ў"), timeout: 5), "Letter row still shown",
+                      file: file, line: line)
+        XCTAssertEqual(searchField.value(forKey: "hasKeyboardFocus") as? Bool, false,
+                       "Search field still has the keyboard", file: file, line: line)
+        XCTAssertEqual(searchField.value as? String, query, "Query was lost", file: file, line: line)
+    }
+
     /// Russian-layout letters still find the Belarusian word (и → і).
     func testRussianLayoutLettersFindBelarusianWord() {
         search("прывитанне")
