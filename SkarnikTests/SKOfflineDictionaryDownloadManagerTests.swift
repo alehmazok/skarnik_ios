@@ -233,7 +233,7 @@ final class SKOfflineDictionaryDownloadManagerTests: XCTestCase {
             .store(in: &cancellables)
 
         manager.startDownload(dictionary)
-        await fulfillment(of: [exp], timeout: 1.0)
+        await fulfillment(of: [exp], timeout: 10)
 
         XCTAssertEqual(cloud.fetchCallCount, 0, "A rate-limited attempt must not touch the network")
         if case .downloading = manager.states[dictionary] {

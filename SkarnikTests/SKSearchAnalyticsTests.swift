@@ -14,15 +14,16 @@ final class SKSearchAnalyticsTests: XCTestCase {
     func testSettle_firesSearchPerformed_afterDebounceElapses_whenResultsNonEmpty() {
         var performed: [(query: String, count: Int)] = []
         var noResults: [String] = []
+        let fired = expectation(description: "settle event")
         let viewModel = SKHistoryViewModel(
-            onSearchPerformed: { query, count in performed.append((query, count)) },
-            onSearchNoResults: { query in noResults.append(query) },
+            onSearchPerformed: { query, count in performed.append((query, count)); fired.fulfill() },
+            onSearchNoResults: { query in noResults.append(query); fired.fulfill() },
             onSearchResultTapped: { _, _, _ in }
         )
 
         viewModel.recordSearchSettle(query: "мова", resultCount: 5)
 
-        wait(seconds: 0.7)
+        wait(for: [fired], timeout: Self.eventTimeout)
 
         XCTAssertEqual(performed.count, 1)
         XCTAssertEqual(performed.first?.query, "мова")
@@ -33,15 +34,16 @@ final class SKSearchAnalyticsTests: XCTestCase {
     func testSettle_firesSearchNoResults_whenResultCountIsZero() {
         var performed: [(query: String, count: Int)] = []
         var noResults: [String] = []
+        let fired = expectation(description: "settle event")
         let viewModel = SKHistoryViewModel(
-            onSearchPerformed: { query, count in performed.append((query, count)) },
-            onSearchNoResults: { query in noResults.append(query) },
+            onSearchPerformed: { query, count in performed.append((query, count)); fired.fulfill() },
+            onSearchNoResults: { query in noResults.append(query); fired.fulfill() },
             onSearchResultTapped: { _, _, _ in }
         )
 
         viewModel.recordSearchSettle(query: "zzzqqq", resultCount: 0)
 
-        wait(seconds: 0.7)
+        wait(for: [fired], timeout: Self.eventTimeout)
 
         XCTAssertTrue(performed.isEmpty)
         XCTAssertEqual(noResults, ["zzzqqq"])
@@ -49,22 +51,22 @@ final class SKSearchAnalyticsTests: XCTestCase {
 
     func testSettle_onlyLastSettleInTypingBurstFires() {
         var performed: [(query: String, count: Int)] = []
+        let fired = expectation(description: "settle event")
         let viewModel = SKHistoryViewModel(
-            onSearchPerformed: { query, count in performed.append((query, count)) },
+            onSearchPerformed: { query, count in performed.append((query, count)); fired.fulfill() },
             onSearchNoResults: { _ in },
             onSearchResultTapped: { _, _, _ in }
         )
 
-        // Three settles under 500ms apart, simulating "м" -> "мо" -> "мова" while typing.
+        // Three settles in one burst, simulating "м" -> "мо" -> "мова" while typing. Sent back to
+        // back (not on timers), so a slow CI runner can't stretch the gaps past the 500ms debounce.
         viewModel.recordSearchSettle(query: "м", resultCount: 100)
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-            viewModel.recordSearchSettle(query: "мо", resultCount: 20)
-        }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-            viewModel.recordSearchSettle(query: "мова", resultCount: 3)
-        }
+        viewModel.recordSearchSettle(query: "мо", resultCount: 20)
+        viewModel.recordSearchSettle(query: "мова", resultCount: 3)
 
-        wait(seconds: 0.9)
+        wait(for: [fired], timeout: Self.eventTimeout)
+        // No second event follows the first one.
+        wait(seconds: 0.7)
 
         XCTAssertEqual(performed.count, 1, "only the last settle in the burst should fire an event")
         XCTAssertEqual(performed.first?.query, "мова")
@@ -127,6 +129,10 @@ final class SKSearchAnalyticsTests: XCTestCase {
     }
 
     // MARK: - Helpers
+
+    /// Upper bound for an expected event. Waits end as soon as the event fires, so this only
+    /// matters on a stalled CI simulator.
+    private static let eventTimeout: TimeInterval = 10
 
     private func wait(seconds: TimeInterval) {
         let expectation = expectation(description: "wait \(seconds)s")
