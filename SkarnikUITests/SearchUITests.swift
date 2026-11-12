@@ -55,7 +55,8 @@ final class SearchUITests: SkarnikUITestCase {
         _ = searchResult("а", in: .belRus)
         waitFor(element("search.key.ў"), "Extra letter row missing")
 
-        app.collectionViews.firstMatch.swipeUp()
+        // Swipe on a result row: `collectionViews.firstMatch` can be another list (or the iOS 26 tab bar).
+        elements("search.result").element(boundBy: 1).swipeUp()
 
         assertKeyboardHidden(query: "а")
         XCTAssertTrue(element("search.result").exists, "Search closed instead of only hiding the keyboard")
