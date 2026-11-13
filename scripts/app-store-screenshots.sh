@@ -4,9 +4,9 @@
 #   scripts/app-store-screenshots.sh
 #
 # Runs AppStoreScreenshotsUITests on a 6.9" iPhone and a 13" iPad simulator, in light and dark mode,
-# with a clean status bar (9:41, full signal and battery) and the software keyboard shown.
+# with a clean status bar (9:41, full signal and battery, not charging) and the software keyboard shown.
 # Output: screenshots/appstore/<iphone|ipad>/<light|dark>/NN-name.png (gitignored), at the exact
-# App Store Connect sizes (1320×2868 and 2064×2752). Captions and the frame are added in Figma.
+# App Store Connect sizes (1320×2868 and 2064×2752). Upload them as they are: no captions, no frame.
 #
 # Env (all optional):
 #   IPHONE_SIM   simulator name, default "iPhone 17 Pro Max"
@@ -42,14 +42,16 @@ prepare_sim() { # <udid>
   xcrun simctl spawn "$udid" defaults write -g AppleKeyboards -array \
     "ru_RU@sw=Russian;hw=Automatic" "en_US@sw=QWERTY;hw=Automatic"
   xcrun simctl spawn "$udid" defaults write -g AppleKeyboardsExpanded -int 1
-  # Keyboard settings apply after a reboot of the simulator.
+  # 12-hour clock: the status bar shows "9:41", not "09:41" as in 24-hour regions (en_BY).
+  xcrun simctl spawn "$udid" defaults write -g AppleICUForce12HourTime -bool true
+  # Keyboard and clock settings apply after a reboot of the simulator.
   xcrun simctl shutdown "$udid"
   xcrun simctl boot "$udid"
   xcrun simctl bootstatus "$udid" -b >/dev/null
   xcrun simctl status_bar "$udid" override --time 9:41 \
     --dataNetwork wifi --wifiMode active --wifiBars 3 \
     --cellularMode active --cellularBars 4 --operatorName "" \
-    --batteryState charged --batteryLevel 100
+    --batteryState discharging --batteryLevel 100
 }
 
 # A connected hardware keyboard hides the software keyboard in every simulator.

@@ -105,6 +105,9 @@ enum AppError: LocalizedError {
 - Use Swift Testing framework (`@Test`, `#expect`)
 - Minimum 80% code coverage for business logic
 
+## Git
+- Never push over SSH (`origin` is `git@github.com:...`, and the SSH key is not available to agents). Push over HTTPS with the `gh` credentials instead: `git -c credential.helper='!gh auth git-credential' push -u https://github.com/alehmazok/skarnik_ios.git <branch>`. Use `gh` for PRs, issues and comments.
+
 ## DO NOT
 - Write UITests during scaffolding phase
 - Use deprecated APIs (UIKit when SwiftUI suffices)
