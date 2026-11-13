@@ -97,9 +97,14 @@ jobs:
           retention-days: 14
 
   ui-test:
-    name: UI tests
+    # The iPhone job keeps the old check name. iPad runs the split view (issue #79).
+    name: ${{ matrix.device == 'iPhone' && 'UI tests' || format('UI tests ({0})', matrix.device) }}
     runs-on: macos-26
     timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        device: [iPhone, iPad]
     steps:
       - uses: actions/checkout@v5
 
@@ -123,13 +128,15 @@ jobs:
       - name: Pick simulator
         id: sim
         run: |
-          udid=$(xcrun simctl list devices available -j | jq -r '
+          udid=$(xcrun simctl list devices available -j | jq -r --arg device "$DEVICE" '
             .devices | to_entries
             | map(select(.key | test("iOS")))
             | sort_by(.key | capture("iOS-(?<v>[0-9-]+)").v | split("-") | map(tonumber))
-            | last | .value | map(select(.name | startswith("iPhone"))) | first | .udid')
-          echo "Using simulator $udid"
+            | last | .value | map(select(.name | startswith($device))) | first | .udid')
+          echo "Using $DEVICE simulator $udid"
           echo "udid=$udid" >> "$GITHUB_OUTPUT"
+        env:
+          DEVICE: ${{ matrix.device }}
 
       - name: Test
         run: |
@@ -153,7 +160,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: ui-test-results
+          name: ui-test-results-${{ matrix.device }}
           path: |
             build/UITestResults.xcresult
             build/xcodebuild-ui-test.log

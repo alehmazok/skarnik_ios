@@ -13,6 +13,7 @@
 //  - NoNetworkUITests runs only in the BrowserStack build with `networkProfile: no-network`.
 //
 
+import UIKit
 import XCTest
 
 class SkarnikUITestCase: XCTestCase {
@@ -143,7 +144,22 @@ class SkarnikUITestCase: XCTestCase {
         XCTAssertTrue(waitUntilGone(element("settings.articleColors"), timeout: 5), "Settings did not close")
     }
 
+    /// iPad and Mac: the list and the word are side by side (split view). A word opens in the right
+    /// column, and the list stays visible on the left with its tab bar at the bottom.
+    var isSplitView: Bool {
+        UIDevice.current.userInterfaceIdiom == .pad
+    }
+
+    /// Back to the previous screen. In the split view a word does not cover the list, so leaving it
+    /// needs no tap: only a screen pushed on top (the stress table, Налады → Пра Скарнік) has a back button.
     func goBack() {
+        if isSplitView {
+            let back = app.navigationBars.buttons["BackButton"]
+            if back.waitForExistence(timeout: 2) {
+                back.tap()
+            }
+            return
+        }
         let back = app.navigationBars.firstMatch.buttons.element(boundBy: 0)
         waitFor(back, "No back button").tap()
     }
@@ -232,11 +248,27 @@ class SkarnikUITestCase: XCTestCase {
         waitFor(element("wordDetails"), "Word screen did not open", file: file, line: line)
         let headword = waitFor(element("wordDetails.headword"), "No headword", file: file, line: line)
         // Homographs carry every stressed form: «ка́ра | кара́».
-        let forms = plain(headword.label).components(separatedBy: " | ")
-        XCTAssertTrue(forms.allSatisfy { $0 == word }, "Headword is «\(headword.label)», expected «\(word)»",
-                      file: file, line: line)
+        func headwordMatches() -> Bool {
+            plain(headword.label).components(separatedBy: " | ").allSatisfy { $0 == word }
+        }
         let subtitle = waitFor(element("wordDetails.subtitle"), "No dictionary subtitle", file: file, line: line)
+        func subtitleMatches() -> Bool {
+            subtitle.label.lowercased() == dictionary.subtitle.lowercased()
+        }
+        waitForSplitViewWord { headwordMatches() && subtitleMatches() }
+        XCTAssertTrue(headwordMatches(), "Headword is «\(headword.label)», expected «\(word)»",
+                      file: file, line: line)
         XCTAssertEqual(subtitle.label.lowercased(), dictionary.subtitle.lowercased(), "Subtitle", file: file, line: line)
+    }
+
+    /// In the split view the word column is reused, so right after a tap it can still show the previous
+    /// word for a moment. Waits up to 5 s for `matches`; on iPhone a new screen is pushed, so no wait.
+    private func waitForSplitViewWord(_ matches: () -> Bool) {
+        guard isSplitView else { return }
+        let deadline = Date().addingTimeInterval(5)
+        while !matches() && Date() < deadline {
+            Thread.sleep(forTimeInterval: 0.3)
+        }
     }
 
     /// Searches `word` and opens its entry in `dictionary`.
@@ -279,6 +311,7 @@ class SkarnikUITestCase: XCTestCase {
         first.tap()
         waitFor(element("wordDetails"), "Word screen did not open")
         let subtitle = waitFor(element("wordDetails.subtitle"), "No dictionary subtitle")
+        waitForSplitViewWord { subtitle.label.lowercased() == dictionary.subtitle.lowercased() }
         XCTAssertEqual(subtitle.label.lowercased(), dictionary.subtitle.lowercased())
         return label
     }

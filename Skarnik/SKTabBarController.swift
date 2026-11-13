@@ -15,6 +15,12 @@ class SKTabBarController: UITabBarController, UITabBarControllerDelegate {
     override func viewDidLoad() {
         super.viewDidLoad()
         delegate = self
+        // iPad and Mac: the tabs live in the narrow list column of the split view. In a regular width
+        // iPadOS 18+ draws them as a floating segmented row at the top, which doesn't fit there:
+        // Слоўнікі ended up behind a «›» overflow next to the gear (issue #79). A compact width keeps
+        // the iPhone tab bar at the bottom of the column, with every tab and the bottom search tab.
+        // Only this column is compact; the split view and the word column stay regular.
+        traitOverrides.horizontalSizeClass = .compact
         setupTabs()
         NotificationCenter.default.addObserver(
             self, selector: #selector(searchBarPlacementChanged),

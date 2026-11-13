@@ -31,6 +31,8 @@ class SKFavoritesController {
         if let jsonData = try? JSONEncoder().encode(favorites) {
             UserDefaults.standard.set(jsonData, forKey: SKFavoritesController.favoritesKey)
         }
+        // On iPad the Закладкі list stays visible beside the word, so it can't wait for viewWillAppear.
+        NotificationCenter.default.post(name: .skFavoritesChanged, object: nil)
     }
 
     private func matches(_ favorite: SKFavoriteWord, _ word: SKWord) -> Bool {
@@ -57,4 +59,9 @@ class SKFavoritesController {
         favorites.removeAll { matches(favorite, $0.word) }
         saveFavorites()
     }
+}
+
+extension Notification.Name {
+    /// Posted after a bookmark is added or removed.
+    static let skFavoritesChanged = Notification.Name("SKFavoritesChanged")
 }
