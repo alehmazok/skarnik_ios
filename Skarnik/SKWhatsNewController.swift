@@ -46,11 +46,6 @@ enum SKWhatsNewCatalog {
                 title: "Клавіятура не замінае",
                 text: "Пачніце гартаць вынікі пошуку, і клавіятура схаваецца, каб паказаць больш слоў."
             ),
-            SKWhatsNewItem(
-                symbol: "ipad",
-                title: "Укладкі на iPad",
-                text: "На iPad і Mac усе ўкладкі зноў унізе спіса, а пошук там жа, дзе на iPhone. Закладкі абнаўляюцца адразу, як толькі вы дадаеце ці выдаляеце слова."
-            ),
         ]),
         SKWhatsNewRelease(version: "3.7.0", items: [
             SKWhatsNewItem(
