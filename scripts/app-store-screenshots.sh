@@ -3,15 +3,16 @@
 #
 #   scripts/app-store-screenshots.sh
 #
-# Runs AppStoreScreenshotsUITests on a 6.9" iPhone and a 13" iPad simulator, in light and dark mode,
+# Runs AppStoreScreenshotsUITests on a 6.9" and a 6.3" iPhone and a 13" iPad simulator, in light and dark mode,
 # with a clean status bar (9:41, full signal and battery, not charging) and the software keyboard shown.
-# Output: screenshots/appstore/<iphone|ipad>/<light|dark>/NN-name.png (gitignored), at the exact
-# App Store Connect sizes (1320×2868 and 2064×2752). Upload them as they are: no captions, no frame.
+# Output: screenshots/appstore/<iphone|iphone-medium|ipad>/<light|dark>/NN-name.png (gitignored), at the
+# exact App Store Connect sizes (1320×2868, 1206×2622 and 2064×2752). Upload them as they are: no captions, no frame.
 #
 # Env (all optional):
-#   IPHONE_SIM   simulator name, default "iPhone 17 Pro Max"
-#   IPAD_SIM     simulator name prefix, default "iPad Pro 13-inch"
-#   DEVICES      "iphone ipad" (default), or just one of them
+#   IPHONE_SIM         simulator name, default "iPhone 17 Pro Max" (large display, 6.9")
+#   IPHONE_MEDIUM_SIM  simulator name, default "iPhone 17 Pro" (medium display, 6.3")
+#   IPAD_SIM           simulator name prefix, default "iPad Pro 13-inch"
+#   DEVICES            "iphone iphone-medium ipad" (default), or some of them
 #   APPEARANCES  "light dark" (default), or just one of them
 #   SKIP_OFFLINE=1  skip the offline-download shot (the ТСБМ download takes a few minutes per run)
 set -euo pipefail
@@ -19,25 +20,32 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 
 iphone_sim="${IPHONE_SIM:-iPhone 17 Pro Max}"
+iphone_medium_sim="${IPHONE_MEDIUM_SIM:-iPhone 17 Pro}"
 ipad_sim="${IPAD_SIM:-iPad Pro 13-inch}"
-devices="${DEVICES:-iphone ipad}"
+devices="${DEVICES:-iphone iphone-medium ipad}"
 appearances="${APPEARANCES:-light dark}"
 out_root="$PWD/screenshots/appstore"
 build_dir="$PWD/build/screenshots"
 
-# Newest available runtime, first simulator whose name starts with $1.
+# Newest available runtime: the simulator named exactly $1, else the first whose name starts with $1
+# (so "iPhone 17 Pro" does not pick "iPhone 17 Pro Max", and "iPad Pro 13-inch" finds the M4 or M5).
 find_sim() {
   xcrun simctl list devices available -j | jq -r --arg name "$1" '
     .devices | to_entries
     | map(select(.key | test("iOS")))
     | sort_by(.key | capture("iOS-(?<v>[0-9-]+)").v | split("-") | map(tonumber))
-    | reverse | map(.value[] | select(.name | startswith($name))) | first | .udid // empty'
+    | reverse | map(.value[]) as $sims
+    | (($sims | map(select(.name == $name))) + ($sims | map(select(.name | startswith($name)))))
+    | first | .udid // empty'
 }
 
 prepare_sim() { # <udid>
   local udid="$1"
   xcrun simctl boot "$udid" 2>/dev/null || true
   xcrun simctl bootstatus "$udid" -b >/dev/null
+  # A runner left over from an earlier build can be launched instead of the fresh one: start clean.
+  xcrun simctl uninstall "$udid" by.skarnik.SkarnikUITests.xctrunner 2>/dev/null || true
+  xcrun simctl uninstall "$udid" by.mazokaleh.Skarnik 2>/dev/null || true
   # Cyrillic software keyboard: the search shot shows it under the і / ў / ʼ key row.
   xcrun simctl spawn "$udid" defaults write -g AppleKeyboards -array \
     "ru_RU@sw=Russian;hw=Automatic" "en_US@sw=QWERTY;hw=Automatic"
@@ -72,12 +80,13 @@ failed=0
 for device in $devices; do
   case "$device" in
     iphone) name="$iphone_sim" ;;
+    iphone-medium) name="$iphone_medium_sim" ;;
     ipad) name="$ipad_sim" ;;
-    *) echo "Unknown device «$device» (use iphone or ipad)"; exit 1 ;;
+    *) echo "Unknown device «$device» (use iphone, iphone-medium or ipad)"; exit 1 ;;
   esac
   udid=$(find_sim "$name")
   if [[ -z "$udid" ]]; then
-    echo "No simulator named «$name». Create one in Xcode > Window > Devices and Simulators, or set IPHONE_SIM / IPAD_SIM."
+    echo "No simulator named «$name». Create one in Xcode > Window > Devices and Simulators, or set IPHONE_SIM / IPHONE_MEDIUM_SIM / IPAD_SIM."
     exit 1
   fi
   echo "== $device: $name ($udid)"

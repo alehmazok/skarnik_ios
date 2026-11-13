@@ -64,6 +64,9 @@ extension UIViewController {
                     ?? splitVC.viewControllers.last as? SKWordDetailsViewController else { return }
             wordDetailsVC.entryPoint = entryPoint
             wordDetailsVC.word = word
+            // The search field keeps focus beside the word; hide the keyboard so it does not cover
+            // the article and its toolbar (Share, Bookmark). The query and results stay.
+            view.window?.endEditing(true)
             splitVC.showDetailViewController(secondaryNav ?? wordDetailsVC, sender: self)
         }
     }

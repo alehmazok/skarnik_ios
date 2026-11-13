@@ -96,6 +96,10 @@ class SkarnikUITestCase: XCTestCase {
         app.descendants(matching: .any).matching(identifier: identifier).firstMatch
     }
 
+    /// The bookmark button on the word screen. Queried as a button: the toolbar item also exposes an
+    /// `Other` with the same identifier, and on iPad that one is off screen (hit point {-1, -1}).
+    var bookmarkButton: XCUIElement { app.buttons["wordDetails.bookmark"] }
+
     func elements(_ identifier: String) -> XCUIElementQuery {
         app.descendants(matching: .any).matching(identifier: identifier)
     }
@@ -110,6 +114,12 @@ class SkarnikUITestCase: XCTestCase {
     func waitUntilGone(_ element: XCUIElement, timeout: TimeInterval) -> Bool {
         let gone = XCTNSPredicateExpectation(predicate: NSPredicate(format: "exists == false"), object: element)
         return XCTWaiter().wait(for: [gone], timeout: timeout) == .completed
+    }
+
+    /// Waits until `element`'s label becomes `label`.
+    func waitForLabel(_ element: XCUIElement, _ label: String, timeout: TimeInterval = 5) -> Bool {
+        let changed = XCTNSPredicateExpectation(predicate: NSPredicate(format: "label == %@", label), object: element)
+        return XCTWaiter().wait(for: [changed], timeout: timeout) == .completed
     }
 
     /// Accessibility label without the combining stress accent (U+0301), so «мо́ва» reads as «мова».
