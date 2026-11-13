@@ -20,7 +20,11 @@ class SKTabBarController: UITabBarController, UITabBarControllerDelegate {
         // Слоўнікі ended up behind a «›» overflow next to the gear (issue #79). A compact width keeps
         // the iPhone tab bar at the bottom of the column, with every tab and the bottom search tab.
         // Only this column is compact; the split view and the word column stay regular.
-        traitOverrides.horizontalSizeClass = .compact
+        // iPhone is left as it was: it is compact already, and with the override the first tap on the
+        // search tab after launch missed on CI (#81).
+        if UIDevice.current.userInterfaceIdiom == .pad {
+            traitOverrides.horizontalSizeClass = .compact
+        }
         setupTabs()
         NotificationCenter.default.addObserver(
             self, selector: #selector(searchBarPlacementChanged),
