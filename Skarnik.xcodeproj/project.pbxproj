@@ -52,7 +52,6 @@
 		B284FE5F2AE0A455009CA21D /* SKWordWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = B284FE5E2AE0A455009CA21D /* SKWordWidget.swift */; };
 		B284FE652AE0A456009CA21D /* WordWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = B284FE552AE0A455009CA21D /* WordWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		B284FE6F2AE0A527009CA21D /* SKWordWidgetEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = B284FE6B2AE0A527009CA21D /* SKWordWidgetEntry.swift */; };
-		B284FE702AE0A527009CA21D /* SKWordWidgetConfigurationIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = B284FE6C2AE0A527009CA21D /* SKWordWidgetConfigurationIntent.swift */; };
 		B284FE712AE0A527009CA21D /* SKWordTimelineProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = B284FE6D2AE0A527009CA21D /* SKWordTimelineProvider.swift */; };
 		B284FE722AE0A527009CA21D /* SKWordWidgetView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B284FE6E2AE0A527009CA21D /* SKWordWidgetView.swift */; };
 		B284FE732AE0A54C009CA21D /* SKLocalization.swift in Sources */ = {isa = PBXBuildFile; fileRef = B27D996228FB11E60047CCBF /* SKLocalization.swift */; };
@@ -188,7 +187,6 @@
 		B284FE622AE0A456009CA21D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		B284FE662AE0A456009CA21D /* WordWidgetExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = WordWidgetExtension.entitlements; sourceTree = "<group>"; };
 		B284FE6B2AE0A527009CA21D /* SKWordWidgetEntry.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SKWordWidgetEntry.swift; sourceTree = "<group>"; };
-		B284FE6C2AE0A527009CA21D /* SKWordWidgetConfigurationIntent.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SKWordWidgetConfigurationIntent.swift; sourceTree = "<group>"; };
 		B284FE6D2AE0A527009CA21D /* SKWordTimelineProvider.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SKWordTimelineProvider.swift; sourceTree = "<group>"; };
 		B284FE6E2AE0A527009CA21D /* SKWordWidgetView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SKWordWidgetView.swift; sourceTree = "<group>"; };
 		B284FE7A2AE0A6AD009CA21D /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.0.sdk/System/iOSSupport/System/Library/Frameworks/UIKit.framework; sourceTree = DEVELOPER_DIR; };
@@ -449,7 +447,6 @@
 				B284FE5C2AE0A455009CA21D /* SKWordWidgetBundle.swift */,
 				B284FE5E2AE0A455009CA21D /* SKWordWidget.swift */,
 				B284FE6D2AE0A527009CA21D /* SKWordTimelineProvider.swift */,
-				B284FE6C2AE0A527009CA21D /* SKWordWidgetConfigurationIntent.swift */,
 				B284FE6B2AE0A527009CA21D /* SKWordWidgetEntry.swift */,
 				B284FE6E2AE0A527009CA21D /* SKWordWidgetView.swift */,
 				B284FE662AE0A456009CA21D /* WordWidgetExtension.entitlements */,
@@ -739,7 +736,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				B284FE702AE0A527009CA21D /* SKWordWidgetConfigurationIntent.swift in Sources */,
 				B251A34D2AE9939300E78923 /* SKLevenshtein.swift in Sources */,
 				B284FE792AE0A5A4009CA21D /* SKVocabularyIndex.swift in Sources */,
 				BEB193CCF22D7938CA2D3213 /* SKDamerauLevenshtein.swift in Sources */,

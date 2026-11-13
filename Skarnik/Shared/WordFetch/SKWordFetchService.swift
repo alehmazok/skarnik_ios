@@ -21,7 +21,9 @@ class SKWordFetchService: Any {
         var loop = 0
         while true {
             loop += 1
-            let word = await self.randomWord(vocabulary)
+            guard let word = self.randomWord(vocabulary) else {
+                return nil
+            }
             if self.storage.hasWord(vocabularyType: word.lang_id, wordId: word.word_id) && loop < maxTries {
                 continue
             }
@@ -49,11 +51,14 @@ class SKWordFetchService: Any {
         return newWordEntry
     }
     
-    private func randomWord(_ vocabularyType: ESKVocabularyType) async -> SKWord {
-        while(true) {
+    /// A few attempts, then give up: an unbounded loop here spun forever when the database
+    /// returned no row, and the widget never got a timeline.
+    private func randomWord(_ vocabularyType: ESKVocabularyType, maxAttempts: Int = 3) -> SKWord? {
+        for _ in 0..<maxAttempts {
             if let word = SKVocabularyIndex.shared.randomWord(vocabularyType: vocabularyType) {
                 return word
             }
         }
+        return nil
     }
 }
