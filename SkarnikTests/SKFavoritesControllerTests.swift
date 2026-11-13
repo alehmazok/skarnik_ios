@@ -57,4 +57,18 @@ final class SKFavoritesControllerTests: XCTestCase {
         let decoded = try? JSONDecoder().decode([SKFavoriteWord].self, from: jsonData!)
         XCTAssertEqual(decoded?.contains { $0.word.word_id == word.word_id && $0.word.lang_id == word.lang_id }, true)
     }
+
+    /// The Закладкі list and the word screen reload on this (on iPad both are on screen, issue #79).
+    func testChangesPostNotification() {
+        let word = SKWord(word_id: 777_006, word: "апавяшчэнне", lang_id: .bel_rus)
+        defer { cleanUp(word) }
+
+        let added = expectation(forNotification: .skFavoritesChanged, object: nil)
+        SKFavoritesController.shared.toggleFavorite(word)
+        wait(for: [added], timeout: 10)
+
+        let removed = expectation(forNotification: .skFavoritesChanged, object: nil)
+        SKFavoritesController.shared.removeFavorite(SKFavoriteWord(word: word, dateAdded: Date()))
+        wait(for: [removed], timeout: 10)
+    }
 }

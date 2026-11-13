@@ -297,6 +297,24 @@ final class SKWordDetailsViewModelTests: XCTestCase {
         XCTAssertFalse(SKFavoritesController.shared.isFavorite(word))
     }
 
+    /// iPad: the word stays open beside Закладкі, where a swipe can remove its bookmark (issue #79).
+    @MainActor
+    func testIsFavorite_followsBookmarkRemovedElsewhere() {
+        let word = SKWord(word_id: 555_003, word: "закладка-побач", lang_id: .bel_rus)
+        defer { SKFavoritesController.shared.removeFavorite(SKFavoriteWord(word: word, dateAdded: Date())) }
+        SKFavoritesController.shared.toggleFavorite(word)
+        viewModel.updateWord(word)
+        XCTAssertTrue(viewModel.isFavorite)
+
+        let cleared = expectation(description: "isFavorite turns false")
+        viewModel.$isFavorite.dropFirst().filter { !$0 }.first()
+            .sink { _ in cleared.fulfill() }
+            .store(in: &cancellables)
+        SKFavoritesController.shared.removeFavorite(SKFavoriteWord(word: word, dateAdded: Date()))
+        wait(for: [cleared], timeout: 10)
+        XCTAssertFalse(viewModel.isFavorite)
+    }
+
     @MainActor
     func testToggleFavorite_noWord_doesNothing() {
         viewModel.updateWord(nil)

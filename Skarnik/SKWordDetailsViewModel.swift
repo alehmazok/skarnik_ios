@@ -31,9 +31,20 @@ class SKWordDetailsViewModel: ObservableObject {
     private var fetchTask: Task<Void, Never>?
     let effectSubject = PassthroughSubject<SKWordDetailsEffect, Never>()
     private let translationSource: any SKTranslationSource
+    private var favoritesObserver: AnyCancellable?
 
     init(translationSource: any SKTranslationSource = SKFallbackTranslationSource.shared) {
         self.translationSource = translationSource
+        // On iPad the word stays open beside Закладкі, where a swipe can remove its bookmark.
+        favoritesObserver = NotificationCenter.default.publisher(for: .skFavoritesChanged)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                MainActor.assumeIsolated { self?.refreshFavorite() }
+            }
+    }
+
+    private func refreshFavorite() {
+        isFavorite = word.map { SKFavoritesController.shared.isFavorite($0) } ?? false
     }
     
     var translation: SKSkarnikTranslation? {

@@ -27,8 +27,8 @@ with BrowserStack" to stay in `README.md` on `main`.
   The word screen shows which source answered as a hidden `wordDetails.source` label, only under
   `-uiTesting`, so tests can check the fetch order (offline db → Supabase → admin API).
   It has its own `SkarnikUITests` scheme, so the unit-test scheme and its CI job are unchanged.
-- **CI → UI tests** (`ci.yml`) runs the offline-safe classes on a simulator for every pull request and
-  push to `main` (it skips `NetworkUITests`, `OfflineDictionaryUITests` and `NoNetworkUITests`).
+- **CI → UI tests** and **UI tests (iPad)** (`ci.yml`) run the offline-safe classes on an iPhone and an iPad
+  simulator for every pull request and push to `main` (they skip `NetworkUITests`, `OfflineDictionaryUITests` and `NoNetworkUITests`).
 - **BrowserStack** (`browserstack.yml`) builds the app and the test runner for real devices, unsigned,
   packages `Skarnik.ipa` and
   `SkarnikUITests.zip`, uploads both to App Automate and runs the suite on the device list, then waits for

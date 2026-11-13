@@ -30,6 +30,14 @@ class SKFavoritesViewController: UIHostingController<SKFavoritesView> {
                 self?.showWordInDetail(word, entryPoint: "favorites")
             }
         )
+        NotificationCenter.default.addObserver(
+            self, selector: #selector(favoritesChanged), name: .skFavoritesChanged, object: nil
+        )
+    }
+
+    /// A bookmark changed on the word screen. On iPad that screen is beside this list.
+    @objc private func favoritesChanged() {
+        viewModel.reload()
     }
 
     override func viewWillAppear(_ animated: Bool) {

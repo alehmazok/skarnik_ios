@@ -115,7 +115,7 @@ meant for BrowserStack; the simulator CI job skips them.
 All CI, including TestFlight uploads, runs on GitHub Actions (`macos-26` runners, latest stable Xcode).
 Workflows live in `.github/workflows/`:
 
-- **CI** (`ci.yml`) runs the unit tests and the offline-safe `SkarnikUITests` on the newest iOS Simulator for every pull request and every push to `main`.
+- **CI** (`ci.yml`) runs the unit tests and the offline-safe `SkarnikUITests` on the newest iOS Simulator (UI tests on an iPhone and an iPad) for every pull request and every push to `main`.
 - **BrowserStack** (`browserstack.yml`) runs the UI tests on real devices in BrowserStack App Automate on every push to `main`, manually, and on pull requests that change the pipeline or the UI tests (setup in [docs/browserstack.md](docs/browserstack.md)).
 - **TestFlight** (`testflight.yml`) archives a Release build and uploads it to TestFlight. Start it from
   Actions → TestFlight → Run workflow. The build number is picked automatically: the highest build already on
