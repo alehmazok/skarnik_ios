@@ -7,7 +7,7 @@
 //  Needs the internet (article, stress table, offline download).
 //
 //  The script runs this once per device (6.9" iPhone, 13" iPad) and appearance (light, dark).
-//  Captions and the frame are added in Figma; these PNGs are the plain screens at full resolution.
+//  The PNGs go to App Store Connect as they are: no captions, no frame.
 //
 
 import XCTest
@@ -18,12 +18,10 @@ final class AppStoreScreenshotsUITests: SkarnikUITestCase {
     private enum Words {
         /// Typed before the shot of the і / ў / ʼ key row, so the results list is full.
         static let searchPrefix = "сям"
-        /// An article with coloured parts.
-        static let article = ("мова", SkarnikUITestCase.Dictionary.belRus)
+        /// A long ТСБМ article, so the coloured parts fill the screen.
+        static let article = ("мова", SkarnikUITestCase.Dictionary.tsbm)
         /// A ТСБМ headword, so «На́ціск» opens the stress table directly.
         static let stress = ("кара", SkarnikUITestCase.Dictionary.tsbm)
-        /// A typo that only the fuzzy search finds («слоўнік»); see SKFuzzySearchTests.
-        static let typo = "слоунік"
         /// Opened (history) and bookmarked before the history and bookmarks shots.
         static let collected: [(String, SkarnikUITestCase.Dictionary)] = [
             ("добразычлівасць", .belRus), ("прывітанне", .belRus), ("кара", .rusBel), ("мова", .belRus)
@@ -71,18 +69,13 @@ final class AppStoreScreenshotsUITests: SkarnikUITestCase {
         goBack()
         goBack()
 
-        // 5. Fuzzy search finds the word despite the typo.
-        search(Words.typo)
-        waitFor(element("search.result"), timeout: 15, "Fuzzy search found nothing for «\(Words.typo)»")
-        snapshot("05-fuzzy-search")
-
-        // 6. History and bookmarks.
+        // 5–6. History and bookmarks.
         showHistory()
         waitFor(element("history.row"), "History is empty")
-        snapshot("06-history")
+        snapshot("05-history")
         openTab(.bookmarks)
         waitFor(element("favorites.row"), "No bookmarks")
-        snapshot("07-bookmarks")
+        snapshot("06-bookmarks")
 
         // 4. Works offline: last, because the download is the slow part.
         if ProcessInfo.processInfo.environment["SKARNIK_SCREENSHOTS_SKIP_OFFLINE"] != "1" {
