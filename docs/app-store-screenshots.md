@@ -21,7 +21,7 @@ signal and battery (12-hour clock, not charging), switches the simulator to a Ru
 | File | Screen |
 |------|--------|
 | `01-search` | Search with the і / ў / ʼ key row and the keyboard (on iOS 26 the field is at the bottom, in the search tab) |
-| `02-article` | Long ТСБМ article («мова») with colours |
+| `02-article` | ТСБМ article («удзячнасць») with colours |
 | `03-stress` | Stress table (націск) |
 | `04-offline` | Settings with the ТСБМ dictionary downloaded |
 | `05-history` | History (its own Гісторыя tab on iOS 26) |
