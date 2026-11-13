@@ -222,15 +222,30 @@ class SkarnikUITestCase: XCTestCase {
 
     /// Leaves search and shows the history list (on iOS 26 that is the Гісторыя tab).
     func showHistory() {
+        if hasSeparateSearchTab && isSplitView {
+            // After a tap in the word column the field loses focus and its Cancel button goes away;
+            // the tab bar switches tabs without it.
+            if searchCancelButton.waitForExistence(timeout: 2) {
+                searchCancelButton.tap()
+            }
+            openTab(.history)
+            return
+        }
         cancelSearch()
         if hasSeparateSearchTab {
             openTab(.history)
         }
     }
 
+    private static let cancelLabels = ["Cancel", "Скасаваць", "Адмена", "Отмена", "Close"]
+
+    private var searchCancelButton: XCUIElement {
+        app.buttons.matching(NSPredicate(format: "label IN %@", Self.cancelLabels)).firstMatch
+    }
+
     /// Cancels search mode so the history list shows again.
     func cancelSearch() {
-        let labels = ["Cancel", "Скасаваць", "Адмена", "Отмена", "Close"]
+        let labels = Self.cancelLabels
         let cancel = app.navigationBars.buttons.matching(NSPredicate(format: "label IN %@", labels)).firstMatch
         if cancel.waitForExistence(timeout: 3) {
             cancel.tap()
