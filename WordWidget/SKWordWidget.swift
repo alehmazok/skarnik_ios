@@ -11,10 +11,12 @@ import SwiftUI
 
 
 struct SKWordWidget: Widget {
-    let kindAppIntent: String = "SKWordOfTheDayAppIntent"
+    // Kept from the former AppIntentConfiguration so widgets already on users' home screens
+    // keep working after the update.
+    let kind: String = "SKWordOfTheDayAppIntent"
 
     var body: some WidgetConfiguration {
-        AppIntentConfiguration(kind: kindAppIntent, intent: SKWordWidgetConfigurationIntent.self, provider: SKWordAppIntentTimelineProvider()) { entry in
+        StaticConfiguration(kind: kind, provider: SKWordTimelineProvider()) { entry in
             SKWordWidgetView(entry: entry)
                 .containerBackground(.fill.tertiary, for: .widget)
         }
