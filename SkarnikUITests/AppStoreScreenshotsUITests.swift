@@ -99,9 +99,12 @@ final class AppStoreScreenshotsUITests: SkarnikUITestCase {
     private func collectBookmarksAndHistory() {
         for (word, dictionary) in Words.bookmarks.reversed() {
             openWord(word, in: dictionary)
-            let bookmark = waitFor(element("wordDetails.bookmark"), "No bookmark button")
+            // The button stays disabled until the article loads (on iPad the word column is reused).
+            waitForTranslation()
+            let bookmark = waitFor(bookmarkButton, "No bookmark button")
             if bookmark.label == "Дадаць у закладкі" {
                 bookmark.tap()
+                XCTAssertTrue(waitForLabel(bookmark, "Выдаліць з закладак"), "«\(word)» was not bookmarked")
             }
             goBack()
         }

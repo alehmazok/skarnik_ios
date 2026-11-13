@@ -14,7 +14,7 @@ final class BookmarksUITests: SkarnikUITestCase {
 
     func testBookmarkAddAndRemove() {
         openWord("мова", in: .belRus)
-        let bookmark = waitFor(element("wordDetails.bookmark"), "No bookmark button")
+        let bookmark = waitFor(bookmarkButton, "No bookmark button")
         XCTAssertEqual(bookmark.label, addLabel)
         bookmark.tap()
         XCTAssertTrue(waitForLabel(bookmark, removeLabel), "Bookmark label did not change to «\(removeLabel)»")
@@ -28,16 +28,11 @@ final class BookmarksUITests: SkarnikUITestCase {
 
         row.tap()
         assertWordScreen("мова", in: .belRus)
-        let remove = waitFor(element("wordDetails.bookmark"), "No bookmark button")
+        let remove = waitFor(bookmarkButton, "No bookmark button")
         XCTAssertEqual(remove.label, removeLabel)
         remove.tap()
         XCTAssertTrue(waitForLabel(remove, addLabel), "Bookmark label did not change back to «\(addLabel)»")
         goBack()
         waitFor(element("favorites.empty"), "Bookmark was not removed")
-    }
-
-    private func waitForLabel(_ element: XCUIElement, _ label: String) -> Bool {
-        let changed = XCTNSPredicateExpectation(predicate: NSPredicate(format: "label == %@", label), object: element)
-        return XCTWaiter().wait(for: [changed], timeout: 5) == .completed
     }
 }
