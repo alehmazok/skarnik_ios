@@ -51,12 +51,32 @@ struct SKAttributedTextView: UIViewRepresentable {
             self.onLinkTap = onLinkTap
         }
 
+        /// A tap on a link opens it in the app; a tap on an abbreviation shows its full text.
         func textView(_ textView: UITextView,
-                      shouldInteractWith URL: URL,
-                      in characterRange: NSRange,
-                      interaction: UITextItemInteraction) -> Bool {
-            onLinkTap(URL)
-            return false
+                      primaryActionFor textItem: UITextItem,
+                      defaultAction: UIAction) -> UIAction? {
+            switch textItem.content {
+            case .link(let url):
+                return UIAction { [weak self] _ in self?.onLinkTap(url) }
+            case .tag:
+                let range = textItem.range
+                return UIAction { [weak textView] _ in
+                    guard let textView else { return }
+                    SKAbbreviationPopover.present(for: range, in: textView)
+                }
+            default:
+                return defaultAction
+            }
+        }
+
+        /// No long-press menu on links and abbreviations: links stay inside the app, as before.
+        func textView(_ textView: UITextView,
+                      menuConfigurationFor textItem: UITextItem,
+                      defaultMenu: UIMenu) -> UITextItem.MenuConfiguration? {
+            switch textItem.content {
+            case .link, .tag: return nil
+            default: return UITextItem.MenuConfiguration(menu: defaultMenu)
+            }
         }
     }
 }
@@ -547,3 +567,88 @@ private let previewTranslation = SKSkarnikTranslation(
     }
 }
 #endif
+
+// MARK: - Abbreviation popover
+
+/// The full text of a tapped abbreviation («разг.» → «разговорное слово, выражение») in a small popover
+/// with an arrow at the abbreviation, also on iPhone. A tap outside closes it.
+enum SKAbbreviationPopover {
+    private static let maxWidth: CGFloat = 300
+
+    @MainActor
+    static func present(for range: NSRange, in textView: UITextView) {
+        guard let text = textView.attributedText, range.length > 0, NSMaxRange(range) <= text.length,
+              let expansion = text.attribute(.skAbbreviation, at: range.location, effectiveRange: nil) as? String,
+              let presenter = textView.skNearestViewController else { return }
+        let abbreviation = (text.string as NSString).substring(with: range)
+
+        let controller = SKAbbreviationPopoverController(
+            rootView: SKAbbreviationPopoverView(abbreviation: abbreviation, expansion: expansion)
+        )
+        controller.modalPresentationStyle = .popover
+        controller.preferredContentSize = controller.sizeThatFits(
+            in: CGSize(width: maxWidth, height: .greatestFiniteMagnitude)
+        )
+        if let popover = controller.popoverPresentationController {
+            popover.sourceView = textView
+            popover.sourceRect = rect(of: range, in: textView)
+            popover.permittedArrowDirections = [.down, .up]
+            popover.delegate = controller
+        }
+        if presenter.presentedViewController is SKAbbreviationPopoverController {
+            presenter.dismiss(animated: false) { presenter.present(controller, animated: true) }
+        } else {
+            presenter.present(controller, animated: true)
+        }
+    }
+
+    /// The abbreviation's rect on its first line, in the text view's coordinates.
+    @MainActor
+    private static func rect(of range: NSRange, in textView: UITextView) -> CGRect {
+        guard let start = textView.position(from: textView.beginningOfDocument, offset: range.location),
+              let end = textView.position(from: start, offset: range.length),
+              let textRange = textView.textRange(from: start, to: end) else {
+            return CGRect(origin: .zero, size: textView.bounds.size)
+        }
+        return textView.firstRect(for: textRange)
+    }
+}
+
+final class SKAbbreviationPopoverController: UIHostingController<SKAbbreviationPopoverView>,
+                                             UIPopoverPresentationControllerDelegate {
+    /// A popover on iPhone too, instead of a sheet.
+    func adaptivePresentationStyle(for controller: UIPresentationController,
+                                   traitCollection: UITraitCollection) -> UIModalPresentationStyle {
+        .none
+    }
+}
+
+struct SKAbbreviationPopoverView: View {
+    let abbreviation: String
+    let expansion: String
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text(abbreviation)
+                .font(.headline)
+                .accessibilityIdentifier("wordDetails.abbreviation.title")
+            Text(expansion)
+                .font(.body)
+                .fixedSize(horizontal: false, vertical: true)
+                .accessibilityIdentifier("wordDetails.abbreviation.text")
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 12)
+    }
+}
+
+private extension UIResponder {
+    var skNearestViewController: UIViewController? {
+        var responder: UIResponder? = self
+        while let current = responder {
+            if let controller = current as? UIViewController { return controller }
+            responder = current.next
+        }
+        return nil
+    }
+}

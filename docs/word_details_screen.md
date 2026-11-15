@@ -76,6 +76,12 @@ between Back and «Націск», and it jumped when the stress form arrived.
 - Links: relative links resolve against skarnik.by; tapping one is routed by
   `SKWordDetailsViewModel.handleUrl`, which opens the linked entry in place
   (`/belrus|rusbel|tsbm/<id>`). Other links do nothing.
+- Abbreviations (Рус-Бел and Бел-Рус only): grammar labels in green spans («разг.», «муж.»,
+  «в разн. знач.») are matched against `SKAbbreviations` (Aleh's list, Russian expansions, plus the forms
+  Бел-Рус uses: «жен.», «муж.», «совер.», «несовер.»), get a dotted underline and a `.textItemTag`.
+  A tap shows the full text in a popover with an arrow at the abbreviation (also on iPhone); a tap
+  outside closes it. Not in ТСБМ, whose abbreviations are Belarusian. Same list and matching as
+  skarnik_android.
 
 ### «На́ціск» button (#25)
 

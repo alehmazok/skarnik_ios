@@ -13,6 +13,8 @@ extension NSAttributedString.Key {
     /// The headword a `data-word` element stands for (rus_bel entries marked up by the admin's
     /// `find_inner_stress` / `fix_inner_stress`).
     static let skDataWord = NSAttributedString.Key("SKDataWord")
+    /// The full text of an abbreviation in a grammar label («разг.» → «разговорное слово, выражение»).
+    static let skAbbreviation = NSAttributedString.Key("SKAbbreviation")
 }
 
 /// How the rendered text is laid out.
@@ -104,17 +106,25 @@ enum SKTranslationRenderer {
     /// superscript, line breaks, links and `data-word`. Fonts are the `textStyle` text style for
     /// `traits` (Dynamic Type, Bold Text); `nil` uses the current app settings. `<font size>` and CSS
     /// font sizes are ignored, so headwords match the body text. Thread-safe; no WebKit.
+    ///
+    /// With `markAbbreviations`, abbreviations in grammar labels (`SKAbbreviations`, outside links) get a
+    /// dotted underline, `.skAbbreviation` with their full text and a `.textItemTag`, so a tap can show it.
     static func render(html: String,
                        theme: SKArticleColorTheme = .current,
                        traits: UITraitCollection? = nil,
                        textStyle: UIFont.TextStyle = .body,
-                       layout: SKTranslationLayout = .article) -> NSAttributedString {
+                       layout: SKTranslationLayout = .article,
+                       markAbbreviations: Bool = false) -> NSAttributedString {
         let builder = Builder(theme: theme, traits: traits, textStyle: textStyle)
         if let body = try? SwiftSoup.parseBodyFragment(html).body() {
             builder.appendChildren(of: body, style: Style())
         }
+        if markAbbreviations { builder.markAbbreviations() }
         return builder.finish(layout: layout)
     }
+
+    /// Prefix of the `.textItemTag` on abbreviations; the full text follows it.
+    static let abbreviationTagPrefix = "abbreviation:"
 
     // MARK: - Builder
 
@@ -160,6 +170,9 @@ enum SKTranslationRenderer {
         private var lastChar: Character?
         /// True while the current line holds nothing or only non-breaking spaces (an indent).
         private var atLineStart = true
+        /// Grammar label spans to look for abbreviations in; nested labels and links are skipped.
+        private var labelRanges: [NSRange] = []
+        private var labelOrLinkDepth = 0
 
         init(theme: SKArticleColorTheme, traits: UITraitCollection?, textStyle: UIFont.TextStyle) {
             self.theme = theme
@@ -187,12 +200,43 @@ enum SKTranslationRenderer {
                 return
             }
             let childStyle = self.style(of: element, tag: tag, inherited: style)
+            let isLink = childStyle.link != nil && style.link == nil
+            let isLabel = childStyle.link == nil && SKTranslationColorRole.of(colorAttribute(of: element)) == .grammar
+            let labelStart = result.length
+            if isLink || isLabel { labelOrLinkDepth += 1 }
             if Self.blockTags.contains(tag) {
                 startLine(style: style)
                 appendChildren(of: element, style: childStyle)
                 startLine(style: style)
             } else {
                 appendChildren(of: element, style: childStyle)
+            }
+            if isLink || isLabel { labelOrLinkDepth -= 1 }
+            if isLabel, labelOrLinkDepth == 0, result.length > labelStart {
+                labelRanges.append(NSRange(location: labelStart, length: result.length - labelStart))
+            }
+        }
+
+        private func colorAttribute(of element: Element) -> String {
+            let color = ((try? element.attr("color")) ?? "").trimmingCharacters(in: .whitespaces)
+            if !color.isEmpty { return color }
+            return Self.matches(Self.cssColor, (try? element.attr("style")) ?? "") ?? ""
+        }
+
+        func markAbbreviations() {
+            let string = result.string as NSString
+            let underline = NSUnderlineStyle.single.union(.patternDot).rawValue
+            for label in labelRanges where NSMaxRange(label) <= string.length {
+                for match in SKAbbreviations.matches(in: string.substring(with: label)) {
+                    let range = NSRange(location: label.location + match.range.location, length: match.range.length)
+                    let color = result.attribute(.foregroundColor, at: range.location, effectiveRange: nil) as? UIColor
+                    result.addAttributes([
+                        .skAbbreviation: match.expansion,
+                        .textItemTag: SKTranslationRenderer.abbreviationTagPrefix + match.expansion,
+                        .underlineStyle: underline,
+                        .underlineColor: (color ?? .label).withAlphaComponent(0.6)
+                    ], range: range)
+                }
             }
         }
 

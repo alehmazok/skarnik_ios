@@ -339,4 +339,42 @@ final class SKTranslationRendererTests: XCTestCase {
 
         XCTAssertEqual(text.string, render(SKTranslationSamples.tsbmKara).string)
     }
+
+    // MARK: - Abbreviations
+
+    private func abbreviations(in text: NSAttributedString) -> [String] {
+        var found: [String] = []
+        text.enumerateAttribute(.skAbbreviation, in: NSRange(location: 0, length: text.length)) { value, range, _ in
+            guard let expansion = value as? String else { return }
+            found.append("\((text.string as NSString).substring(with: range))=\(expansion)")
+        }
+        return found
+    }
+
+    func testMarksAbbreviationsInLabelSpans() {
+        let html = """
+            <font size="+2" color="#831b03">прывітанне</font>, <i>-ння <font color="#008000">ср.</font></i>, \
+            <font color="#008000"><i>перен. разг.</i></font> ср. дом
+            """
+        let text = SKTranslationRenderer.render(html: html, theme: .system,
+                                                traits: SKTranslationRenderer.traits(contentSize: .large),
+                                                markAbbreviations: true)
+
+        XCTAssertEqual(abbreviations(in: text),
+                       ["ср.=средний род", "перен.=переносное значение", "разг.=разговорное слово, выражение"])
+        let attributes = attributes(of: "перен.", in: text)
+        XCTAssertEqual(attributes[.textItemTag] as? String,
+                       SKTranslationRenderer.abbreviationTagPrefix + "переносное значение")
+        XCTAssertEqual(attributes[.underlineStyle] as? Int, NSUnderlineStyle.single.union(.patternDot).rawValue)
+        XCTAssertNil(attributes(of: "дом", in: text)[.skAbbreviation])
+    }
+
+    func testLeavesAbbreviationsAloneInLinksAndByDefault() {
+        let html = """
+            <a href="/rusbel/1"><font color="#008000">муж.</font></a> <font color="#008000">жен.</font>
+            """
+        let marked = SKTranslationRenderer.render(html: html, theme: .system, markAbbreviations: true)
+        XCTAssertEqual(abbreviations(in: marked), ["жен.=женский род"])
+        XCTAssertEqual(abbreviations(in: render(html)), [])
+    }
 }
