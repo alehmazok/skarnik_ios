@@ -362,10 +362,10 @@ final class SKTranslationRendererTests: XCTestCase {
 
         XCTAssertEqual(abbreviations(in: text),
                        ["ср.=средний род", "перен.=переносное значение", "разг.=разговорное слово, выражение"])
-        let attributes = attributes(of: "перен.", in: text)
-        XCTAssertEqual(attributes[.textItemTag] as? String,
+        let marked = attributes(of: "перен.", in: text)
+        XCTAssertEqual(marked[.textItemTag] as? String,
                        SKTranslationRenderer.abbreviationTagPrefix + "переносное значение")
-        XCTAssertEqual(attributes[.underlineStyle] as? Int, NSUnderlineStyle.single.union(.patternDot).rawValue)
+        XCTAssertEqual(marked[.underlineStyle] as? Int, NSUnderlineStyle.single.union(.patternDot).rawValue)
         XCTAssertNil(attributes(of: "дом", in: text)[.skAbbreviation])
     }
 
