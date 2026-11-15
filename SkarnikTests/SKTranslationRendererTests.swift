@@ -389,6 +389,6 @@ final class SKTranslationRendererTests: XCTestCase {
 
         XCTAssertEqual(found.map { $0.components(separatedBy: "=")[0] }, ["Т", "знач.", "//", "▪", "..", "Колас", "грэч."])
         XCTAssertEqual(found.first, "Т=творны склон")
-        XCTAssertEqual(found[5].hasPrefix("Колас=Якуб Колас:"), true)
+        XCTAssertEqual(found.count > 5 && found[5].hasPrefix("Колас=Якуб Колас:"), true)
     }
 }

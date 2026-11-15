@@ -79,9 +79,14 @@ enum SKTsbmAbbreviations {
 
     private static let sources = SKAbbreviationList(tsbmSources)
     private static let grammar = SKAbbreviationList(tsbmGrammar)
-    private static let label = SKAbbreviationList(tsbmGrammar + tsbmCases + tsbmSigns)
-    private static let plain = SKAbbreviationList(tsbmGrammar + tsbmSigns, without: labelSigns.union(cut))
+    private static let label = SKAbbreviationList(lines(tsbmGrammar, tsbmCases, tsbmSigns))
+    private static let plain = SKAbbreviationList(lines(tsbmGrammar, tsbmSigns), without: labelSigns.union(cut))
     private static let quote = SKAbbreviationList(tsbmSigns, without: labelSigns)
+
+    /// A multi-line literal has no newline at its end, so lists are joined with one.
+    private static func lines(_ lists: String...) -> String {
+        lists.joined(separator: "\n")
+    }
 
     static func matches(in text: String, place: SKTextPlace) -> [SKAbbreviationMatch] {
         switch place {
