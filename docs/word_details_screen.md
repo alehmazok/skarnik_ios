@@ -76,12 +76,17 @@ between Back and «Націск», and it jumped when the stress form arrived.
 - Links: relative links resolve against skarnik.by; tapping one is routed by
   `SKWordDetailsViewModel.handleUrl`, which opens the linked entry in place
   (`/belrus|rusbel|tsbm/<id>`). Other links do nothing.
-- Abbreviations (Рус-Бел and Бел-Рус only): grammar labels in green spans («разг.», «муж.»,
-  «в разн. знач.») are matched against `SKAbbreviations` (Aleh's list, Russian expansions, plus the forms
-  Бел-Рус uses: «жен.», «муж.», «совер.», «несовер.»), get a dotted underline and a `.textItemTag`.
+- Abbreviations: each run of text is matched by its place (`SKTextPlace`: label, plain, citation,
+  source; never headwords or links) and gets a dotted underline and a `.textItemTag`.
+  - Рус-Бел and Бел-Рус: grammar labels in green spans («разг.», «муж.», «в разн. знач.») against
+    `SKAbbreviations` (Aleh's list, Russian expansions, plus the forms Бел-Рус uses: «жен.», «муж.»,
+    «совер.», «несовер.»).
+  - ТСБМ (`SKTsbmAbbreviations`, Aleh's Belarusian list): citation sources in `#151B54` spans as a whole
+    span («Колас.» → Якуб Колас and works), grammar abbreviations in labels and plain text («(у 1 знач.)»,
+    «[Ад грэч.]», case letters «Т» only in labels), «//» and «/» in labels, «▪» and the cut «..» in
+    citations.
   A tap shows the full text in a popover with an arrow at the abbreviation (also on iPhone); a tap
-  outside closes it. Not in ТСБМ, whose abbreviations are Belarusian. Same list and matching as
-  skarnik_android.
+  outside closes it. Same lists and matching as skarnik_android.
 
 ### «На́ціск» button (#25)
 

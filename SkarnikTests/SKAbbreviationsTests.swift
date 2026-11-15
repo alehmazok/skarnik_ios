@@ -45,4 +45,38 @@ final class SKAbbreviationsTests: XCTestCase {
         let match = SKAbbreviations.matches(in: "-ння ср.").first
         XCTAssertEqual(match?.range, NSRange(location: 5, length: 3))
     }
+
+    // MARK: - Тлумачальны слоўнік
+
+    private func tsbm(_ text: String, _ place: SKTextPlace) -> [String] {
+        SKTsbmAbbreviations.matches(in: text, place: place).map { "\($0.abbreviation)=\($0.expansion)" }
+    }
+
+    func testFindsTsbmSourceAsWholeSpanWithoutItsDot() {
+        let colas = SKTsbmAbbreviations.matches(in: " Колас.", place: .source).first
+        XCTAssertEqual(colas?.range, NSRange(location: 1, length: 5))
+        XCTAssertEqual(colas?.abbreviation, "Колас")
+        XCTAssertEqual(colas?.expansion.hasPrefix("Якуб Колас:"), true)
+        XCTAssertEqual(tsbm("Ядвігін Ш.", .source), ["Ядвігін Ш.=Ядвігін Ш.: Выбр. тв., 1976."])
+        XCTAssertEqual(tsbm("З нар.", .source), ["З нар.=з народнай творчасці"])
+        XCTAssertEqual(tsbm("Прыказка.", .source), [])
+        XCTAssertEqual(tsbm("Колас і Купала.", .source), [])
+    }
+
+    func testFindsTsbmAbbreviationsAndSignsOnlyWhereTheDictionaryUsesThem() {
+        XCTAssertEqual(tsbm("прыназоўнік з Т.", .label), ["Т=творны склон"])
+        XCTAssertEqual(tsbm("Т", .plain), [])
+        XCTAssertEqual(tsbm("(у 1 знач.)", .plain), ["знач.=значэнне"])
+        XCTAssertEqual(tsbm("[Ад грэч. palaios.]", .plain), ["грэч.=грэчаскае слова"])
+        XCTAssertEqual(tsbm("//", .label), ["//=адценне значэння"])
+        XCTAssertEqual(tsbm("км/г", .plain), [])
+        XCTAssertEqual(tsbm("Разм. жарт.", .quote), [])
+    }
+
+    func testFindsACutInACitationButNotOtherDots() {
+        XCTAssertEqual(tsbm("Валасы павылазілі. ▪ Карані .. павыпіналіся", .quote),
+                       ["▪=знак, які аддзяляе цытаты ад рэдакцыйных прыкладаў", "..=скарачэнне ў цытаце"])
+        XCTAssertEqual(tsbm("запрог.. [кабылу]", .quote), ["..=скарачэнне ў цытаце"])
+        XCTAssertEqual(tsbm("Чаму?.. Так... Ну!..", .quote), [])
+    }
 }
