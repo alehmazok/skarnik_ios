@@ -30,6 +30,13 @@ struct SKWhatsNewRelease: Equatable, Identifiable {
 /// under the version that will ship it. A version without an entry shows no sheet.
 enum SKWhatsNewCatalog {
     static let releases: [SKWhatsNewRelease] = [
+        SKWhatsNewRelease(version: "3.9.0", items: [
+            SKWhatsNewItem(
+                symbol: "text.bubble",
+                title: "Скарачэнні",
+                text: "Скарачэнні ў слоўніках, напрыклад «разг.», «жен.» альбо «Колас.». Націсніце на скарачэнне, каб убачыць яго цалкам."
+            ),
+        ]),
         SKWhatsNewRelease(version: "3.8.0", items: [
             SKWhatsNewItem(
                 symbol: "magnifyingglass",

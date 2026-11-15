@@ -339,4 +339,56 @@ final class SKTranslationRendererTests: XCTestCase {
 
         XCTAssertEqual(text.string, render(SKTranslationSamples.tsbmKara).string)
     }
+
+    // MARK: - Abbreviations
+
+    private func abbreviations(in text: NSAttributedString) -> [String] {
+        var found: [String] = []
+        text.enumerateAttribute(.skAbbreviation, in: NSRange(location: 0, length: text.length)) { value, range, _ in
+            guard let expansion = value as? String else { return }
+            found.append("\((text.string as NSString).substring(with: range))=\(expansion)")
+        }
+        return found
+    }
+
+    func testMarksAbbreviationsInLabelSpans() {
+        let html = """
+            <font size="+2" color="#831b03">прывітанне</font>, <i>-ння <font color="#008000">ср.</font></i>, \
+            <font color="#008000"><i>перен. разг.</i></font> ср. дом
+            """
+        let text = SKTranslationRenderer.render(html: html, theme: .system,
+                                                traits: SKTranslationRenderer.traits(contentSize: .large),
+                                                abbreviations: .russian)
+
+        XCTAssertEqual(abbreviations(in: text),
+                       ["ср.=средний род", "перен.=переносное значение", "разг.=разговорное слово, выражение"])
+        let marked = attributes(of: "перен.", in: text)
+        XCTAssertEqual(marked[.textItemTag] as? String,
+                       SKTranslationRenderer.abbreviationTagPrefix + "переносное значение")
+        XCTAssertEqual(marked[.underlineStyle] as? Int, NSUnderlineStyle.single.union(.patternDot).rawValue)
+        XCTAssertNil(attributes(of: "дом", in: text)[.skAbbreviation])
+    }
+
+    func testLeavesAbbreviationsAloneInLinksAndByDefault() {
+        let html = """
+            <a href="/rusbel/1"><font color="#008000">муж.</font></a> <font color="#008000">жен.</font>
+            """
+        let marked = SKTranslationRenderer.render(html: html, theme: .system, abbreviations: .russian)
+        XCTAssertEqual(abbreviations(in: marked), ["жен.=женский род"])
+        XCTAssertEqual(abbreviations(in: render(html)), [])
+    }
+
+    func testMarksTsbmSourcesSignsAndAbbreviationsOutsideHeadwordsAndExamples() {
+        let html = """
+            <strong><font color="#0000A0">разм.,</font></strong><font color="#A52A2A"> прыназоўнік з Т.</font>\
+            <br /> Тое, што і павыцягваць (у 1 знач.). <font color="#CC33FF"><strong>//</strong></font> Дробны. \
+            <font color="#5f5f5f">Разм. жарт. ▪ Карані .. павыпіналіся. Чаму?..</font> \
+            <i><font color="#151B54">Колас.</font></i> [Ад грэч. palaios.]
+            """
+        let found = abbreviations(in: SKTranslationRenderer.render(html: html, theme: .system, abbreviations: .tsbm))
+
+        XCTAssertEqual(found.map { $0.components(separatedBy: "=")[0] }, ["Т", "знач.", "//", "▪", "..", "Колас", "грэч."])
+        XCTAssertEqual(found.first, "Т=творны склон")
+        XCTAssertEqual(found.count > 5 && found[5].hasPrefix("Колас=Якуб Колас:"), true)
+    }
 }

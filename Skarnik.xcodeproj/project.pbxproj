@@ -56,6 +56,8 @@
 		B284FE722AE0A527009CA21D /* SKWordWidgetView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B284FE6E2AE0A527009CA21D /* SKWordWidgetView.swift */; };
 		B284FE732AE0A54C009CA21D /* SKLocalization.swift in Sources */ = {isa = PBXBuildFile; fileRef = B27D996228FB11E60047CCBF /* SKLocalization.swift */; };
 		B284FE742AE0A556009CA21D /* SKTranslationRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2AF0838291482DD0005E3E6 /* SKTranslationRenderer.swift */; };
+		C0ABB2E2F00D000000A8ACBE /* SKAbbreviations.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0ABB2E1F00D000000A8ACBE /* SKAbbreviations.swift */; };
+		C0ABB2E3F00D000000A8ACBE /* SKAbbreviations.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0ABB2E1F00D000000A8ACBE /* SKAbbreviations.swift */; };
 		B284FE752AE0A565009CA21D /* URLSession+Skarnik.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2AF083A29148AEF0005E3E6 /* URLSession+Skarnik.swift */; };
 		B284FE762AE0A582009CA21D /* UIColor+Skarnik.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2C557DD2908996500FEB28A /* UIColor+Skarnik.swift */; };
 		B284FE772AE0A589009CA21D /* String+Skarnik.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2462E6C2927AE9F005C8D33 /* String+Skarnik.swift */; };
@@ -194,6 +196,7 @@
 		B29000B52AF735780032532D /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		B2AA11223344556677880001 /* SKReportIssueView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SKReportIssueView.swift; sourceTree = "<group>"; };
 		B2AA5E1000000000000000A1 /* SKWhatsNewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SKWhatsNewController.swift; sourceTree = "<group>"; };
+		C0ABB2E1F00D000000A8ACBE /* SKAbbreviations.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SKAbbreviations.swift; sourceTree = "<group>"; };
 		B2AF0838291482DD0005E3E6 /* SKTranslationRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SKTranslationRenderer.swift; sourceTree = "<group>"; };
 		B2AF083A29148AEF0005E3E6 /* URLSession+Skarnik.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "URLSession+Skarnik.swift"; sourceTree = "<group>"; };
 		B2C557D9290898A700FEB28A /* Task+Skarnik.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Task+Skarnik.swift"; sourceTree = "<group>"; };
@@ -395,6 +398,7 @@
 				B2C557DD2908996500FEB28A /* UIColor+Skarnik.swift */,
 				B27D996228FB11E60047CCBF /* SKLocalization.swift */,
 				B2AF0838291482DD0005E3E6 /* SKTranslationRenderer.swift */,
+				C0ABB2E1F00D000000A8ACBE /* SKAbbreviations.swift */,
 				B2AF083A29148AEF0005E3E6 /* URLSession+Skarnik.swift */,
 				B251A3402AE9928600E78923 /* WordFetch */,
 				543953569B0109FAE70BBEC2 /* OfflineDictionaries */,
@@ -693,6 +697,7 @@
 				B2FEFEE928F3634800675E49 /* SKAdditionalKeyboardView.swift in Sources */,
 				B251A3812AF1AE5C00E78923 /* SKWhatsNewView.swift in Sources */,
 				B2AF0839291482DD0005E3E6 /* SKTranslationRenderer.swift in Sources */,
+				C0ABB2E2F00D000000A8ACBE /* SKAbbreviations.swift in Sources */,
 				B20ABABC28EEBF6F00AA2FC9 /* SceneDelegate.swift in Sources */,
 				B20ABAD928EF22AD00AA2FC9 /* SKVocabularyIndex.swift in Sources */,
 				4CBC1449DC5632EA59C93C52 /* SKDamerauLevenshtein.swift in Sources */,
@@ -743,6 +748,7 @@
 				B284FE782AE0A5A0009CA21D /* SKTranslationSource.swift in Sources */,
 				C5E0A1000000000000000008 /* SKErrorReporting.swift in Sources */,
 				B284FE742AE0A556009CA21D /* SKTranslationRenderer.swift in Sources */,
+				C0ABB2E3F00D000000A8ACBE /* SKAbbreviations.swift in Sources */,
 				B251A34F2AE9939300E78923 /* SKWordFetchEntry.swift in Sources */,
 				B284FE752AE0A565009CA21D /* URLSession+Skarnik.swift in Sources */,
 				B284FE722AE0A527009CA21D /* SKWordWidgetView.swift in Sources */,
@@ -943,7 +949,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 77;
+				CURRENT_PROJECT_VERSION = 78;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = "";
 				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = EQFFWL4KZF;
@@ -964,7 +970,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 3.8.0;
+				MARKETING_VERSION = 3.9.0;
 				OTHER_LDFLAGS = (
 					"-ObjC",
 					"-weak_framework",
@@ -993,7 +999,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Distribution";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 77;
+				CURRENT_PROJECT_VERSION = 78;
 				DEVELOPMENT_TEAM = "";
 				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = EQFFWL4KZF;
 				ENABLE_APP_SANDBOX = YES;
@@ -1013,7 +1019,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 3.8.0;
+				MARKETING_VERSION = 3.9.0;
 				OTHER_LDFLAGS = (
 					"-ObjC",
 					"-weak_framework",
@@ -1043,7 +1049,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 77;
+				CURRENT_PROJECT_VERSION = 78;
 				DEVELOPMENT_TEAM = "";
 				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = EQFFWL4KZF;
 				ENABLE_APP_SANDBOX = YES;
@@ -1061,7 +1067,7 @@
 					"@executable_path/../../Frameworks",
 				);
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
-				MARKETING_VERSION = 3.8.0;
+				MARKETING_VERSION = 3.9.0;
 				PRODUCT_BUNDLE_IDENTIFIER = by.mazokaleh.Skarnik.WordWidget;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -1087,7 +1093,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Distribution";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 77;
+				CURRENT_PROJECT_VERSION = 78;
 				DEVELOPMENT_TEAM = "";
 				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = EQFFWL4KZF;
 				ENABLE_APP_SANDBOX = YES;
@@ -1105,7 +1111,7 @@
 					"@executable_path/../../Frameworks",
 				);
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
-				MARKETING_VERSION = 3.8.0;
+				MARKETING_VERSION = 3.9.0;
 				PRODUCT_BUNDLE_IDENTIFIER = by.mazokaleh.Skarnik.WordWidget;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";

@@ -66,8 +66,10 @@ struct SKSkarnikTranslation {
     func renderedText(theme: SKArticleColorTheme = .current,
                       traits: UITraitCollection? = nil) async -> NSAttributedString {
         let html = self.html
+        let abbreviations = SKAbbreviationScheme(word.lang_id)
         return await Task.detached(priority: .userInitiated) {
-            SKTranslationRenderer.render(html: html, theme: theme, traits: traits)
+            SKTranslationRenderer.render(html: html, theme: theme, traits: traits,
+                                         abbreviations: abbreviations)
         }.value
     }
 

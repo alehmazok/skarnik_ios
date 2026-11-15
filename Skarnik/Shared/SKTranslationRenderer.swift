@@ -13,6 +13,8 @@ extension NSAttributedString.Key {
     /// The headword a `data-word` element stands for (rus_bel entries marked up by the admin's
     /// `find_inner_stress` / `fix_inner_stress`).
     static let skDataWord = NSAttributedString.Key("SKDataWord")
+    /// The full text of an abbreviation in a grammar label («разг.» → «разговорное слово, выражение»).
+    static let skAbbreviation = NSAttributedString.Key("SKAbbreviation")
 }
 
 /// How the rendered text is laid out.
@@ -104,17 +106,26 @@ enum SKTranslationRenderer {
     /// superscript, line breaks, links and `data-word`. Fonts are the `textStyle` text style for
     /// `traits` (Dynamic Type, Bold Text); `nil` uses the current app settings. `<font size>` and CSS
     /// font sizes are ignored, so headwords match the body text. Thread-safe; no WebKit.
+    ///
+    /// With `abbreviations`, the abbreviations it finds in each kind of text (`SKTextPlace`: labels, plain
+    /// text, citations and their sources; never in headwords or links) get a dotted underline,
+    /// `.skAbbreviation` with their full text and a `.textItemTag`, so a tap can show it.
     static func render(html: String,
                        theme: SKArticleColorTheme = .current,
                        traits: UITraitCollection? = nil,
                        textStyle: UIFont.TextStyle = .body,
-                       layout: SKTranslationLayout = .article) -> NSAttributedString {
+                       layout: SKTranslationLayout = .article,
+                       abbreviations: SKAbbreviationScheme? = nil) -> NSAttributedString {
         let builder = Builder(theme: theme, traits: traits, textStyle: textStyle)
         if let body = try? SwiftSoup.parseBodyFragment(html).body() {
             builder.appendChildren(of: body, style: Style())
         }
+        if let abbreviations { builder.markAbbreviations(abbreviations) }
         return builder.finish(layout: layout)
     }
+
+    /// Prefix of the `.textItemTag` on abbreviations; the full text follows it.
+    static let abbreviationTagPrefix = "abbreviation:"
 
     // MARK: - Builder
 
@@ -160,6 +171,12 @@ enum SKTranslationRenderer {
         private var lastChar: Character?
         /// True while the current line holds nothing or only non-breaking spaces (an indent).
         private var atLineStart = true
+        /// Runs of the text to look for abbreviations in, with their place; a source span is a run of its own.
+        private var runs: [(range: NSRange, place: SKTextPlace)] = []
+        /// The place of each enclosing coloured element or link; nil inside a link, headword or hidden text.
+        private var places: [SKTextPlace?] = []
+        /// `.plain` outside any coloured element.
+        private var currentPlace: SKTextPlace? { places.isEmpty ? .plain : places[places.count - 1] }
 
         init(theme: SKArticleColorTheme, traits: UITraitCollection?, textStyle: UIFont.TextStyle) {
             self.theme = theme
@@ -187,12 +204,80 @@ enum SKTranslationRenderer {
                 return
             }
             let childStyle = self.style(of: element, tag: tag, inherited: style)
+            let isLink = childStyle.link != nil && style.link == nil
+            let change: SKTextPlace?? = isLink ? .some(nil) : Self.placeChange(of: colorAttribute(of: element))
+            let start = result.length
+            // Inside a link or a headword nothing is looked at, whatever the colours inside it.
+            if let change { places.append(currentPlace == nil ? nil : change) }
             if Self.blockTags.contains(tag) {
                 startLine(style: style)
                 appendChildren(of: element, style: childStyle)
                 startLine(style: style)
             } else {
                 appendChildren(of: element, style: childStyle)
+            }
+            if let change {
+                places.removeLast()
+                if change == .source, currentPlace != nil, result.length > start {
+                    runs.append((NSRange(location: start, length: result.length - start), .source))
+                }
+            }
+        }
+
+        /// How an element's colour changes the place of its text: nil keeps it (no colour), `.some(nil)` means
+        /// nowhere (headwords, hidden text).
+        private static func placeChange(of color: String) -> SKTextPlace?? {
+            let hex = color.trimmingCharacters(in: .whitespaces)
+                .trimmingCharacters(in: CharacterSet(charactersIn: "#"))
+                .lowercased()
+            switch hex {
+            case "": return nil
+            case sourceColor: return .some(.source)
+            case quoteColor: return .some(.quote)
+            default:
+                switch SKTranslationColorRole.of(hex) {
+                case .grammar: return .some(.label)
+                case .plain, nil: return .some(.plain)
+                case .emphasis, .muted, .hidden: return .some(nil)
+                }
+            }
+        }
+
+        /// The Тлумачальны слоўнік's citation sources («Колас.»), and its usage examples and citations.
+        private static let sourceColor = "151b54"
+        private static let quoteColor = "5f5f5f"
+
+        /// Extends the last run when it has the same place and ends where `range` starts.
+        private func addRun(_ range: NSRange) {
+            guard let place = currentPlace, place != .source else { return }
+            if let last = runs.last, last.place == place, NSMaxRange(last.range) == range.location {
+                runs[runs.count - 1].range.length += range.length
+            } else {
+                runs.append((range, place))
+            }
+        }
+
+        private func colorAttribute(of element: Element) -> String {
+            let color = ((try? element.attr("color")) ?? "").trimmingCharacters(in: .whitespaces)
+            if !color.isEmpty { return color }
+            return Self.matches(Self.cssColor, (try? element.attr("style")) ?? "") ?? ""
+        }
+
+        func markAbbreviations(_ scheme: SKAbbreviationScheme) {
+            let string = result.string as NSString
+            let underline = NSUnderlineStyle.single.union(.patternDot).rawValue
+            for run in runs where NSMaxRange(run.range) <= string.length {
+                for match in scheme.matches(in: string.substring(with: run.range), place: run.place) {
+                    let range = NSRange(location: run.range.location + match.range.location,
+                                        length: match.range.length)
+                    let color = result.attribute(.foregroundColor, at: range.location, effectiveRange: nil) as? UIColor
+                    result.addAttributes([
+                        .skAbbreviation: match.expansion,
+                        .textItemTag: SKTranslationRenderer.abbreviationTagPrefix + match.expansion,
+                        .underlineStyle: underline,
+                        .underlineColor: (color ?? .label).withAlphaComponent(0.6)
+                    ], range: range)
+                }
             }
         }
 
@@ -296,6 +381,7 @@ enum SKTranslationRenderer {
 
         private func append(_ text: String, style: Style) {
             guard let last = text.last else { return }
+            addRun(NSRange(location: result.length, length: (text as NSString).length))
             result.append(NSAttributedString(string: text, attributes: attributes(for: style)))
             lastChar = last
             for char in text {
