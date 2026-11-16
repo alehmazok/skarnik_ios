@@ -52,12 +52,12 @@ final class SKWordLinksTests: XCTestCase {
     }
 
     func testNoWordLinksWithoutTheMap() {
-        let text = SKTranslationRenderer.render(html: #"<font color="#831b03">янтар</font>"#)
+        let text = SKTranslationRenderer.render(html: ##"<font color="#831b03">янтар</font>"##)
         XCTAssertTrue(wordLinks(in: text).isEmpty)
     }
 
     func testUnderlinesOnlyTheLinkedWords() {
-        let text = SKTranslationRenderer.render(html: #"<font color="#831b03">янтар</font>, бурштын"#,
+        let text = SKTranslationRenderer.render(html: ##"<font color="#831b03">янтар</font>, бурштын"##,
                                                 wordLinks: ["янтар": yantar])
         let underlined = SKAttributedTextView.underliningWordLinks(text)
 
@@ -85,14 +85,14 @@ final class SKWordLinksTests: XCTestCase {
 
     func testWordLinksOfARusBelTranslationLeaveOutUnknownWords() {
         let word = SKWord(word_id: 1, word: "привет", lang_id: .rus_bel)
-        let translation = SKSkarnikTranslation(word: word, url: "", html: #"<font color="#831b03">прывітанне, прывітаннем</font>"#)
+        let translation = SKSkarnikTranslation(word: word, url: "", html: ##"<font color="#831b03">прывітанне, прывітаннем</font>"##)
 
         XCTAssertEqual(Array(translation.wordLinks.keys), ["прывітанне"])
     }
 
     func testATsbmTranslationHasNoWordLinks() {
         let word = SKWord(word_id: 1, word: "прывітанне", lang_id: .bel_definition)
-        let translation = SKSkarnikTranslation(word: word, url: "", html: #"<font color="#831b03">прывітанне</font>"#)
+        let translation = SKSkarnikTranslation(word: word, url: "", html: ##"<font color="#831b03">прывітанне</font>"##)
 
         XCTAssertTrue(translation.wordLinks.isEmpty)
     }
