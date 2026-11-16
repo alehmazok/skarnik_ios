@@ -66,9 +66,8 @@ class SkarnikUITestCase: XCTestCase {
     // MARK: - Launch
 
     /// `reset: false` keeps what the previous launch stored (history, bookmarks, settings).
-    /// `extraArguments`: e.g. `-showTips`, which lets TipKit tips show (they are hidden in other tests).
-    func launch(reset: Bool, extraArguments: [String] = []) {
-        app.launchArguments = ["-uiTesting"] + (reset ? ["-uiTestingReset"] : []) + extraArguments
+    func launch(reset: Bool) {
+        app.launchArguments = ["-uiTesting"] + (reset ? ["-uiTestingReset"] : [])
         app.launch()
         if reset {
             dismissAnalyticsConsent()

@@ -69,14 +69,6 @@ class SKAnalyticsManager {
         shared.service.logTranslationWordClicked(from: from, word: word, target: target)
     }
 
-    static func logWordLinkHintShown() {
-        shared.service.logWordLinkHintShown()
-    }
-
-    static func logWordLinkHintDismissed(byTap: Bool) {
-        shared.service.logWordLinkHintDismissed(byTap: byTap)
-    }
-
     /// Sets the `install_source` user property. Fire-and-forget: the lookup runs off the main thread
     /// and never blocks launch. Call at launch (after `applyStoredConsent`) and when consent is granted;
     /// does nothing while analytics consent is not granted.

@@ -354,7 +354,9 @@ enum SKTranslationRenderer {
                     let range = NSRange(location: run.range.location + part.range.location, length: part.range.length)
                     result.addAttributes([
                         .skWordLink: url,
-                        .textItemTag: SKTranslationRenderer.wordLinkTagPrefix + url.absoluteString
+                        .textItemTag: SKTranslationRenderer.wordLinkTagPrefix + url.absoluteString,
+                        // A thin underline in the word's own colour shows it can be tapped (Aleh, 2026-11-16).
+                        .underlineStyle: NSUnderlineStyle.single.rawValue
                     ], range: range)
                 }
             }

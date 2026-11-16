@@ -118,14 +118,6 @@ class SKFirebaseAnalytics: SKAnalyticsService {
             ])
     }
 
-    func logWordLinkHintShown() {
-        Analytics.logEvent(SKAnalyticsEvent.wordLinkHintShown.rawValue, parameters: nil)
-    }
-
-    func logWordLinkHintDismissed(byTap: Bool) {
-        Analytics.logEvent(SKAnalyticsEvent.wordLinkHintDismissed.rawValue, parameters: ["by_tap": byTap ? 1 : 0])
-    }
-
     func setInstallSource(_ source: SKInstallSource) {
         Analytics.setUserProperty(source.rawValue, forName: SKInstallSource.userPropertyName)
     }

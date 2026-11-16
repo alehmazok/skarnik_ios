@@ -70,8 +70,6 @@ class SKLocalization: Any {
     class var wordStressTitle: String { "Націск" }
     class var wordStressError: String { "Адбылася памылка падчас загрузкі інфармацыі аб націску." }
     class var wordStressNotFound: String { "Інфармацыя аб націску для гэтага слова не знойдзена." }
-    class var wordLinkHint: String { "Націсніце на беларускае слова, каб адкрыць яго пераклад" }
-    class var wordLinkHintDone: String { "Зразумела" }
     class var wordLinkAccessibilityHint: String { "Адкрыць пераклад" }
 
     class var historyEmptyPlaceholder: String { "Тут з'явяцца словы, якія вы адкрывалі.\nПашукайце альбо абярыце слова ў слоўніку." }

@@ -29,10 +29,6 @@ protocol SKAnalyticsService {
 
     func logTranslationWordClicked(from: SKWord, word: String, target: SKWord)
 
-    func logWordLinkHintShown()
-
-    func logWordLinkHintDismissed(byTap: Bool)
-
     func setInstallSource(_ source: SKInstallSource)
 
     func setSearchBarPlacement(_ placement: SKSearchBarPlacement)
@@ -50,8 +46,6 @@ enum SKAnalyticsEvent: String {
     case searchNoResults = "search_no_results"
     case searchResultTapped = "search_result_tapped"
     case translationWordClicked = "translation_word_clicked"
-    case wordLinkHintShown = "word_link_hint_shown"
-    case wordLinkHintDismissed = "word_link_hint_dismissed"
 }
 
 enum SKWidgetDeepLinkAppState: String {

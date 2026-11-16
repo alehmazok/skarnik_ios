@@ -59,11 +59,10 @@ final class SKWordLinksTests: XCTestCase {
     func testUnderlinesOnlyTheLinkedWords() {
         let text = SKTranslationRenderer.render(html: ##"<font color="#831b03">янтар</font>, бурштын"##,
                                                 wordLinks: ["янтар": yantar])
-        let underlined = SKAttributedTextView.underliningWordLinks(text)
 
-        XCTAssertNotNil(underlined.attribute(.underlineStyle, at: 0, effectiveRange: nil))
-        let plain = (underlined.string as NSString).range(of: "бурштын").location
-        XCTAssertNil(underlined.attribute(.underlineStyle, at: plain, effectiveRange: nil))
+        XCTAssertNotNil(text.attribute(.underlineStyle, at: 0, effectiveRange: nil))
+        let plain = (text.string as NSString).range(of: "бурштын").location
+        XCTAssertNil(text.attribute(.underlineStyle, at: plain, effectiveRange: nil))
     }
 
     func testHeadwordColouredWordsAndDataWords() {
