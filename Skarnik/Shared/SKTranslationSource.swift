@@ -63,14 +63,77 @@ struct SKSkarnikTranslation {
     /// The translation as styled text (SwiftSoup, no WebKit), built off the main thread.
     /// Pass `traits` from the view so the text follows Dynamic Type and Bold Text; colours are
     /// dynamic and follow dark mode and Increase Contrast on their own.
+    /// The Belarusian words are linked to their entries (`wordLinks`), looked up on the same background task.
     func renderedText(theme: SKArticleColorTheme = .current,
                       traits: UITraitCollection? = nil) async -> NSAttributedString {
         let html = self.html
         let abbreviations = SKAbbreviationScheme(word.lang_id)
+        let translation = self
         return await Task.detached(priority: .userInitiated) {
-            SKTranslationRenderer.render(html: html, theme: theme, traits: traits,
-                                         abbreviations: abbreviations)
+            let links = translation.wordLinks.compactMapValues(Self.url(of:))
+            return SKTranslationRenderer.render(html: html, theme: theme, traits: traits,
+                                                abbreviations: abbreviations, wordLinks: links)
         }.value
+    }
+
+    /// How a word is looked up in the index: lowercase, without the stress mark admin-edited entries show («я́нтар»).
+    static func wordKey(_ text: String) -> String {
+        text.replacingOccurrences(of: "\u{0301}", with: "").lowercased()
+    }
+
+    /// The link a tapped word opens; `SKWordDetailsViewModel.handleUrl` routes it.
+    static func url(of word: SKWord) -> URL? {
+        guard let path = word.lang_id.skarnikId else { return nil }
+        return URL(string: "https://www.skarnik.by/\(path)/\(word.word_id)")
+    }
+
+    /// The Belarusian words of a Бел-Рус or Рус-Бел translation that open their own entry, by `wordKey`:
+    /// the same words as the stress candidates (`#831b03` runs; Рус-Бел `data-word` when present), found as
+    /// Бел-Рус (else ТСБМ) headwords in one index query. The entry itself is left out. Same rules as
+    /// skarnik_android (`FindWordLinksUseCase`).
+    var wordLinks: [String: SKWord] {
+        let texts: [String]
+        switch word.lang_id {
+        case .bel_rus: texts = Self.headwordColouredWords(inHtml: html)
+        case .rus_bel:
+            let dataWords = Self.dataWords(inHtml: html)
+            texts = dataWords.isEmpty ? Self.headwordColouredWords(inHtml: html) : dataWords
+        default: return [:]
+        }
+        let keys = Set(texts.map(Self.wordKey))
+        guard !keys.isEmpty else { return [:] }
+        let me = word
+        return SKVocabularyIndex.shared.belarusianWords(keys)
+            .filter { !($0.value.word_id == me.word_id && $0.value.lang_id == me.lang_id) }
+    }
+
+    /// The single words of the `#831b03` `font`/`span` runs, split at commas, before any index check.
+    static func headwordColouredWords(inHtml html: String) -> [String] {
+        guard let doc = try? SwiftSoup.parse(html), let elements = try? doc.select("font, span") else { return [] }
+        var words: [String] = []
+        for element in elements where SKTranslationRenderer.isHeadwordColoured(element) {
+            let text = (try? element.text()) ?? ""
+            for part in text.components(separatedBy: ",") {
+                let word = part.trimmingCharacters(in: .whitespacesAndNewlines)
+                guard !word.isEmpty, word.rangeOfCharacter(from: .whitespacesAndNewlines) == nil,
+                      !words.contains(word) else { continue }
+                words.append(word)
+            }
+        }
+        return words
+    }
+
+    /// The single-word `data-word` attributes (set by skarnik_admin's `find_inner_stress`).
+    static func dataWords(inHtml html: String) -> [String] {
+        guard let doc = try? SwiftSoup.parse(html), let elements = try? doc.select("[data-word]") else { return [] }
+        var words: [String] = []
+        for element in elements {
+            let word = ((try? element.attr("data-word")) ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !word.isEmpty, word.rangeOfCharacter(from: .whitespacesAndNewlines) == nil,
+                  !words.contains(word) else { continue }
+            words.append(word)
+        }
+        return words
     }
 
     var attributedString: NSAttributedString? {

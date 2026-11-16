@@ -5,6 +5,7 @@
 //  Created by Logout on 6.10.22.
 //
 
+import TipKit
 import UIKit
 import FirebaseCore
 
@@ -28,6 +29,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         SKCrashReporting.start()
 
         SKUITesting.prepareForLaunch()
+        SKUITesting.prepareTips()
+        try? Tips.configure([.displayFrequency(.immediate)])
 
         // Firebase Analytics only; crash reporting is Sentry (SKCrashReporting).
         FirebaseApp.configure()
@@ -71,6 +74,18 @@ enum SKUITesting {
     static let isActive = ProcessInfo.processInfo.arguments.contains("-uiTesting")
     /// Start from a fresh install: no history, bookmarks, settings or offline dictionaries.
     static let resetsState = ProcessInfo.processInfo.arguments.contains("-uiTestingReset")
+
+    /// Shows TipKit tips (the word link hint) only to the tests that ask for them with `-showTips`, so
+    /// popovers never cover what other tests tap; `-uiTestingReset` also forgets which tips were shown.
+    /// Runs before `Tips.configure`.
+    static func prepareTips() {
+        guard isActive else { return }
+        if resetsState { try? Tips.resetDatastore() }
+        // With `-showTips` tips follow their own rules, as for users.
+        if !ProcessInfo.processInfo.arguments.contains("-showTips") {
+            Tips.hideAllTipsForTesting()
+        }
+    }
 
     /// Runs first in `didFinishLaunching`, before any controller reads its stored state.
     static func prepareForLaunch() {

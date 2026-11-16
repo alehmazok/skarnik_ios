@@ -51,6 +51,18 @@ class SKDebugAnalytics: SKAnalyticsService {
         print("📊 Search result tapped: word=\(word.word), word_id=\(word.word_id), lang_id=\(word.lang_id.rawValue), dict_name=\(word.lang_id.name ?? "unknown"), dict_path=\(word.lang_id.skarnikId ?? "unknown"), position=\(position), query=\(query)")
     }
 
+    func logTranslationWordClicked(from: SKWord, word: String, target: SKWord) {
+        print("📊 Translation word clicked: word=\(word), from=\(from.lang_id.skarnikId ?? "unknown")/\(from.word_id), target=\(target.lang_id.skarnikId ?? "unknown")/\(target.word_id)")
+    }
+
+    func logWordLinkHintShown() {
+        print("📊 Word link hint shown")
+    }
+
+    func logWordLinkHintDismissed(byTap: Bool) {
+        print("📊 Word link hint dismissed: by_tap=\(byTap)")
+    }
+
     func setInstallSource(_ source: SKInstallSource) {
         print("📊 User property: \(SKInstallSource.userPropertyName)=\(source.rawValue)")
     }

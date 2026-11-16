@@ -15,6 +15,8 @@ extension NSAttributedString.Key {
     static let skDataWord = NSAttributedString.Key("SKDataWord")
     /// The full text of an abbreviation in a grammar label («разг.» → «разговорное слово, выражение»).
     static let skAbbreviation = NSAttributedString.Key("SKAbbreviation")
+    /// The entry (`https://www.skarnik.by/belrus/123`) a Belarusian word of the translation opens.
+    static let skWordLink = NSAttributedString.Key("SKWordLink")
 }
 
 /// How the rendered text is laid out.
@@ -110,22 +112,59 @@ enum SKTranslationRenderer {
     /// With `abbreviations`, the abbreviations it finds in each kind of text (`SKTextPlace`: labels, plain
     /// text, citations and their sources; never in headwords or links) get a dotted underline,
     /// `.skAbbreviation` with their full text and a `.textItemTag`, so a tap can show it.
+    ///
+    /// With `wordLinks` (by `SKSkarnikTranslation.wordKey`), the single words of headword-coloured runs
+    /// (`#831b03`) it has, or a whole run by its `data-word`, get `.skWordLink` and a `.textItemTag`
+    /// (`wordLinkTagPrefix` + the URL), never inside links. They look as before.
     static func render(html: String,
                        theme: SKArticleColorTheme = .current,
                        traits: UITraitCollection? = nil,
                        textStyle: UIFont.TextStyle = .body,
                        layout: SKTranslationLayout = .article,
-                       abbreviations: SKAbbreviationScheme? = nil) -> NSAttributedString {
-        let builder = Builder(theme: theme, traits: traits, textStyle: textStyle)
+                       abbreviations: SKAbbreviationScheme? = nil,
+                       wordLinks: [String: URL] = [:]) -> NSAttributedString {
+        let builder = Builder(theme: theme, traits: traits, textStyle: textStyle, wordLinks: wordLinks)
         if let body = try? SwiftSoup.parseBodyFragment(html).body() {
             builder.appendChildren(of: body, style: Style())
         }
         if let abbreviations { builder.markAbbreviations(abbreviations) }
+        builder.markWordLinks()
         return builder.finish(layout: layout)
     }
 
     /// Prefix of the `.textItemTag` on abbreviations; the full text follows it.
     static let abbreviationTagPrefix = "abbreviation:"
+    /// Prefix of the `.textItemTag` on linked words; the entry's URL follows it.
+    static let wordLinkTagPrefix = "word:"
+
+    /// True for a `<font>` or `<span>` in the headword colour (`#831b03`, as an attribute or inline CSS).
+    static func isHeadwordColoured(_ element: Element) -> Bool {
+        let tag = element.tagName().lowercased()
+        guard tag == "font" || tag == "span" else { return false }
+        let color = ((try? element.attr("color")) ?? "").lowercased()
+            .trimmingCharacters(in: CharacterSet(charactersIn: "# "))
+        let css = (try? element.attr("style")) ?? ""
+        return color == "831b03" || css.range(of: "color:\\s*#?831b03", options: [.regularExpression, .caseInsensitive]) != nil
+    }
+
+    /// The comma-separated single words of a headword-coloured run, with their ranges in `text`.
+    static func runParts(_ text: String) -> [(range: NSRange, word: String)] {
+        let string = text as NSString
+        var parts: [(NSRange, String)] = []
+        var location = 0
+        while location <= string.length {
+            let comma = string.range(of: ",", range: NSRange(location: location, length: string.length - location))
+            let end = comma.location == NSNotFound ? string.length : comma.location
+            let raw = string.substring(with: NSRange(location: location, length: end - location)) as NSString
+            let word = raw.trimmingCharacters(in: .whitespacesAndNewlines)
+            if !word.isEmpty, word.rangeOfCharacter(from: .whitespacesAndNewlines) == nil {
+                let inner = raw.range(of: word)
+                parts.append((NSRange(location: location + inner.location, length: inner.length), word))
+            }
+            location = end + 1
+        }
+        return parts
+    }
 
     // MARK: - Builder
 
@@ -178,7 +217,14 @@ enum SKTranslationRenderer {
         /// `.plain` outside any coloured element.
         private var currentPlace: SKTextPlace? { places.isEmpty ? .plain : places[places.count - 1] }
 
-        init(theme: SKArticleColorTheme, traits: UITraitCollection?, textStyle: UIFont.TextStyle) {
+        private let wordLinks: [String: URL]
+        /// Headword-coloured runs whose words may be linked, with their `data-word`.
+        private var headwordRuns: [(range: NSRange, dataWord: String?)] = []
+        private var headwordDepth = 0
+
+        init(theme: SKArticleColorTheme, traits: UITraitCollection?, textStyle: UIFont.TextStyle,
+             wordLinks: [String: URL] = [:]) {
+            self.wordLinks = wordLinks
             self.theme = theme
             self.traits = traits
             self.textStyle = textStyle
@@ -209,12 +255,23 @@ enum SKTranslationRenderer {
             let start = result.length
             // Inside a link or a headword nothing is looked at, whatever the colours inside it.
             if let change { places.append(currentPlace == nil ? nil : change) }
+            let dataWord = ((try? element.attr("data-word")) ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+            let isHeadword = !wordLinks.isEmpty && childStyle.link == nil && headwordDepth == 0 &&
+                (!dataWord.isEmpty || SKTranslationRenderer.isHeadwordColoured(element))
+            if isHeadword { headwordDepth += 1 }
             if Self.blockTags.contains(tag) {
                 startLine(style: style)
                 appendChildren(of: element, style: childStyle)
                 startLine(style: style)
             } else {
                 appendChildren(of: element, style: childStyle)
+            }
+            if isHeadword {
+                headwordDepth -= 1
+                if result.length > start {
+                    headwordRuns.append((NSRange(location: start, length: result.length - start),
+                                         dataWord.isEmpty ? nil : dataWord))
+                }
             }
             if let change {
                 places.removeLast()
@@ -276,6 +333,28 @@ enum SKTranslationRenderer {
                         .textItemTag: SKTranslationRenderer.abbreviationTagPrefix + match.expansion,
                         .underlineStyle: underline,
                         .underlineColor: (color ?? .label).withAlphaComponent(0.6)
+                    ], range: range)
+                }
+            }
+        }
+
+        func markWordLinks() {
+            let string = result.string as NSString
+            for run in headwordRuns where NSMaxRange(run.range) <= string.length {
+                let text = string.substring(with: run.range)
+                let parts: [(range: NSRange, word: String)]
+                if let dataWord = run.dataWord {
+                    let word = text.trimmingCharacters(in: .whitespacesAndNewlines)
+                    parts = word.isEmpty ? [] : [((text as NSString).range(of: word), dataWord)]
+                } else {
+                    parts = SKTranslationRenderer.runParts(text)
+                }
+                for part in parts {
+                    guard let url = wordLinks[SKSkarnikTranslation.wordKey(part.word)] else { continue }
+                    let range = NSRange(location: run.range.location + part.range.location, length: part.range.length)
+                    result.addAttributes([
+                        .skWordLink: url,
+                        .textItemTag: SKTranslationRenderer.wordLinkTagPrefix + url.absoluteString
                     ], range: range)
                 }
             }

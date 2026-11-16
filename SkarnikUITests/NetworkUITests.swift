@@ -33,6 +33,24 @@ final class NetworkUITests: SkarnikUITestCase {
         XCTAssertTrue(share.isHittable, "Word screen is not back after closing the share sheet")
     }
 
+    /// The one-time word link hint: shows on the first translation with tappable Belarusian words,
+    /// closes with «Зразумела» and does not come back on the next one.
+    func testWordLinkHintShowsOnce() {
+        app.terminate()
+        launch(reset: true, extraArguments: ["-showTips"])
+        openWord("вопрос", in: .rusBel)
+        waitForTranslation()
+        let hint = app.staticTexts["Націсніце на беларускае слова, каб адкрыць яго пераклад"]
+        waitFor(hint, timeout: 10, "The word link hint did not show")
+        waitFor(app.buttons["Зразумела"], "No «Зразумела» button on the hint").tap()
+        XCTAssertTrue(waitUntilGone(hint, timeout: 5), "The hint did not close")
+
+        goBack()
+        openWord("время", in: .rusBel)
+        waitForTranslation()
+        XCTAssertFalse(hint.waitForExistence(timeout: 3), "The hint showed a second time")
+    }
+
     /// «На́ціск» opens the stress and spelling table from starnik.by (or the admin API).
     func testStressTableOpens() {
         // A ТСБМ headword is its own stress candidate, so the button opens the lookup directly.

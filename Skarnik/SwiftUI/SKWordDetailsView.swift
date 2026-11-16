@@ -4,17 +4,37 @@
 //
 
 import SwiftUI
+import TipKit
 import UIKit
 import Combine
+
+// MARK: - Word link hint
+
+/// The one-time hint about tappable Belarusian words (Aleh, 2026-11-16): shown once per install, on the
+/// first translation that has such words, which are underlined while it shows. Same as skarnik_android.
+struct SKWordLinkTip: Tip {
+    static let doneActionId = "done"
+
+    var title: Text { Text(SKLocalization.wordLinkHint) }
+
+    var actions: [Action] {
+        [Action(id: Self.doneActionId, title: SKLocalization.wordLinkHintDone)]
+    }
+
+    var options: [any TipOption] { [MaxDisplayCount(1)] }
+}
 
 // MARK: - UITextView representable
 
 struct SKAttributedTextView: UIViewRepresentable {
     let attributedText: NSAttributedString?
     let onLinkTap: (URL) -> Void
+    var onWordLinkTap: (URL, String) -> Void = { _, _ in }
+    /// Underlines the linked words (`.skWordLink`) while the word link hint shows.
+    var underlinesWordLinks = false
 
     func makeCoordinator() -> Coordinator {
-        Coordinator(onLinkTap: onLinkTap)
+        Coordinator(onLinkTap: onLinkTap, onWordLinkTap: onWordLinkTap)
     }
 
     func makeUIView(context: Context) -> UITextView {
@@ -34,8 +54,18 @@ struct SKAttributedTextView: UIViewRepresentable {
 
     func updateUIView(_ uiView: UITextView, context: Context) {
         context.coordinator.onLinkTap = onLinkTap
-        uiView.attributedText = attributedText
+        context.coordinator.onWordLinkTap = onWordLinkTap
+        uiView.attributedText = underlinesWordLinks ? attributedText.map(Self.underliningWordLinks) : attributedText
         uiView.invalidateIntrinsicContentSize()
+    }
+
+    static func underliningWordLinks(_ text: NSAttributedString) -> NSAttributedString {
+        let result = NSMutableAttributedString(attributedString: text)
+        text.enumerateAttribute(.skWordLink, in: NSRange(location: 0, length: text.length)) { value, range, _ in
+            guard value != nil else { return }
+            result.addAttribute(.underlineStyle, value: NSUnderlineStyle.single.rawValue, range: range)
+        }
+        return result
     }
 
     func sizeThatFits(_ proposal: ProposedViewSize, uiView: UITextView, context: Context) -> CGSize? {
@@ -46,18 +76,29 @@ struct SKAttributedTextView: UIViewRepresentable {
 
     class Coordinator: NSObject, UITextViewDelegate {
         var onLinkTap: (URL) -> Void
+        var onWordLinkTap: (URL, String) -> Void
 
-        init(onLinkTap: @escaping (URL) -> Void) {
+        init(onLinkTap: @escaping (URL) -> Void, onWordLinkTap: @escaping (URL, String) -> Void) {
             self.onLinkTap = onLinkTap
+            self.onWordLinkTap = onWordLinkTap
         }
 
-        /// A tap on a link opens it in the app; a tap on an abbreviation shows its full text.
+        /// A tap on a link or a linked Belarusian word opens it in the app; a tap on an abbreviation
+        /// shows its full text.
         func textView(_ textView: UITextView,
                       primaryActionFor textItem: UITextItem,
                       defaultAction: UIAction) -> UIAction? {
             switch textItem.content {
             case .link(let url):
                 return UIAction { [weak self] _ in self?.onLinkTap(url) }
+            case .tag(let tag) where tag.hasPrefix(SKTranslationRenderer.wordLinkTagPrefix):
+                let range = textItem.range
+                guard let text = textView.attributedText, NSMaxRange(range) <= text.length,
+                      let url = text.attribute(.skWordLink, at: range.location, effectiveRange: nil) as? URL else {
+                    return nil
+                }
+                let word = (text.string as NSString).substring(with: range)
+                return UIAction { [weak self] _ in self?.onWordLinkTap(url, word) }
             case .tag:
                 let range = textItem.range
                 return UIAction { [weak textView] _ in
@@ -86,16 +127,60 @@ struct SKAttributedTextView: UIViewRepresentable {
 private struct SKWordDetailsTranslationView: View {
     let translation: SKSkarnikTranslation
     let onLinkTap: (URL) -> Void
+    var onWordLinkTap: (URL, String) -> Void = { _, _ in }
     // Colours are dynamic (dark mode, Increase Contrast resolve in the text view); fonts are not,
     // so the text is rebuilt when Dynamic Type or Bold Text changes.
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @Environment(\.legibilityWeight) private var legibilityWeight
     @AppStorage(SKArticleColorTheme.userDefaultsKey) private var articleColorTheme = SKArticleColorTheme.system.rawValue
     @State private var attributedText: NSAttributedString?
+    @State private var hasWordLinks = false
+    @State private var hintVisible = false
+    @State private var hintShownLogged = false
+    private let wordLinkTip = SKWordLinkTip()
 
     var body: some View {
-        SKAttributedTextView(attributedText: attributedText, onLinkTap: onLinkTap)
+        SKAttributedTextView(
+            attributedText: attributedText,
+            onLinkTap: onLinkTap,
+            onWordLinkTap: { url, word in
+                if hintVisible {
+                    hintVisible = false
+                    SKAnalyticsManager.logWordLinkHintDismissed(byTap: true)
+                }
+                wordLinkTip.invalidate(reason: .actionPerformed)
+                onWordLinkTap(url, word)
+            },
+            underlinesWordLinks: hintVisible
+        )
             .frame(maxWidth: .infinity, alignment: .leading)
+            // The tip points at the top of the text, where the first linked word usually is.
+            .overlay(alignment: .top) {
+                if hasWordLinks {
+                    Color.clear
+                        .frame(height: 1)
+                        .popoverTip(wordLinkTip, arrowEdge: .bottom) { action in
+                            if action.id == SKWordLinkTip.doneActionId {
+                                wordLinkTip.invalidate(reason: .tipClosed)
+                            }
+                        }
+                }
+            }
+            .task(id: hasWordLinks) {
+                guard hasWordLinks else { return }
+                for await status in wordLinkTip.statusUpdates {
+                    let available: Bool
+                    if case .available = status { available = true } else { available = false }
+                    if available, !hintShownLogged {
+                        hintShownLogged = true
+                        SKAnalyticsManager.logWordLinkHintShown()
+                    } else if !available, hintVisible {
+                        SKAnalyticsManager.logWordLinkHintDismissed(byTap: false)
+                    }
+                    hintVisible = available
+                }
+            }
+            .onDisappear { hintVisible = false }
             .overlay(alignment: .topTrailing) {
                 if SKUITesting.isActive {
                     // Lets UI tests check which source answered (local, supabase, api).
@@ -112,7 +197,21 @@ private struct SKWordDetailsTranslationView: View {
                 let text = await translation.renderedText(theme: theme, traits: traits)
                 guard !Task.isCancelled else { return }
                 attributedText = text
+                hasWordLinks = Self.hasWordLinks(text)
             }
+    }
+}
+
+extension SKWordDetailsTranslationView {
+    static func hasWordLinks(_ text: NSAttributedString) -> Bool {
+        var found = false
+        text.enumerateAttribute(.skWordLink, in: NSRange(location: 0, length: text.length)) { value, _, stop in
+            if value != nil {
+                found = true
+                stop.pointee = true
+            }
+        }
+        return found
     }
 }
 
@@ -310,7 +409,8 @@ struct SKWordDetailsView: View {
         case .success(let translation):
             SKWordDetailsTranslationView(
                 translation: translation,
-                onLinkTap: { url in viewModel.handleUrl(url.absoluteString) }
+                onLinkTap: { url in viewModel.handleUrl(url.absoluteString) },
+                onWordLinkTap: { url, word in viewModel.openWordLink(url, text: word) }
             )
         case .error(let message):
             errorView(message: message)
