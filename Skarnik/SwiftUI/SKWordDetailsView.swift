@@ -166,6 +166,7 @@ struct SKWordDetailsView: View {
                     VStack(spacing: 0) {
                         header
                         contentView
+                        footerLink
                     }
                     .padding(.horizontal, 15)
                     // At least a screen tall, so the loading and error states can centre in the
@@ -299,6 +300,10 @@ struct SKWordDetailsView: View {
                         .fixedSize(horizontal: false, vertical: true)
                         .accessibilityIdentifier("wordDetails.subtitle")
                 }
+                if let link = viewModel.dictionaryLink, link.placement == .header {
+                    headerLinkButton(link)
+                        .padding(.top, 8)
+                }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.top, 8)
@@ -312,6 +317,74 @@ struct SKWordDetailsView: View {
                 }
             )
         }
+    }
+
+    // MARK: Dictionary link (Бел-Рус ⇄ ТСБМ, A/B test `dictionary_link_placement`)
+
+    /// Variant `header`: a small capsule button under the dictionary name, named after what it opens.
+    private func headerLinkButton(_ link: SKDictionaryLink) -> some View {
+        Button(action: { viewModel.openDictionaryLink() }) {
+            Label(link.target.lang_id == .bel_definition
+                  ? SKLocalization.dictionaryLinkTsbmButton
+                  : SKLocalization.dictionaryLinkBelRusButton,
+                  systemImage: "book")
+                .font(.subheadline)
+        }
+        .buttonStyle(.bordered)
+        .buttonBorderShape(.capsule)
+        .controlSize(.small)
+        .accessibilityHint(dictionaryLinkTitle(link))
+        .accessibilityIdentifier("wordDetails.dictionaryLink.header")
+    }
+
+    /// Variant `footer`: an inset row after the translation, like a navigation row in a grouped list.
+    /// Shown once the translation has loaded, where the reader finishes the entry.
+    @ViewBuilder
+    private var footerLink: some View {
+        if case .success = viewModel.state, let link = viewModel.dictionaryLink, link.placement == .footer {
+            Button(action: { viewModel.openDictionaryLink() }) {
+                HStack(spacing: 12) {
+                    Image(systemName: "book")
+                        .font(.title3)
+                        .foregroundStyle(Color.accentColor)
+                        .accessibilityHidden(true)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(dictionaryLinkTitle(link))
+                            .font(.body)
+                            .foregroundStyle(.primary)
+                        Text(link.target.lang_id == .bel_definition
+                             ? SKLocalization.dictionaryLinkTsbmText
+                             : SKLocalization.dictionaryLinkBelRusText)
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                    }
+                    .multilineTextAlignment(.leading)
+                    Spacer(minLength: 8)
+                    Image(systemName: "chevron.right")
+                        .font(.footnote.weight(.semibold))
+                        .foregroundStyle(.tertiary)
+                        .accessibilityHidden(true)
+                }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 12)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(Color(uiColor: .secondarySystemBackground),
+                            in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+                .contentShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+            }
+            .buttonStyle(.plain)
+            .accessibilityElement(children: .combine)
+            .accessibilityAddTraits(.isButton)
+            .accessibilityIdentifier("wordDetails.dictionaryLink.footer")
+            .padding(.top, 24)
+            .padding(.bottom, 16)
+        }
+    }
+
+    private func dictionaryLinkTitle(_ link: SKDictionaryLink) -> String {
+        link.target.lang_id == .bel_definition
+            ? SKLocalization.dictionaryLinkTsbmTitle
+            : SKLocalization.dictionaryLinkBelRusTitle
     }
 
     // MARK: Content

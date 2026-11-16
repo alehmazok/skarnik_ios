@@ -85,6 +85,8 @@
 		BEB193CCF22D7938CA2D3213 /* SKDamerauLevenshtein.swift in Sources */ = {isa = PBXBuildFile; fileRef = B080BC497B8AC249E588E1F3 /* SKDamerauLevenshtein.swift */; };
 		C5E0A1000000000000000001 /* Sentry in Frameworks */ = {isa = PBXBuildFile; productRef = C5E0A1000000000000000002 /* Sentry */; };
 		C5E0A1000000000000000005 /* SKCrashReporting.swift in Sources */ = {isa = PBXBuildFile; fileRef = C5E0A1000000000000000004 /* SKCrashReporting.swift */; };
+		D1C7A1000000000000000002 /* SKDictionaryLink.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1C7A1000000000000000001 /* SKDictionaryLink.swift */; };
+		D1C7A1000000000000000004 /* FirebaseRemoteConfig in Frameworks */ = {isa = PBXBuildFile; productRef = D1C7A1000000000000000003 /* FirebaseRemoteConfig */; };
 		C5E0A1000000000000000007 /* SKErrorReporting.swift in Sources */ = {isa = PBXBuildFile; fileRef = C5E0A1000000000000000006 /* SKErrorReporting.swift */; };
 		C5E0A1000000000000000008 /* SKErrorReporting.swift in Sources */ = {isa = PBXBuildFile; fileRef = C5E0A1000000000000000006 /* SKErrorReporting.swift */; };
 		C95158DD56A01DAB74CDAA79 /* SKLocalTranslationSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEADC5D2AEEDF862E8EED585 /* SKLocalTranslationSource.swift */; };
@@ -209,6 +211,7 @@
 		B2FEFEEE28F4E53500675E49 /* SKWordDetailsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SKWordDetailsViewController.swift; sourceTree = "<group>"; };
 		C0DEBA5F2F8D000000A8ACBE /* SkarnikUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SkarnikUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		C5E0A1000000000000000004 /* SKCrashReporting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SKCrashReporting.swift; sourceTree = "<group>"; };
+		D1C7A1000000000000000001 /* SKDictionaryLink.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SKDictionaryLink.swift; sourceTree = "<group>"; };
 		C5E0A1000000000000000006 /* SKErrorReporting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SKErrorReporting.swift; sourceTree = "<group>"; };
 		C6C88C91F944A417B5665C31 /* SKOfflineDictionaryStore.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SKOfflineDictionaryStore.swift; sourceTree = "<group>"; };
 		D49C5E9119FCE560844062A3 /* SKSettingsView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SKSettingsView.swift; sourceTree = "<group>"; };
@@ -260,6 +263,7 @@
 				B20ABAD528EF215400AA2FC9 /* SQLite in Frameworks */,
 				B29000B62AF735780032532D /* UIKit.framework in Frameworks */,
 				F268C3D12D50DD4B004B7BE4 /* FirebaseAnalyticsWithoutAdIdSupport in Frameworks */,
+				D1C7A1000000000000000004 /* FirebaseRemoteConfig in Frameworks */,
 				C5E0A1000000000000000001 /* Sentry in Frameworks */,
 				B2FEFEF228F4E7A500675E49 /* SwiftSoup in Frameworks */,
 			);
@@ -348,6 +352,7 @@
 				B251A3652AE9947C00E78923 /* Shared */,
 				B20ABAB928EEBF6F00AA2FC9 /* AppDelegate.swift */,
 				C5E0A1000000000000000004 /* SKCrashReporting.swift */,
+				D1C7A1000000000000000001 /* SKDictionaryLink.swift */,
 				B20ABAD128EED10D00AA2FC9 /* SKSplitViewController.swift */,
 				B20ABACD28EEC39D00AA2FC9 /* SKVocabulariesTableViewController.swift */,
 				F2B7CC022F8C000000A8ACBE /* SKHistoryViewController.swift */,
@@ -508,6 +513,7 @@
 				B20ABAD428EF215400AA2FC9 /* SQLite */,
 				B2FEFEF128F4E7A500675E49 /* SwiftSoup */,
 				F268C3D02D50DD4B004B7BE4 /* FirebaseAnalyticsWithoutAdIdSupport */,
+				D1C7A1000000000000000003 /* FirebaseRemoteConfig */,
 				C5E0A1000000000000000002 /* Sentry */,
 			);
 			productName = Skarnik;
@@ -686,6 +692,7 @@
 				B27D996528FB341F0047CCBF /* SKAboutView.swift in Sources */,
 				B20ABABA28EEBF6F00AA2FC9 /* AppDelegate.swift in Sources */,
 				C5E0A1000000000000000005 /* SKCrashReporting.swift in Sources */,
+				D1C7A1000000000000000002 /* SKDictionaryLink.swift in Sources */,
 				C5E0A1000000000000000007 /* SKErrorReporting.swift in Sources */,
 				B25728EB2AFD9682007ADCF5 /* SKWordStressViewModel.swift in Sources */,
 				B251A34A2AE9931700E78923 /* SKWordFetchEntry.swift in Sources */,
@@ -1335,6 +1342,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = F268C3CF2D50DD4B004B7BE4 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = FirebaseAnalyticsWithoutAdIdSupport;
+		};
+		D1C7A1000000000000000003 /* FirebaseRemoteConfig */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = F268C3CF2D50DD4B004B7BE4 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseRemoteConfig;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

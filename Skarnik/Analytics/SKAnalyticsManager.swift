@@ -69,6 +69,11 @@ class SKAnalyticsManager {
         shared.service.logTranslationWordClicked(from: from, word: word, target: target)
     }
 
+    /// The goal event of the `dictionary_link_placement` experiment.
+    static func logDictionaryLinkClicked(from: SKWord, target: SKWord, placement: SKDictionaryLinkPlacement) {
+        shared.service.logDictionaryLinkClicked(from: from, target: target, placement: placement.rawValue)
+    }
+
     /// Sets the `install_source` user property. Fire-and-forget: the lookup runs off the main thread
     /// and never blocks launch. Call at launch (after `applyStoredConsent`) and when consent is granted;
     /// does nothing while analytics consent is not granted.

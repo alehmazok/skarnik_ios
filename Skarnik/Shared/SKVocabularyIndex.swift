@@ -251,6 +251,23 @@ class SKVocabularyIndex {
         return found
     }
 
+    /// The `vocabularyType` entry with the same headword as `word` (`lword`, the lowercase text), the
+    /// lowest id when there are homonyms; nil when there is none. The link from a Бел-Рус entry to ТСБМ
+    /// and back (`ESKVocabularyType.linkedDictionary`).
+    func sameWord(_ word: SKWord, vocabularyType: ESKVocabularyType) -> SKWord? {
+        do {
+            let rows = try db.prepare(
+                "SELECT word_id, word FROM vocabulary WHERE lang_id=? AND lword=? ORDER BY word_id LIMIT 1",
+                vocabularyType.rawValue, word.word.lowercased()
+            )
+            guard let row = rows.next(), let id = row[0] as? Int64, let text = row[1] as? String else { return nil }
+            return SKWord(word_id: id, word: text, lang_id: vocabularyType)
+        } catch {
+            SKErrorReporting.logError(error, tag: "VocabularyIndex")
+            return nil
+        }
+    }
+
     func word(id: Int64, vocabularyType: ESKVocabularyType) -> SKWord? {
         var rows: Statement?
         do {
