@@ -57,8 +57,10 @@ extension ESKVocabularyType {
 }
 
 /// Firebase Remote Config. Fetched and activated at launch, at most every 12 hours (skarnik_android's
-/// settings); reads never fail and fall back to the defaults. Not gated by analytics consent: the
-/// fetch sends a Firebase installation id, no events.
+/// settings), and kept current while the app runs by real-time updates: a value published in the
+/// console arrives within seconds instead of after the 12-hour throttle and a cold start. Reads never
+/// fail and fall back to the defaults. Not gated by analytics consent: the fetch sends a Firebase
+/// installation id, no events.
 final class SKRemoteConfig {
     static let shared = SKRemoteConfig()
 
@@ -66,6 +68,8 @@ final class SKRemoteConfig {
 
     /// Set before `start()` runs, so a read before it is not a crash.
     private var config: RemoteConfig?
+    /// Kept so the real-time listener stays registered for the app's lifetime.
+    private var updates: ConfigUpdateListenerRegistration?
 
     /// After `FirebaseApp.configure()`. UI tests skip the fetch, so they always get the defaults.
     func start() {
@@ -82,6 +86,18 @@ final class SKRemoteConfig {
         config.fetchAndActivate { _, error in
             // Offline is common; the stored or default values stay.
             if let error { print("Remote Config fetch failed: \(error.localizedDescription)") }
+        }
+        // Real-time: the backend pushes a change as soon as it is published; activate it at once, so
+        // it applies from the next word opened.
+        updates = config.addOnConfigUpdateListener { update, error in
+            if let error {
+                print("Remote Config real-time update failed: \(error.localizedDescription)")
+                return
+            }
+            guard update != nil else { return }
+            config.activate { _, error in
+                if let error { print("Remote Config activate failed: \(error.localizedDescription)") }
+            }
         }
     }
 
