@@ -66,10 +66,14 @@ final class SKRemoteConfig {
 
     static let dictionaryLinkPlacementKey = "dictionary_link_placement"
 
-    /// Set before `start()` runs, so a read before it is not a crash.
-    private var config: RemoteConfig?
     /// Kept so the real-time listener stays registered for the app's lifetime.
     private var updates: ConfigUpdateListenerRegistration?
+    /// The activated values the app reads, copied out of Firebase off the main thread: Firebase's own
+    /// reads wait on its internal queue (busy while it loads, fetches or activates), and the word
+    /// screen reads the placement on the main thread every time a word opens.
+    private let lock = NSLock()
+    private var placement: SKDictionaryLinkPlacement = .defaultPlacement
+    private let readQueue = DispatchQueue(label: "by.mazokaleh.Skarnik.remoteConfig", qos: .utility)
 
     /// After `FirebaseApp.configure()`. UI tests skip the fetch, so they always get the defaults.
     func start() {
@@ -81,15 +85,17 @@ final class SKRemoteConfig {
         config.setDefaults([
             Self.dictionaryLinkPlacementKey: SKDictionaryLinkPlacement.defaultPlacement.rawValue as NSObject,
         ])
-        self.config = config
         guard !SKUITesting.isActive else { return }
-        config.fetchAndActivate { _, error in
+        // The values activated at an earlier launch apply until the fetch lands.
+        refresh(config)
+        config.fetchAndActivate { [weak self] _, error in
             // Offline is common; the stored or default values stay.
             if let error { print("Remote Config fetch failed: \(error.localizedDescription)") }
+            self?.refresh(config)
         }
         // Real-time: the backend pushes a change as soon as it is published; activate it at once, so
         // it applies from the next word opened.
-        updates = config.addOnConfigUpdateListener { update, error in
+        updates = config.addOnConfigUpdateListener { [weak self] update, error in
             if let error {
                 print("Remote Config real-time update failed: \(error.localizedDescription)")
                 return
@@ -97,13 +103,27 @@ final class SKRemoteConfig {
             guard update != nil else { return }
             config.activate { _, error in
                 if let error { print("Remote Config activate failed: \(error.localizedDescription)") }
+                self?.refresh(config)
             }
         }
     }
 
-    /// Read when a word opens, so a value activated by the launch fetch applies from the next word.
+    /// Copies the activated values on a background queue.
+    private func refresh(_ config: RemoteConfig) {
+        readQueue.async { [weak self] in
+            let value = config.configValue(forKey: Self.dictionaryLinkPlacementKey).stringValue
+            let placement = SKDictionaryLinkPlacement(configValue: value)
+            guard let self else { return }
+            self.lock.lock()
+            self.placement = placement
+            self.lock.unlock()
+        }
+    }
+
+    /// Read when a word opens, so a newly activated value applies from the next word. Never blocks.
     var dictionaryLinkPlacement: SKDictionaryLinkPlacement {
-        guard let config else { return .defaultPlacement }
-        return SKDictionaryLinkPlacement(configValue: config.configValue(forKey: Self.dictionaryLinkPlacementKey).stringValue)
+        lock.lock()
+        defer { lock.unlock() }
+        return placement
     }
 }
