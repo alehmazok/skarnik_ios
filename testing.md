@@ -14,17 +14,16 @@ The application's core value is its offline search capability. The complexity of
 - **Status:** Initial tests implemented in `SKVocabularyIndexTests.swift`.
 
 ## 2. HTML Parsing, Translation Extraction & Source Architecture (Critical)
-The app relies on external HTML from `skarnik.by`, which is brittle and prone to breakage if the website's structure changes. Translation fetching now uses a protocol-based, multi-source architecture with a fallback chain.
+Translations are legacy HTML (`<font>` tags, inline colours). Translation fetching uses a protocol-based, multi-source architecture with a fallback chain.
 
-- **Target:** `SKTranslationSource.swift` (contains `SKTranslationSource`, `SKHtmlTranslationSource`, `SKFallbackTranslationSource`, stubs)
+- **Target:** `SKTranslationSource.swift` (contains `SKTranslationSource`, the Supabase and API sources, `SKFallbackTranslationSource`)
 - **Key Focus Areas:**
     - **Complex Word Extraction:** The `belWords` property uses `SwiftSoup` to extract reverse translations from HTML. This is complex and requires rigorous testing with various HTML samples.
     - **Rendering:** `SKTranslationRenderer` (SwiftSoup → `NSAttributedString`, no WebKit) maps legacy colours to semantic roles, keeps links and `data-word`, collapses whitespace and follows Dynamic Type. Covered in `SKTranslationRendererTests.swift`, incl. entries from all three dictionaries.
-    - **Error Handling:** Ensure `parseHtml` correctly identifies "Redirect" (`rdr`) blocks and triggers the `nextWordIndexRequired` error.
     - **Async Rendering:** `renderedText` builds the text off the main thread.
     - **Fallback Chain:** `SKFallbackTranslationSource` must try sources in order, fall through on `nil` results or errors, rethrow the last error if all sources fail, and return `nil` if all return `nil`.
     - **Stub Sources:** `SKApiTranslationSource` and `SKSupabaseTranslationSource` return `nil` until implemented.
-- **Status:** Fallback chain and stub sources fully covered in `SKTranslationSourceTests.swift`. HTML parsing tests exist; needs more robust `rus_bel` extraction scenarios.
+- **Status:** Fallback chain and stub sources fully covered in `SKTranslationSourceTests.swift`. Needs more robust `rus_bel` extraction scenarios.
 
 ## 3. Phonetic Normalization for Widgets (High)
 The "Word of the Day" widget uses phonetic and spelling normalization to ensure quality and prevent repetitive or near-duplicate entries.

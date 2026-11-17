@@ -73,7 +73,7 @@ between Back and «Націск», and it jumped when the stress form arrived.
   entry starts at the margin and is easy to scan.
 - Whitespace: a run of spaces and `&nbsp;` inside a line collapses to one gap, so
   «благожелательность — &nbsp;добразычлівасць» shows a single space after the dash.
-- Links: relative links resolve against skarnik.by; tapping one is routed by
+- Links: relative links resolve against skarnik.app; tapping one is routed by
   `SKWordDetailsViewModel.handleUrl`, which opens the linked entry in place
   (`/belrus|rusbel|tsbm/<id>`). Other links do nothing.
 - Abbreviations: each run of text is matched by its place (`SKTextPlace`: label, plain, citation,
@@ -151,7 +151,7 @@ on iOS also as an error, so non-interactive text never uses it.
 | Dictionary subtitle | secondary label |
 
 Settings → «Колеры артыкула» lets users switch the article's highlighted words back to
-«Чырвоныя Скарніка» (the red used on skarnik.by and in older versions). The default is
+«Чырвоныя Скарніка» (the red used in older versions). The default is
 «Сістэмныя» (bold primary). This choice only affects article text; buttons keep the accent.
 
 Never hard-code hex colours in the view: use system colours or the renderer's roles.
@@ -167,7 +167,7 @@ Never hard-code hex colours in the view: use system colours or the renderer's ro
 | #18 | Toast on `tertiarySystemBackground` so it is visible in dark mode; space + `&nbsp;` collapse to one space. |
 | #19 | Large headword heading with stress form and dictionary subtitle; nav-bar title only after scrolling. |
 | #20 | SwiftSoup renderer instead of the WebKit HTML importer; semantic colours; Dynamic Type live. |
-| #24 | The `skarnik.app/r/...` URL line under the subtitle is removed entirely (Aleh, 2026-11-05): it duplicated Share, was below the minimum font size, and could route back into the app. Attribution to skarnik.by stays on the About screen. |
+| #24 | The `skarnik.app/r/...` URL line under the subtitle is removed entirely (Aleh, 2026-11-05): it duplicated Share, was below the minimum font size, and could route back into the app. |
 | #25 | «На́ціск» slot reserved while loading; be→ru menu of headword + synonyms kept (Aleh, 2026-11-05). |
 | #22 | Loading and error states centred; error has a «Паспрабаваць яшчэ» retry; nested error `ScrollView` removed; network error text no longer says «try later». |
 

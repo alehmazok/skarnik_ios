@@ -57,7 +57,7 @@ class SKLocalization: Any {
     class var aboutSubscriptionCreator: String { "Cтваральнік Скарніка" }
     class var aboutSubscriptionDeveloper: String { "Распрацоўшчыкі" }
     class var aboutSubscriptionDesigner: String { "UI/UX дапамога" }
-    class var aboutDescription: String { "Skarnik - электронны руска-беларускі слоўнік. За аснову ўзяты акадэмічны слоўнік, які быў выпушчаны ў 1953 годзе (пад рэдакцыяй Я. Коласа, К. Крапівы і П. Глебкі) і затым некалькі разоў перавыдаваўся з выпраўленнямі і дапаўненнямі.\n\nСайт skarnik.by пачаў працаваць 7 жніўня 2012 года." }
+    class var aboutDescription: String { "Skarnik - электронны руска-беларускі слоўнік. За аснову ўзяты акадэмічны слоўнік, які быў выпушчаны ў 1953 годзе (пад рэдакцыяй Я. Коласа, К. Крапівы і П. Глебкі) і затым некалькі разоў перавыдаваўся з выпраўленнямі і дапаўненнямі." }
     class var aboutSupportButtonTitle: String { "Напісаць распрацоўшчыкам" }
     class var aboutRowTitle: String { "Пра Скарнік" }
     class var whatsNewRowTitle: String { "Што новага" }

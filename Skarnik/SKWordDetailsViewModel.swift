@@ -182,9 +182,10 @@ class SKWordDetailsViewModel: ObservableObject {
         handleUrl(url.absoluteString)
     }
 
-    /// The word a `/belrus/123`-style link (relative, skarnik.by or `SKSkarnikTranslation.url(of:)`) points at.
+    /// The word a `/belrus/123`-style link points at: relative, absolute on any host (links in the
+    /// legacy translation HTML) or `SKSkarnikTranslation.url(of:)` (`https://skarnik.app/r/belrus/123`).
     static func word(forUrl urlString: String) -> SKWord? {
-        let regexPattern = #"(https?://(www.)?skarnik.by)?/(?<vocabularyPath>belrus|rusbel|tsbm)/(?<wordId>[0-9]+)"#
+        let regexPattern = #"/(?<vocabularyPath>belrus|rusbel|tsbm)/(?<wordId>[0-9]+)"#
 
         guard let regex = try? NSRegularExpression(pattern: regexPattern, options: []),
               let match = regex.firstMatch(in: urlString, options: [], range: NSRange(location: 0, length: urlString.utf16.count)) else {

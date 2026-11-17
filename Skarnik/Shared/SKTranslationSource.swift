@@ -1,5 +1,5 @@
 //
-//  SKSkarnikByController.swift
+//  SKTranslationSource.swift
 //  Skarnik
 //
 //  Created by Logout on 11.10.22.
@@ -24,7 +24,7 @@ private func skLog(_ message: @autoclosure () -> String, type: OSLogType = .debu
 enum SKArticleColorTheme: String, CaseIterable {
     /// Bold text in the primary label colour; red stays for interactive elements only (default).
     case system
-    /// The Skarnik red accent, as on skarnik.by and in earlier app versions.
+    /// The Skarnik red accent, as in earlier app versions.
     case skarnikRed
 
     static let userDefaultsKey = "articleColorTheme"
@@ -44,8 +44,14 @@ struct SKSkarnikTranslation {
     var sourceName: String = ""
 
     var sharingUrl: String {
-        guard let path = word.lang_id.skarnikId else { return url }
-        return "https://skarnik.app/r/\(path)/\(word.word_id)"
+        Self.pageUrl(vocabularyType: word.lang_id, wordId: word.word_id) ?? url
+    }
+
+    /// The entry's page on skarnik.app (`https://skarnik.app/r/belrus/27890`): the address shared,
+    /// logged and shown for an entry.
+    static func pageUrl(vocabularyType: ESKVocabularyType, wordId: Int64) -> String? {
+        guard let path = vocabularyType.skarnikId else { return nil }
+        return "https://skarnik.app/r/\(path)/\(wordId)"
     }
 
     /// The word as it goes into a share: the stressed form when known, else the plain word.
@@ -83,8 +89,7 @@ struct SKSkarnikTranslation {
 
     /// The link a tapped word opens; `SKWordDetailsViewModel.handleUrl` routes it.
     static func url(of word: SKWord) -> URL? {
-        guard let path = word.lang_id.skarnikId else { return nil }
-        return URL(string: "https://www.skarnik.by/\(path)/\(word.word_id)")
+        pageUrl(vocabularyType: word.lang_id, wordId: word.word_id).flatMap { URL(string: $0) }
     }
 
     /// The Belarusian words of a Бел-Рус or Рус-Бел translation that open their own entry, by `wordKey`:
@@ -141,7 +146,7 @@ struct SKSkarnikTranslation {
     }
 
     /// Scans `html` for `#831b03`-colored `font`/`span` elements, which mark Belarusian
-    /// word forms in scraped skarnik.by markup, and returns the ones present in the local
+    /// word forms in the legacy dictionary markup, and returns the ones present in the local
     /// vocabulary index (deduped against `existing`).
     private static func colorMarkedBelWords(inHtml html: String, excluding existing: [String] = []) -> [String] {
         guard let doc = try? SwiftSoup.parse(html) else { return [] }
@@ -244,70 +249,6 @@ protocol SKTranslationSource {
     func wordTranslation(_ word: SKWord) async throws -> SKSkarnikTranslation?
 }
 
-// MARK: - HTML Source
-
-/// skarnik.by page scrape. Not in any fallback chain any more (see `SKFallbackTranslationSource.shared`).
-
-struct SKHtmlTranslationSource: SKTranslationSource {
-
-    func wordTranslation(_ word: SKWord) async throws -> SKSkarnikTranslation? {
-        guard let urlStr = Self.url(vocabularyType: word.lang_id, wordId: word.word_id) else {
-            return nil
-        }
-
-        skLog("[HTML] Fetching word: \"\(word.word)\" (id: \(word.word_id), lang: \(word.lang_id.rawValue)) url: \(urlStr)")
-
-        guard let data = await URLSession.skarnikDownload(urlStr: urlStr) else {
-            skLog("[HTML] Network error for url: \(urlStr)", type: .error)
-            throw SKSkarnikError.networkError
-        }
-
-        var html: String?
-        do {
-            html = try Self.parseHtml(data: data)
-        } catch SKSkarnikError.nextWordIndexRequired {
-            let nextId = word.word_id + 1
-            skLog("[HTML] Redirect — retrying with next word id: \(nextId)")
-            guard let nextWord = SKVocabularyIndex.shared.word(id: nextId, vocabularyType: word.lang_id) else {
-                return nil
-            }
-            return try await self.wordTranslation(nextWord)
-        } catch {
-            throw error
-        }
-        guard let html = html else {
-            return nil
-        }
-
-        skLog("[HTML] Parsed successfully for word: \"\(word.word)\" (id: \(word.word_id))")
-        return SKSkarnikTranslation(word: word, url: urlStr, html: html, sourceName: "html")
-    }
-
-    static func url(vocabularyType: ESKVocabularyType, wordId: Int64) -> String? {
-        guard let vocabularySkarnikId = vocabularyType.skarnikId else {
-            return nil
-        }
-        return "https://www.skarnik.by/\(vocabularySkarnikId)/\(wordId)"
-    }
-
-    static func parseHtml(data: Data) throws -> String? {
-        var rawHtmlText: String?
-
-        let html = String(data: data, encoding: .utf8) ?? ""
-        let doc = try SwiftSoup.parse(html)
-        let translation = try doc.getElementById("trn")
-        rawHtmlText = try translation?.html()
-        if rawHtmlText == nil {
-            let rdr = try doc.getElementById("rdr")
-            if rdr != nil {
-                throw SKSkarnikError.nextWordIndexRequired
-            }
-        }
-
-        return rawHtmlText
-    }
-}
-
 // MARK: - API Source
 
 struct SKApiTranslationSource: SKTranslationSource {
@@ -346,7 +287,7 @@ struct SKApiTranslationSource: SKTranslationSource {
             return nil
         }
 
-        let displayUrl = SKHtmlTranslationSource.url(vocabularyType: word.lang_id, wordId: word.word_id) ?? urlStr
+        let displayUrl = SKSkarnikTranslation.pageUrl(vocabularyType: word.lang_id, wordId: word.word_id) ?? urlStr
         skLog("[API] Parsed successfully for word: \"\(word.word)\" (id: \(word.word_id))")
         return SKSkarnikTranslation(word: word, url: displayUrl, html: html, stress: response.stress, sourceName: "api")
     }
@@ -392,7 +333,7 @@ struct SKSupabaseTranslationSource: SKTranslationSource {
             return nil
         }
 
-        let displayUrl = SKHtmlTranslationSource.url(vocabularyType: word.lang_id, wordId: word.word_id) ?? urlStr
+        let displayUrl = SKSkarnikTranslation.pageUrl(vocabularyType: word.lang_id, wordId: word.word_id) ?? urlStr
         skLog("[Supabase] Parsed successfully for word: \"\(word.word)\" (id: \(word.word_id))")
         return SKSkarnikTranslation(word: word, url: displayUrl, html: html, stress: response.stress, sourceName: "supabase")
     }
@@ -429,14 +370,9 @@ struct SKFallbackTranslationSource: SKTranslationSource {
     }
 
     /// Supabase, then the skarnik_admin API: the order every Skarnik app uses after the local store
-    /// (Aleh, 2026-11-05). The skarnik.by HTML scrape is no longer part of the chain;
-    /// `SKHtmlTranslationSource.url` still gives the skarnik.by address shown for an entry.
+    /// (Aleh, 2026-11-05).
     static let shared = SKFallbackTranslationSource(sources: [
         SKSupabaseTranslationSource(),
         SKApiTranslationSource()
     ])
 }
-
-// MARK: - Backward Compatibility
-
-typealias SKSkarnikByController = SKHtmlTranslationSource

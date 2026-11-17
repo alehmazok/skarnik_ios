@@ -141,7 +141,7 @@ final class SKWordDetailsViewModelTests: XCTestCase {
             }
             .store(in: &cancellables)
 
-        viewModel.handleUrl("https://skarnik.by/belrus/123")
+        viewModel.handleUrl("https://skarnik.app/r/belrus/123")
 
         // Since we can't easily mock SKVocabularyIndex, this might not fulfill if the word is nil.
         // Let's just check the state if it goes to loading or remains idle.

@@ -2,7 +2,7 @@
 import XCTest
 @testable import Skarnik
 
-final class SKSkarnikByControllerTests: XCTestCase {
+final class SKTranslationSourceTests: XCTestCase {
 
     // MARK: - SKSkarnikTranslation Tests
 
@@ -192,61 +192,21 @@ final class SKSkarnikByControllerTests: XCTestCase {
         XCTAssertNoThrow(_ = translation.belWords)
     }
 
-    // MARK: - SKSkarnikByController Tests
+    // MARK: - Page URL Tests
 
-    func testSKSkarnikByController_url_rus_bel() {
-        let url = SKSkarnikByController.url(vocabularyType: .rus_bel, wordId: 123)
-        XCTAssertEqual(url, "https://www.skarnik.by/rusbel/123")
+    func testPageUrl_rus_bel() {
+        let url = SKSkarnikTranslation.pageUrl(vocabularyType: .rus_bel, wordId: 123)
+        XCTAssertEqual(url, "https://skarnik.app/r/rusbel/123")
     }
 
-    func testSKSkarnikByController_url_bel_rus() {
-        let url = SKSkarnikByController.url(vocabularyType: .bel_rus, wordId: 456)
-        XCTAssertEqual(url, "https://www.skarnik.by/belrus/456")
+    func testPageUrl_bel_rus() {
+        let url = SKSkarnikTranslation.pageUrl(vocabularyType: .bel_rus, wordId: 456)
+        XCTAssertEqual(url, "https://skarnik.app/r/belrus/456")
     }
 
-    func testSKSkarnikByController_url_tsbm() {
-        let url = SKSkarnikByController.url(vocabularyType: .bel_definition, wordId: 789)
-        XCTAssertEqual(url, "https://www.skarnik.by/tsbm/789")
-    }
-
-    func testSKSkarnikByController_parseHtml_success() throws {
-        let html = """
-        <html>
-            <body>
-                <div id="trn">
-                    <font color="831b03">Пераклад</font>
-                </div>
-            </body>
-        </html>
-        """
-        let data = html.data(using: .utf8)!
-        let result = try SKSkarnikByController.parseHtml(data: data)
-        
-        XCTAssertNotNil(result)
-        XCTAssertTrue(result!.contains("Пераклад"))
-    }
-
-    func testSKSkarnikByController_parseHtml_redirect() throws {
-        let html = """
-        <html>
-            <body>
-                <div id="rdr">Redirect content</div>
-            </body>
-        </html>
-        """
-        let data = html.data(using: .utf8)!
-        
-        XCTAssertThrowsError(try SKSkarnikByController.parseHtml(data: data)) { error in
-            XCTAssertEqual(error as? SKSkarnikError, SKSkarnikError.nextWordIndexRequired)
-        }
-    }
-
-    func testSKSkarnikByController_parseHtml_empty() throws {
-        let html = "<html><body></body></html>"
-        let data = html.data(using: .utf8)!
-        let result = try SKSkarnikByController.parseHtml(data: data)
-        
-        XCTAssertNil(result)
+    func testPageUrl_tsbm() {
+        let url = SKSkarnikTranslation.pageUrl(vocabularyType: .bel_definition, wordId: 789)
+        XCTAssertEqual(url, "https://skarnik.app/r/tsbm/789")
     }
 
     // MARK: - Async Tests

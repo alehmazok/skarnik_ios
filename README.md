@@ -17,7 +17,7 @@
 
 ## About
 
-Skarnik is a comprehensive Russian-Belarusian, Belarusian-Russian, and Belarusian explanatory (TSBM) dictionary app for iOS, based on the [skarnik.by](https://skarnik.by) service. It provides quick offline search plus detailed word entries, including word stress and spelling info.
+Skarnik is a comprehensive Russian-Belarusian, Belarusian-Russian, and Belarusian explanatory (TSBM) dictionary app for iOS. It provides quick offline search plus detailed word entries, including word stress and spelling info.
 
 ## Features
 
@@ -183,7 +183,7 @@ the user grants consent, and never while analytics consent is off. MarketplaceKi
 Translations are looked up in this order, the same in every Skarnik app: the downloaded offline dictionary,
 then Supabase, then the Skarnik admin API.
 
-- **[skarnik.by](https://skarnik.by)** — origin of the dictionary content (Рус-Бел, Бел-Рус, Тлумачальны). The app no longer scrapes it; each entry still links to its skarnik.by page.
+- **[skarnik.app](https://skarnik.app)** — the Skarnik website; shared links (`skarnik.app/r/<dict>/<id>`) open the entry in the app
 - **Supabase** (`main_word` table) — online translation source and the source of the offline dictionary downloads
 - **Skarnik admin** (`skarnik.play.of.by`) — Django backend; last translation fallback and the fallback for word-stress lookup
 - **[starnik.by](https://starnik.by)** — primary source for word stress (nacisk) and spelling info
