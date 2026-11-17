@@ -169,26 +169,38 @@ class SKWordDetailsViewModel: ObservableObject {
     }
 
     func handleUrl(_ urlString: String) {
-        let regexPattern = #"(https?://(www.)?skarnik.by)?/(?<vocabularyPath>belrus|rusbel|tsbm)/(?<wordId>[0-9]+)"#
-        
-        guard let regex = try? NSRegularExpression(pattern: regexPattern, options: []),
-              let match = regex.firstMatch(in: urlString, options: [], range: NSRange(location: 0, length: urlString.utf16.count)) else {
-            return
-        }
-        
-        let vocabularyPath = extractNamedGroup(from: match, named: "vocabularyPath", in: urlString)
-        let wordIdString = extractNamedGroup(from: match, named: "wordId", in: urlString)
-        
-        if let vocabularyPath = vocabularyPath,
-           let wordIdString = wordIdString,
-           let wordId = Int64(wordIdString),
-           let vocabularyType = ESKVocabularyType.from(vocabularyPath: vocabularyPath) {
-            let newWord = SKVocabularyIndex.shared.word(id: wordId, vocabularyType: vocabularyType)
+        if let newWord = Self.word(forUrl: urlString) {
             self.updateWord(newWord)
         }
     }
-    
-    private func extractNamedGroup(from match: NSTextCheckingResult, named groupName: String, in text: String) -> String? {
+
+    /// A Belarusian word of the translation (`text` as shown) was tapped: log it and open its entry.
+    func openWordLink(_ url: URL, text: String) {
+        if let from = word, let target = Self.word(forUrl: url.absoluteString) {
+            SKAnalyticsManager.logTranslationWordClicked(from: from, word: text, target: target)
+        }
+        handleUrl(url.absoluteString)
+    }
+
+    /// The word a `/belrus/123`-style link (relative, skarnik.by or `SKSkarnikTranslation.url(of:)`) points at.
+    static func word(forUrl urlString: String) -> SKWord? {
+        let regexPattern = #"(https?://(www.)?skarnik.by)?/(?<vocabularyPath>belrus|rusbel|tsbm)/(?<wordId>[0-9]+)"#
+
+        guard let regex = try? NSRegularExpression(pattern: regexPattern, options: []),
+              let match = regex.firstMatch(in: urlString, options: [], range: NSRange(location: 0, length: urlString.utf16.count)) else {
+            return nil
+        }
+
+        guard let vocabularyPath = extractNamedGroup(from: match, named: "vocabularyPath", in: urlString),
+              let wordIdString = extractNamedGroup(from: match, named: "wordId", in: urlString),
+              let wordId = Int64(wordIdString),
+              let vocabularyType = ESKVocabularyType.from(vocabularyPath: vocabularyPath) else {
+            return nil
+        }
+        return SKVocabularyIndex.shared.word(id: wordId, vocabularyType: vocabularyType)
+    }
+
+    private static func extractNamedGroup(from match: NSTextCheckingResult, named groupName: String, in text: String) -> String? {
         let groupRange = match.range(withName: groupName)
         if groupRange.location != NSNotFound, let range = Range(groupRange, in: text) {
             return String(text[range])

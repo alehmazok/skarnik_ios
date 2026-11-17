@@ -12,9 +12,10 @@ import Combine
 struct SKAttributedTextView: UIViewRepresentable {
     let attributedText: NSAttributedString?
     let onLinkTap: (URL) -> Void
+    var onWordLinkTap: (URL, String) -> Void = { _, _ in }
 
     func makeCoordinator() -> Coordinator {
-        Coordinator(onLinkTap: onLinkTap)
+        Coordinator(onLinkTap: onLinkTap, onWordLinkTap: onWordLinkTap)
     }
 
     func makeUIView(context: Context) -> UITextView {
@@ -34,6 +35,7 @@ struct SKAttributedTextView: UIViewRepresentable {
 
     func updateUIView(_ uiView: UITextView, context: Context) {
         context.coordinator.onLinkTap = onLinkTap
+        context.coordinator.onWordLinkTap = onWordLinkTap
         uiView.attributedText = attributedText
         uiView.invalidateIntrinsicContentSize()
     }
@@ -46,18 +48,29 @@ struct SKAttributedTextView: UIViewRepresentable {
 
     class Coordinator: NSObject, UITextViewDelegate {
         var onLinkTap: (URL) -> Void
+        var onWordLinkTap: (URL, String) -> Void
 
-        init(onLinkTap: @escaping (URL) -> Void) {
+        init(onLinkTap: @escaping (URL) -> Void, onWordLinkTap: @escaping (URL, String) -> Void) {
             self.onLinkTap = onLinkTap
+            self.onWordLinkTap = onWordLinkTap
         }
 
-        /// A tap on a link opens it in the app; a tap on an abbreviation shows its full text.
+        /// A tap on a link or a linked Belarusian word opens it in the app; a tap on an abbreviation
+        /// shows its full text.
         func textView(_ textView: UITextView,
                       primaryActionFor textItem: UITextItem,
                       defaultAction: UIAction) -> UIAction? {
             switch textItem.content {
             case .link(let url):
                 return UIAction { [weak self] _ in self?.onLinkTap(url) }
+            case .tag(let tag) where tag.hasPrefix(SKTranslationRenderer.wordLinkTagPrefix):
+                let range = textItem.range
+                guard let text = textView.attributedText, NSMaxRange(range) <= text.length,
+                      let url = text.attribute(.skWordLink, at: range.location, effectiveRange: nil) as? URL else {
+                    return nil
+                }
+                let word = (text.string as NSString).substring(with: range)
+                return UIAction { [weak self] _ in self?.onWordLinkTap(url, word) }
             case .tag:
                 let range = textItem.range
                 return UIAction { [weak textView] _ in
@@ -86,6 +99,7 @@ struct SKAttributedTextView: UIViewRepresentable {
 private struct SKWordDetailsTranslationView: View {
     let translation: SKSkarnikTranslation
     let onLinkTap: (URL) -> Void
+    var onWordLinkTap: (URL, String) -> Void = { _, _ in }
     // Colours are dynamic (dark mode, Increase Contrast resolve in the text view); fonts are not,
     // so the text is rebuilt when Dynamic Type or Bold Text changes.
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
@@ -94,7 +108,11 @@ private struct SKWordDetailsTranslationView: View {
     @State private var attributedText: NSAttributedString?
 
     var body: some View {
-        SKAttributedTextView(attributedText: attributedText, onLinkTap: onLinkTap)
+        SKAttributedTextView(
+            attributedText: attributedText,
+            onLinkTap: onLinkTap,
+            onWordLinkTap: onWordLinkTap
+        )
             .frame(maxWidth: .infinity, alignment: .leading)
             .overlay(alignment: .topTrailing) {
                 if SKUITesting.isActive {
@@ -310,7 +328,8 @@ struct SKWordDetailsView: View {
         case .success(let translation):
             SKWordDetailsTranslationView(
                 translation: translation,
-                onLinkTap: { url in viewModel.handleUrl(url.absoluteString) }
+                onLinkTap: { url in viewModel.handleUrl(url.absoluteString) },
+                onWordLinkTap: { url, word in viewModel.openWordLink(url, text: word) }
             )
         case .error(let message):
             errorView(message: message)

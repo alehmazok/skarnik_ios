@@ -65,6 +65,10 @@ class SKAnalyticsManager {
         shared.service.logSearchResultTapped(word: word, position: position, query: query)
     }
 
+    static func logTranslationWordClicked(from: SKWord, word: String, target: SKWord) {
+        shared.service.logTranslationWordClicked(from: from, word: word, target: target)
+    }
+
     /// Sets the `install_source` user property. Fire-and-forget: the lookup runs off the main thread
     /// and never blocks launch. Call at launch (after `applyStoredConsent`) and when consent is granted;
     /// does nothing while analytics consent is not granted.

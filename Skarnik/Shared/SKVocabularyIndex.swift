@@ -226,6 +226,31 @@ class SKVocabularyIndex {
         return word
     }
     
+    /// The Бел-Рус entry each of `keys` (`SKSkarnikTranslation.wordKey`: lowercase, no stress mark) is the
+    /// headword of, else its ТСБМ entry; the lowest id when several share the text. One query for all keys;
+    /// keys the index lacks are left out. Translations use it to link their Belarusian words.
+    func belarusianWords(_ keys: Set<String>) -> [String: SKWord] {
+        guard !keys.isEmpty else { return [:] }
+        let list = Array(keys)
+        let placeholders = Array(repeating: "?", count: list.count).joined(separator: ",")
+        let sql = "SELECT word_id, word, lang_id, lword FROM vocabulary " +
+            "WHERE lang_id IN (?, ?) AND lword IN (\(placeholders)) ORDER BY lang_id = ? DESC, word_id"
+        let bindings: [Binding?] = [ESKVocabularyType.bel_rus.rawValue, ESKVocabularyType.bel_definition.rawValue]
+            + list.map { $0 as Binding? } + [ESKVocabularyType.bel_rus.rawValue]
+        var found: [String: SKWord] = [:]
+        do {
+            for row in try db.prepare(sql, bindings) {
+                guard let id = row[0] as? Int64, let text = row[1] as? String, let lang = row[2] as? Int64,
+                      let type = ESKVocabularyType(rawValue: Int(lang)), let lword = row[3] as? String,
+                      found[lword] == nil else { continue }
+                found[lword] = SKWord(word_id: id, word: text, lang_id: type)
+            }
+        } catch {
+            SKErrorReporting.logError(error, tag: "VocabularyIndex")
+        }
+        return found
+    }
+
     func word(id: Int64, vocabularyType: ESKVocabularyType) -> SKWord? {
         var rows: Statement?
         do {
