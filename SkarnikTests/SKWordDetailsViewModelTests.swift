@@ -235,9 +235,15 @@ final class SKWordDetailsViewModelTests: XCTestCase {
 
         vm.updateWord(requestedWord)
         await fulfillment(of: [exp], timeout: 10)
+        // The effect is sent before the redirect target's own load starts, so wait for that load
+        // instead of assuming it finished before this test resumed.
+        let deadline = Date().addingTimeInterval(5)
+        while case .loading = vm.state, Date() < deadline {
+            try? await Task.sleep(nanoseconds: 10_000_000)
+        }
 
         guard case .success(let translation) = vm.state else {
-            XCTFail("Expected .success state after following the redirect"); return
+            XCTFail("Expected .success state after following the redirect, got \(vm.state)"); return
         }
         XCTAssertEqual(vm.word?.word_id, redirectTarget.word_id)
         XCTAssertEqual(translation.word.word_id, redirectTarget.word_id)
