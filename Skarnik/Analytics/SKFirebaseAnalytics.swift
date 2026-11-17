@@ -118,6 +118,19 @@ class SKFirebaseAnalytics: SKAnalyticsService {
             ])
     }
 
+    func logDictionaryLinkClicked(from: SKWord, target: SKWord, placement: String) {
+        Analytics.logEvent(
+            SKAnalyticsEvent.dictionaryLinkClicked.rawValue,
+            parameters: [
+                "word": from.word,
+                "dict_name": from.lang_id.name ?? "unknown",
+                "dict_path": from.lang_id.skarnikId ?? "unknown",
+                "target_dict_path": target.lang_id.skarnikId ?? "unknown",
+                "target_word_id": target.word_id,
+                "placement": placement,
+            ])
+    }
+
     func setInstallSource(_ source: SKInstallSource) {
         Analytics.setUserProperty(source.rawValue, forName: SKInstallSource.userPropertyName)
     }

@@ -29,6 +29,8 @@ protocol SKAnalyticsService {
 
     func logTranslationWordClicked(from: SKWord, word: String, target: SKWord)
 
+    func logDictionaryLinkClicked(from: SKWord, target: SKWord, placement: String)
+
     func setInstallSource(_ source: SKInstallSource)
 
     func setSearchBarPlacement(_ placement: SKSearchBarPlacement)
@@ -46,6 +48,7 @@ enum SKAnalyticsEvent: String {
     case searchNoResults = "search_no_results"
     case searchResultTapped = "search_result_tapped"
     case translationWordClicked = "translation_word_clicked"
+    case dictionaryLinkClicked = "dictionary_link_clicked"
 }
 
 enum SKWidgetDeepLinkAppState: String {

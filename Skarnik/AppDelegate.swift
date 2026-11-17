@@ -29,8 +29,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
         SKUITesting.prepareForLaunch()
 
-        // Firebase Analytics only; crash reporting is Sentry (SKCrashReporting).
+        // Firebase Analytics and Remote Config; crash reporting is Sentry (SKCrashReporting).
         FirebaseApp.configure()
+        // Defaults at once, fetch in the background (dictionary_link_placement A/B test).
+        SKRemoteConfig.shared.start()
 
         // Before the consent prompt writes its keys, which would make a fresh install look like an update.
         SKWhatsNewController.shared.prepareAtLaunch()

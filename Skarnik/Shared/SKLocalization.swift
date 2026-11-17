@@ -35,6 +35,13 @@ class SKLocalization: Any {
     class var wordDetailsSubtitleBelRus: String { "Пераклад на рускую мову" }
     class var wordDetailsSubtitleDenifition: String { "Тлумачэнне слова" }
     class var wordDetailsSpelling: String { "На́ціск" }
+    // The link to the same word in the other dictionary: Бел-Рус → ТСБМ and ТСБМ → Бел-Рус.
+    class var dictionaryLinkTsbmButton: String { "Тлумачэнне" }
+    class var dictionaryLinkBelRusButton: String { "Пераклад" }
+    class var dictionaryLinkTsbmTitle: String { "Тлумачэнне слова" }
+    class var dictionaryLinkBelRusTitle: String { "Пераклад на рускую мову" }
+    class var dictionaryLinkTsbmText: String { "Гэта слова ў Тлумачальным слоўніку" }
+    class var dictionaryLinkBelRusText: String { "Гэта слова ў Беларуска-рускім слоўніку" }
     class var wordDetailsSpellingTitle: String { "Націск і арфаграфія" }
     class var wordDetailsSpellingMessage: String { "для прагляду, калі ласка, абярыце слова" }
     class var wordDetailsSpellingCancel: String { "Адмена" }

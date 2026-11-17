@@ -25,6 +25,9 @@ class SKWordDetailsViewModel: ObservableObject {
     @Published private(set) var state: SKWordDetailsState = .idle
     @Published var word: SKWord?
     @Published private(set) var isFavorite: Bool = false
+    /// The same word in the other dictionary (Бел-Рус ⇄ ТСБМ), or nil. Found in the bundled index
+    /// as soon as the word is set, so the header button doesn't jump in when the translation arrives.
+    @Published private(set) var dictionaryLink: SKDictionaryLink?
 
     var entryPoint: String = ""
 
@@ -32,9 +35,12 @@ class SKWordDetailsViewModel: ObservableObject {
     let effectSubject = PassthroughSubject<SKWordDetailsEffect, Never>()
     private let translationSource: any SKTranslationSource
     private var favoritesObserver: AnyCancellable?
+    private let dictionaryLinkPlacement: () -> SKDictionaryLinkPlacement
 
-    init(translationSource: any SKTranslationSource = SKFallbackTranslationSource.shared) {
+    init(translationSource: any SKTranslationSource = SKFallbackTranslationSource.shared,
+         dictionaryLinkPlacement: @escaping () -> SKDictionaryLinkPlacement = { SKRemoteConfig.shared.dictionaryLinkPlacement }) {
         self.translationSource = translationSource
+        self.dictionaryLinkPlacement = dictionaryLinkPlacement
         // On iPad the word stays open beside Закладкі, where a swipe can remove its bookmark.
         favoritesObserver = NotificationCenter.default.publisher(for: .skFavoritesChanged)
             .receive(on: DispatchQueue.main)
@@ -92,6 +98,7 @@ class SKWordDetailsViewModel: ObservableObject {
         guard let word = word else {
             self.word = nil
             self.isFavorite = false
+            self.dictionaryLink = nil
             self.state = .idle
             return
         }
@@ -104,6 +111,7 @@ class SKWordDetailsViewModel: ObservableObject {
 
         self.word = word
         self.isFavorite = SKFavoritesController.shared.isFavorite(word)
+        self.dictionaryLink = SKDictionaryLink.find(for: word, placement: dictionaryLinkPlacement())
         self.state = .loading
         
         fetchTask = Task {
@@ -180,6 +188,14 @@ class SKWordDetailsViewModel: ObservableObject {
             SKAnalyticsManager.logTranslationWordClicked(from: from, word: text, target: target)
         }
         handleUrl(url.absoluteString)
+    }
+
+    /// The link to the same word in the other dictionary was tapped: log it and open that entry in
+    /// place, as links in translations do.
+    func openDictionaryLink() {
+        guard let from = word, let link = dictionaryLink else { return }
+        SKAnalyticsManager.logDictionaryLinkClicked(from: from, target: link.target, placement: link.placement)
+        updateWord(link.target)
     }
 
     /// The word a `/belrus/123`-style link points at: relative, absolute on any host (links in the
