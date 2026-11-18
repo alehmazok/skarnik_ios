@@ -59,6 +59,10 @@ class SKDebugAnalytics: SKAnalyticsService {
         print("📊 Dictionary link clicked: word=\(from.word), from=\(from.lang_id.skarnikId ?? "unknown")/\(from.word_id), target=\(target.lang_id.skarnikId ?? "unknown")/\(target.word_id), placement=\(placement)")
     }
 
+    func logAddToFavorites(word: SKWord) {
+        print("📊 Add to favorites: word=\(word.word), word_id=\(word.word_id), lang_id=\(word.lang_id.rawValue), dict_name=\(word.lang_id.name ?? "unknown"), dict_path=\(word.lang_id.skarnikId ?? "unknown")")
+    }
+
     func setInstallSource(_ source: SKInstallSource) {
         print("📊 User property: \(SKInstallSource.userPropertyName)=\(source.rawValue)")
     }

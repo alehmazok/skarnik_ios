@@ -74,6 +74,11 @@ class SKAnalyticsManager {
         shared.service.logDictionaryLinkClicked(from: from, target: target, placement: placement.rawValue)
     }
 
+    /// A word was bookmarked. Removing a bookmark is not logged, as on Android and in the Flutter app.
+    static func logAddToFavorites(word: SKWord) {
+        shared.service.logAddToFavorites(word: word)
+    }
+
     /// Sets the `install_source` user property. Fire-and-forget: the lookup runs off the main thread
     /// and never blocks launch. Call at launch (after `applyStoredConsent`) and when consent is granted;
     /// does nothing while analytics consent is not granted.

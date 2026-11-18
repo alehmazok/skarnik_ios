@@ -131,6 +131,19 @@ class SKFirebaseAnalytics: SKAnalyticsService {
             ])
     }
 
+    /// Same parameters as Android's `AddToFavorites` and the Flutter app's `logAddToFavorites`.
+    func logAddToFavorites(word: SKWord) {
+        Analytics.logEvent(
+            SKAnalyticsEvent.addToFavorites.rawValue,
+            parameters: [
+                "word_id": word.word_id,
+                "lang_id": word.lang_id.rawValue,
+                "word": word.word,
+                "dict_name": word.lang_id.name ?? "unknown",
+                "dict_path": word.lang_id.skarnikId ?? "unknown",
+            ])
+    }
+
     func setInstallSource(_ source: SKInstallSource) {
         Analytics.setUserProperty(source.rawValue, forName: SKInstallSource.userPropertyName)
     }

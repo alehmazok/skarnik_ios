@@ -36,11 +36,14 @@ class SKWordDetailsViewModel: ObservableObject {
     private let translationSource: any SKTranslationSource
     private var favoritesObserver: AnyCancellable?
     private let dictionaryLinkPlacement: () -> SKDictionaryLinkPlacement
+    private let onAddedToFavorites: (SKWord) -> Void
 
     init(translationSource: any SKTranslationSource = SKFallbackTranslationSource.shared,
-         dictionaryLinkPlacement: @escaping () -> SKDictionaryLinkPlacement = { SKRemoteConfig.shared.dictionaryLinkPlacement }) {
+         dictionaryLinkPlacement: @escaping () -> SKDictionaryLinkPlacement = { SKRemoteConfig.shared.dictionaryLinkPlacement },
+         onAddedToFavorites: @escaping (SKWord) -> Void = { SKAnalyticsManager.logAddToFavorites(word: $0) }) {
         self.translationSource = translationSource
         self.dictionaryLinkPlacement = dictionaryLinkPlacement
+        self.onAddedToFavorites = onAddedToFavorites
         // On iPad the word stays open beside Закладкі, where a swipe can remove its bookmark.
         favoritesObserver = NotificationCenter.default.publisher(for: .skFavoritesChanged)
             .receive(on: DispatchQueue.main)
@@ -174,6 +177,8 @@ class SKWordDetailsViewModel: ObservableObject {
     func toggleFavorite() {
         guard let word else { return }
         isFavorite = SKFavoritesController.shared.toggleFavorite(word)
+        // Only adding is logged (`add_to_favorites`), as on Android.
+        if isFavorite { onAddedToFavorites(word) }
     }
 
     func handleUrl(_ urlString: String) {
