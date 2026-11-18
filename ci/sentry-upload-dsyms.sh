@@ -15,7 +15,7 @@ warn() {
 }
 
 if [[ -z "${SENTRY_AUTH_TOKEN:-}" ]]; then
-  warn "dSYMs not sent to Sentry: add the SENTRY_AUTH_TOKEN secret (README). Crashes of this build stay unsymbolicated."
+  warn "dSYMs not sent to Sentry: add the SENTRY_AUTH_TOKEN secret (docs/ci.md). Crashes of this build stay unsymbolicated."
   exit 0
 fi
 [[ -d "$dsyms" ]] || { echo "No dSYMs at $dsyms"; exit 1; }
