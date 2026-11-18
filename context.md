@@ -1,7 +1,7 @@
 # Skarnik for iOS: Project Overview
 
 ## Project Idea
-**Skarnik** is a comprehensive Russian-Belarusian, Belarusian-Russian, and Belarusian explanatory (TSBM) dictionary application for iOS. It is based on the popular [skarnik.by](https://skarnik.by) service. The app provides quick search and detailed word entries, including word stress and spelling information.
+**Skarnik** is a comprehensive Russian-Belarusian, Belarusian-Russian, and Belarusian explanatory (TSBM) dictionary application for iOS. The app provides quick search and detailed word entries, including word stress and spelling information.
 
 ## Architecture
 The project uses a hybrid architecture combining established UIKit patterns with modern SwiftUI and Combine.
@@ -16,7 +16,7 @@ The project uses a hybrid architecture combining established UIKit patterns with
     - **Supplementary Data:** Pronunciation (word stress) and spelling suggestions are retrieved from `starnik.by`.
 - **Services & Managers:**
     - **SKVocabularyIndex:** The primary interface for querying the local SQLite database.
-    - **SKTranslationSource (protocol):** Defines the interface for all translation data sources. Concrete implementations: `SKLocalTranslationSource` (downloaded offline dictionaries), `SKSupabaseTranslationSource` (Supabase `main_word`), `SKApiTranslationSource` (skarnik_admin JSON API) and `SKHtmlTranslationSource` (skarnik.by scrape, no longer in any chain; its `url` is still the displayed address). `SKFallbackTranslationSource.shared` is Supabase → API (used by the widget, which cannot read the offline store); `sharedWithLocalCache` puts the local store first (word details). All defined in `SKTranslationSource.swift`. `SKSkarnikByController` is kept as a `typealias` for `SKHtmlTranslationSource` for backward compatibility.
+    - **SKTranslationSource (protocol):** Defines the interface for all translation data sources. Concrete implementations: `SKLocalTranslationSource` (downloaded offline dictionaries), `SKSupabaseTranslationSource` (Supabase `main_word`), `SKApiTranslationSource` (skarnik_admin JSON API). `SKSkarnikTranslation.pageUrl` gives the entry's `skarnik.app/r/...` address (shared, logged and shown in issue reports). `SKFallbackTranslationSource.shared` is Supabase → API (used by the widget, which cannot read the offline store); `sharedWithLocalCache` puts the local store first (word details). All defined in `SKTranslationSource.swift`.
     - **SKStarnikByController:** Handles word stress/spelling data fetching and parsing.
     - **SKStorageController:** Manages user search history using `UserDefaults`.
     - **SKAnalyticsManager:** A wrapper for Firebase and debug analytics.

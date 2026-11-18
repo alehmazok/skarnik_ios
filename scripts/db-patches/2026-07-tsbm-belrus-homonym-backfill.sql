@@ -2,7 +2,7 @@
 -- in the external generator (github.com/pikoshyk/skarnik.by-ios-database/main.py):
 -- its letter-page parser keys a dict by word text, so when two distinct entries
 -- share identical spelling, the second silently overwrites the first and one
--- word_id is dropped. Source: Supabase `main_word` table (mirrors skarnik.by).
+-- word_id is dropped. Source: Supabase `main_word` table.
 -- 555 tsbm (lang_id=3) rows + 1 belrus (lang_id=2) row. Generated 2026-07-09.
 BEGIN TRANSACTION;
 INSERT OR IGNORE INTO vocabulary (word_id, word, lword, lang_id, first_char, word_mask) VALUES (1049, 'аблятаць', 'аблятаць', 3, 'а', 'аблятаць');

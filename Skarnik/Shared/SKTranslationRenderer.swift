@@ -15,7 +15,7 @@ extension NSAttributedString.Key {
     static let skDataWord = NSAttributedString.Key("SKDataWord")
     /// The full text of an abbreviation in a grammar label («разг.» → «разговорное слово, выражение»).
     static let skAbbreviation = NSAttributedString.Key("SKAbbreviation")
-    /// The entry (`https://www.skarnik.by/belrus/123`) a Belarusian word of the translation opens.
+    /// The entry (`https://skarnik.app/r/belrus/123`) a Belarusian word of the translation opens.
     static let skWordLink = NSAttributedString.Key("SKWordLink")
 }
 
@@ -39,7 +39,7 @@ enum SKTranslationColorRole: CaseIterable {
     case plain
     /// Examples and their authors.
     case muted
-    /// Spacers drawn in the page background colour on skarnik.by.
+    /// Spacers drawn in the page background colour in the legacy markup.
     case hidden
 
     var hexes: [String] {
@@ -93,8 +93,8 @@ enum SKTranslationRenderer {
         }
     }
 
-    /// Relative links in the HTML (`/rusbel/123`) point at skarnik.by, which `handleUrl` routes.
-    static let linkBaseURL = URL(string: "https://www.skarnik.by")!
+    /// Base for relative links in the HTML (`/rusbel/123`); `handleUrl` routes them by path.
+    static let linkBaseURL = URL(string: "https://skarnik.app")!
 
     /// Trait collection for a content size and the Bold Text setting, for rendering off the main thread.
     static func traits(contentSize: UIContentSizeCategory, boldText: Bool = false) -> UITraitCollection {

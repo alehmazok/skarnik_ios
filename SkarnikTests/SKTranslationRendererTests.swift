@@ -188,19 +188,19 @@ final class SKTranslationRendererTests: XCTestCase {
     // MARK: - Links and data-word
 
     func testLinksKeepTheirHref() {
-        let text = render("<i>смотрите</i> <a href=\"http://www.skarnik.by/rusbel/47880\">нерв</a>")
+        let text = render("<i>смотрите</i> <a href=\"http://example.org/rusbel/47880\">нерв</a>")
 
         XCTAssertEqual(text.string, "смотрите нерв")
         XCTAssertEqual(attributes(of: "нерв", in: text)[.link] as? URL,
-                       URL(string: "http://www.skarnik.by/rusbel/47880"))
+                       URL(string: "http://example.org/rusbel/47880"))
         XCTAssertNil(attributes(of: "смотрите", in: text)[.link])
     }
 
-    func testRelativeLinksResolveAgainstSkarnikBy() {
+    func testRelativeLinksResolveAgainstSkarnikApp() {
         let text = render("<a href=\"/belrus/123\">слова</a>")
 
         XCTAssertEqual((attributes(of: "слова", in: text)[.link] as? URL)?.absoluteString,
-                       "https://www.skarnik.by/belrus/123")
+                       "https://skarnik.app/belrus/123")
     }
 
     func testKeepsDataWord() {
@@ -315,7 +315,7 @@ final class SKTranslationRendererTests: XCTestCase {
         let html = "благожелательность — <font size=\"+2\" color=\"#831b03\">добразычлівасць</font>, " +
             "<font size=\"5\">-ці</font> <i><font color=\"008000\">жен.</font></i><br>" +
             "благожелательный — <span data-word=\"добразычлівы\">добразы́члівы</span><br>" +
-            "<i>смотрите</i> <a href=\"http://www.skarnik.by/rusbel/47880\">нерв</a>"
+            "<i>смотрите</i> <a href=\"http://example.org/rusbel/47880\">нерв</a>"
         let text = render(html)
 
         XCTAssertEqual(text.string,

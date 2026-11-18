@@ -5,8 +5,8 @@ import UIKit
 /// Tappable Belarusian words in translations (same rules as skarnik_android's `FindWordLinksUseCase`).
 final class SKWordLinksTests: XCTestCase {
 
-    private let yantar = URL(string: "https://www.skarnik.by/belrus/10")!
-    private let burshtyn = URL(string: "https://www.skarnik.by/belrus/20")!
+    private let yantar = URL(string: "https://skarnik.app/r/belrus/10")!
+    private let burshtyn = URL(string: "https://skarnik.app/r/belrus/20")!
 
     private func wordLinks(in text: NSAttributedString) -> [(word: String, url: URL)] {
         var links: [(String, URL)] = []
@@ -100,7 +100,9 @@ final class SKWordLinksTests: XCTestCase {
     func testWordLinkUrlsRouteBackToTheirWord() {
         let word = SKWord(word_id: 27890, word: "бурштын", lang_id: .bel_rus)
         let url = SKSkarnikTranslation.url(of: word)
-        XCTAssertEqual(url?.absoluteString, "https://www.skarnik.by/belrus/27890")
+        XCTAssertEqual(url?.absoluteString, "https://skarnik.app/r/belrus/27890")
         XCTAssertEqual(SKWordDetailsViewModel.word(forUrl: url!.absoluteString)?.word_id, 27890)
+        // Links in the legacy translation HTML are routed by path, whatever their host.
+        XCTAssertEqual(SKWordDetailsViewModel.word(forUrl: "http://example.org/belrus/27890")?.word_id, 27890)
     }
 }

@@ -24,7 +24,7 @@ struct SKLocalTranslationSource: SKTranslationSource {
             throw SKSkarnikError.redirect(word: word, redirectTo: redirectTo)
         }
 
-        let displayUrl = SKHtmlTranslationSource.url(vocabularyType: word.lang_id, wordId: word.word_id) ?? ""
+        let displayUrl = SKSkarnikTranslation.pageUrl(vocabularyType: word.lang_id, wordId: word.word_id) ?? ""
         return SKSkarnikTranslation(word: word, url: displayUrl, html: downloaded.translation, stress: downloaded.stress, sourceName: "local")
     }
 }
