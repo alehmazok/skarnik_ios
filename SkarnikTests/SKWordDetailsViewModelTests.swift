@@ -322,6 +322,22 @@ final class SKWordDetailsViewModelTests: XCTestCase {
     }
 
     @MainActor
+    func testToggleFavorite_logsAddToFavoritesOnlyWhenAdding() {
+        var logged: [SKWord] = []
+        let viewModel = SKWordDetailsViewModel(onAddedToFavorites: { logged.append($0) })
+        let word = SKWord(word_id: 555_004, word: "закладка-аналітыка", lang_id: .bel_definition)
+        defer { SKFavoritesController.shared.removeFavorite(SKFavoriteWord(word: word, dateAdded: Date())) }
+        viewModel.updateWord(word)
+
+        viewModel.toggleFavorite()
+        XCTAssertEqual(logged.map(\.word_id), [555_004])
+        XCTAssertEqual(logged.first?.lang_id, .bel_definition)
+
+        viewModel.toggleFavorite()
+        XCTAssertEqual(logged.count, 1, "removing a bookmark is not logged")
+    }
+
+    @MainActor
     func testToggleFavorite_noWord_doesNothing() {
         viewModel.updateWord(nil)
         viewModel.toggleFavorite()
