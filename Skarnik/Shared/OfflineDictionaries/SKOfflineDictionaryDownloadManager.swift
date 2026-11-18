@@ -73,7 +73,7 @@ final class SKOfflineDictionaryDownloadManager: ObservableObject {
     func startDownload(_ dictionary: ESKVocabularyType) {
         // Logged unconditionally, before the rate-limit check, so it fires even for rejected attempts.
         SKAnalyticsManager.logOfflineDictionaryDownloadClick(
-            dictName: dictionary.name ?? "",
+            dictName: dictionary.analyticsName ?? "",
             dictPath: dictionary.skarnikId ?? ""
         )
 

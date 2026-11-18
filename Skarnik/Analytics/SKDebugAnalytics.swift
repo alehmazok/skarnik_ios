@@ -36,19 +36,19 @@ class SKDebugAnalytics: SKAnalyticsService {
     }
 
     func logVocabularyWordClicked(word: SKWord) {
-        print("📊 Vocabulary word clicked: word=\(word.word), word_id=\(word.word_id), lang_id=\(word.lang_id.rawValue), dict_name=\(word.lang_id.name ?? "unknown"), dict_path=\(word.lang_id.skarnikId ?? "unknown")")
+        print("📊 Vocabulary word clicked: word=\(word.word), word_id=\(word.word_id), lang_id=\(word.lang_id.rawValue), dict_name=\(word.lang_id.analyticsName ?? "unknown"), dict_path=\(word.lang_id.skarnikId ?? "unknown")")
     }
 
-    func logSearchPerformed(query: String, resultCount: Int) {
-        print("📊 Search performed: query=\(query), result_count=\(resultCount)")
+    func logSearchPerformed(query: String, resultCount: Int, usedPrepositionFallback: Bool) {
+        print("📊 Search performed: query=\(query), result_count=\(resultCount), used_preposition_fallback=\(usedPrepositionFallback ? 1 : 0)")
     }
 
-    func logSearchNoResults(query: String) {
-        print("📊 Search no results: query=\(query)")
+    func logSearchNoResults(query: String, usedPrepositionFallback: Bool) {
+        print("📊 Search no results: query=\(query), used_preposition_fallback=\(usedPrepositionFallback ? 1 : 0)")
     }
 
     func logSearchResultTapped(word: SKWord, position: Int, query: String) {
-        print("📊 Search result tapped: word=\(word.word), word_id=\(word.word_id), lang_id=\(word.lang_id.rawValue), dict_name=\(word.lang_id.name ?? "unknown"), dict_path=\(word.lang_id.skarnikId ?? "unknown"), position=\(position), query=\(query)")
+        print("📊 Search result tapped: word=\(word.word), word_id=\(word.word_id), lang_id=\(word.lang_id.rawValue), dict_name=\(word.lang_id.analyticsName ?? "unknown"), dict_path=\(word.lang_id.skarnikId ?? "unknown"), position=\(position), query=\(query)")
     }
 
     func logTranslationWordClicked(from: SKWord, word: String, target: SKWord) {
@@ -60,7 +60,7 @@ class SKDebugAnalytics: SKAnalyticsService {
     }
 
     func logAddToFavorites(word: SKWord) {
-        print("📊 Add to favorites: word=\(word.word), word_id=\(word.word_id), lang_id=\(word.lang_id.rawValue), dict_name=\(word.lang_id.name ?? "unknown"), dict_path=\(word.lang_id.skarnikId ?? "unknown")")
+        print("📊 Add to favorites: word=\(word.word), word_id=\(word.word_id), lang_id=\(word.lang_id.rawValue), dict_name=\(word.lang_id.analyticsName ?? "unknown"), dict_path=\(word.lang_id.skarnikId ?? "unknown")")
     }
 
     func setInstallSource(_ source: SKInstallSource) {

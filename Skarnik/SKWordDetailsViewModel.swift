@@ -134,7 +134,7 @@ class SKWordDetailsViewModel: ObservableObject {
                     word: translation.word.word,
                     word_id: word.word_id,
                     lang_id: word.lang_id.rawValue,
-                    dict_name: word.lang_id.name ?? "unknown",
+                    dict_name: word.lang_id.analyticsName ?? "unknown",
                     dict_path: word.lang_id.skarnikId ?? "unknown",
                     source_name: translation.sourceName,
                     entry_point: self.entryPoint

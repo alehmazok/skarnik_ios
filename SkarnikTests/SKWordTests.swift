@@ -21,4 +21,19 @@ struct SKWordTests {
 
         #expect(a.uniqueId == b.uniqueId)
     }
+
+    // Issue #94: dict_name must be the stable names Android sends, not the localized UI name.
+    @Test func analyticsName_matchesAndroidDictionaryNames() {
+        #expect(ESKVocabularyType.rus_bel.analyticsName == "rusBel")
+        #expect(ESKVocabularyType.bel_rus.analyticsName == "belRus")
+        #expect(ESKVocabularyType.bel_definition.analyticsName == "tsbm")
+        #expect(ESKVocabularyType.history.analyticsName == nil)
+        #expect(ESKVocabularyType.all.analyticsName == nil)
+    }
+
+    @Test func analyticsName_isNotTheLocalizedName() {
+        for type in [ESKVocabularyType.rus_bel, .bel_rus, .bel_definition] {
+            #expect(type.analyticsName != type.name)
+        }
+    }
 }

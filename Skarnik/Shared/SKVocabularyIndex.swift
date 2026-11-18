@@ -38,6 +38,17 @@ extension ESKVocabularyType {
         }
     }
     
+    /// Stable, non-localized `dict_name` for analytics: the Flutter `Dictionary` enum names that
+    /// Android also sends (issue #94). Never derive analytics values from the UI name above.
+    var analyticsName: String? {
+        switch self {
+        case .rus_bel: return "rusBel"
+        case .bel_rus: return "belRus"
+        case .bel_definition: return "tsbm"
+        default: return nil
+        }
+    }
+
     var skarnikId: String? {
         if self == .rus_bel { return "rusbel" }
         if self == .bel_rus { return "belrus" }

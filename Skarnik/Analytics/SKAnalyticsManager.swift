@@ -53,12 +53,14 @@ class SKAnalyticsManager {
         shared.service.logVocabularyWordClicked(word: word)
     }
 
-    static func logSearchPerformed(query: String, resultCount: Int) {
-        shared.service.logSearchPerformed(query: query, resultCount: resultCount)
+    /// `usedPrepositionFallback`: the results came from the retry without a glued one-letter
+    /// preposition (`SKVocabularyIndex.search`). Sent as 0/1, as on Android.
+    static func logSearchPerformed(query: String, resultCount: Int, usedPrepositionFallback: Bool) {
+        shared.service.logSearchPerformed(query: query, resultCount: resultCount, usedPrepositionFallback: usedPrepositionFallback)
     }
 
-    static func logSearchNoResults(query: String) {
-        shared.service.logSearchNoResults(query: query)
+    static func logSearchNoResults(query: String, usedPrepositionFallback: Bool) {
+        shared.service.logSearchNoResults(query: query, usedPrepositionFallback: usedPrepositionFallback)
     }
 
     static func logSearchResultTapped(word: SKWord, position: Int, query: String) {
