@@ -17,6 +17,7 @@ The project uses a hybrid architecture combining established UIKit patterns with
 - **Services & Managers:**
     - **SKVocabularyIndex:** The primary interface for querying the local SQLite database.
     - **SKTranslationSource (protocol):** Defines the interface for all translation data sources. Concrete implementations: `SKLocalTranslationSource` (downloaded offline dictionaries), `SKSupabaseTranslationSource` (Supabase `main_word`), `SKApiTranslationSource` (skarnik_admin JSON API). `SKSkarnikTranslation.pageUrl` gives the entry's `skarnik.app/r/...` address (shared, logged and shown in issue reports). `SKFallbackTranslationSource.shared` is Supabase → API (used by the widget, which cannot read the offline store); `sharedWithLocalCache` puts the local store first (word details). All defined in `SKTranslationSource.swift`.
+    - **SKHTTPClient (`URLSession+Skarnik.swift`):** all Supabase, admin API and stress requests go through `URLSession.skarnikDownload`, which uses one 20 MB `URLCache` managed by hand: a 2xx GET is served from cache for a fixed 24 h whatever the server's headers say, and on a network failure (`URLError`, not cancellation or an HTTP error status) a cached copy of any age is served. No ETags or revalidation. Same rules as skarnik_android's OkHttp client.
     - **SKStarnikByController:** Handles word stress/spelling data fetching and parsing.
     - **SKStorageController:** Manages user search history using `UserDefaults`.
     - **SKAnalyticsManager:** A wrapper for Firebase and debug analytics.
