@@ -123,7 +123,7 @@ meant for BrowserStack; the simulator CI job skips them.
 
 All CI, including TestFlight uploads, runs on GitHub Actions:
 
-- **CI** (`ci.yml`): unit tests and offline-safe UI tests (iPhone and iPad simulators) on every pull request and push to `main`
+- **CI** (`ci.yml`): unit tests and offline-safe UI tests on every pull request (iPhone simulator) and push to `main` (iPhone and iPad)
 - **BrowserStack** (`browserstack.yml`): UI tests on real devices
 - **TestFlight** (`testflight.yml`): manual Release archive and upload
 
