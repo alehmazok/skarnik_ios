@@ -70,25 +70,27 @@ class SKFirebaseAnalytics: SKAnalyticsService {
                 "word_id": word.word_id,
                 "lang_id": word.lang_id.rawValue,
                 "word": word.word,
-                "dict_name": word.lang_id.name ?? "unknown",
+                "dict_name": word.lang_id.analyticsName ?? "unknown",
                 "dict_path": word.lang_id.skarnikId ?? "unknown",
             ])
     }
 
-    func logSearchPerformed(query: String, resultCount: Int) {
+    func logSearchPerformed(query: String, resultCount: Int, usedPrepositionFallback: Bool) {
         Analytics.logEvent(
             SKAnalyticsEvent.searchPerformed.rawValue,
             parameters: [
                 "query": query,
                 "result_count": resultCount,
+                "used_preposition_fallback": usedPrepositionFallback ? 1 : 0,
             ])
     }
 
-    func logSearchNoResults(query: String) {
+    func logSearchNoResults(query: String, usedPrepositionFallback: Bool) {
         Analytics.logEvent(
             SKAnalyticsEvent.searchNoResults.rawValue,
             parameters: [
                 "query": query,
+                "used_preposition_fallback": usedPrepositionFallback ? 1 : 0,
             ])
     }
 
@@ -99,7 +101,7 @@ class SKFirebaseAnalytics: SKAnalyticsService {
                 "word_id": word.word_id,
                 "lang_id": word.lang_id.rawValue,
                 "word": word.word,
-                "dict_name": word.lang_id.name ?? "unknown",
+                "dict_name": word.lang_id.analyticsName ?? "unknown",
                 "dict_path": word.lang_id.skarnikId ?? "unknown",
                 "position": position,
                 "query": query,
@@ -111,7 +113,7 @@ class SKFirebaseAnalytics: SKAnalyticsService {
             SKAnalyticsEvent.translationWordClicked.rawValue,
             parameters: [
                 "word": word,
-                "dict_name": from.lang_id.name ?? "unknown",
+                "dict_name": from.lang_id.analyticsName ?? "unknown",
                 "dict_path": from.lang_id.skarnikId ?? "unknown",
                 "target_dict_path": target.lang_id.skarnikId ?? "unknown",
                 "target_word_id": target.word_id,
@@ -123,7 +125,7 @@ class SKFirebaseAnalytics: SKAnalyticsService {
             SKAnalyticsEvent.dictionaryLinkClicked.rawValue,
             parameters: [
                 "word": from.word,
-                "dict_name": from.lang_id.name ?? "unknown",
+                "dict_name": from.lang_id.analyticsName ?? "unknown",
                 "dict_path": from.lang_id.skarnikId ?? "unknown",
                 "target_dict_path": target.lang_id.skarnikId ?? "unknown",
                 "target_word_id": target.word_id,
@@ -139,7 +141,7 @@ class SKFirebaseAnalytics: SKAnalyticsService {
                 "word_id": word.word_id,
                 "lang_id": word.lang_id.rawValue,
                 "word": word.word,
-                "dict_name": word.lang_id.name ?? "unknown",
+                "dict_name": word.lang_id.analyticsName ?? "unknown",
                 "dict_path": word.lang_id.skarnikId ?? "unknown",
             ])
     }

@@ -11,8 +11,8 @@ final class SKHistoryViewModelTests: XCTestCase {
 
     private func makeViewModel() -> SKHistoryViewModel {
         SKHistoryViewModel(
-            onSearchPerformed: { _, _ in },
-            onSearchNoResults: { _ in },
+            onSearchPerformed: { _, _, _ in },
+            onSearchNoResults: { _, _ in },
             onSearchResultTapped: { _, _, _ in }
         )
     }

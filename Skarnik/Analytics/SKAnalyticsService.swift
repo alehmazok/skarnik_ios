@@ -21,9 +21,9 @@ protocol SKAnalyticsService {
 
     func logVocabularyWordClicked(word: SKWord)
 
-    func logSearchPerformed(query: String, resultCount: Int)
+    func logSearchPerformed(query: String, resultCount: Int, usedPrepositionFallback: Bool)
 
-    func logSearchNoResults(query: String)
+    func logSearchNoResults(query: String, usedPrepositionFallback: Bool)
 
     func logSearchResultTapped(word: SKWord, position: Int, query: String)
 

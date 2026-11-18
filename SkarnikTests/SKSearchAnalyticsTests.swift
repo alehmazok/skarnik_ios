@@ -16,8 +16,8 @@ final class SKSearchAnalyticsTests: XCTestCase {
         var noResults: [String] = []
         let fired = expectation(description: "settle event")
         let viewModel = SKHistoryViewModel(
-            onSearchPerformed: { query, count in performed.append((query, count)); fired.fulfill() },
-            onSearchNoResults: { query in noResults.append(query); fired.fulfill() },
+            onSearchPerformed: { query, count, _ in performed.append((query, count)); fired.fulfill() },
+            onSearchNoResults: { query, _ in noResults.append(query); fired.fulfill() },
             onSearchResultTapped: { _, _, _ in }
         )
 
@@ -36,8 +36,8 @@ final class SKSearchAnalyticsTests: XCTestCase {
         var noResults: [String] = []
         let fired = expectation(description: "settle event")
         let viewModel = SKHistoryViewModel(
-            onSearchPerformed: { query, count in performed.append((query, count)); fired.fulfill() },
-            onSearchNoResults: { query in noResults.append(query); fired.fulfill() },
+            onSearchPerformed: { query, count, _ in performed.append((query, count)); fired.fulfill() },
+            onSearchNoResults: { query, _ in noResults.append(query); fired.fulfill() },
             onSearchResultTapped: { _, _, _ in }
         )
 
@@ -53,8 +53,8 @@ final class SKSearchAnalyticsTests: XCTestCase {
         var performed: [(query: String, count: Int)] = []
         let fired = expectation(description: "settle event")
         let viewModel = SKHistoryViewModel(
-            onSearchPerformed: { query, count in performed.append((query, count)); fired.fulfill() },
-            onSearchNoResults: { _ in },
+            onSearchPerformed: { query, count, _ in performed.append((query, count)); fired.fulfill() },
+            onSearchNoResults: { _, _ in },
             onSearchResultTapped: { _, _, _ in }
         )
 
@@ -77,8 +77,8 @@ final class SKSearchAnalyticsTests: XCTestCase {
         var performed = 0
         var noResults = 0
         let viewModel = SKHistoryViewModel(
-            onSearchPerformed: { _, _ in performed += 1 },
-            onSearchNoResults: { _ in noResults += 1 },
+            onSearchPerformed: { _, _, _ in performed += 1 },
+            onSearchNoResults: { _, _ in noResults += 1 },
             onSearchResultTapped: { _, _, _ in }
         )
 
@@ -95,8 +95,8 @@ final class SKSearchAnalyticsTests: XCTestCase {
     func testViewModelDeinit_cancelsPendingSettleTimer() {
         var performed = 0
         var viewModel: SKHistoryViewModel? = SKHistoryViewModel(
-            onSearchPerformed: { _, _ in performed += 1 },
-            onSearchNoResults: { _ in },
+            onSearchPerformed: { _, _, _ in performed += 1 },
+            onSearchNoResults: { _, _ in },
             onSearchResultTapped: { _, _, _ in }
         )
 
@@ -108,13 +108,45 @@ final class SKSearchAnalyticsTests: XCTestCase {
         XCTAssertEqual(performed, 0, "no event should fire after the view model is torn down")
     }
 
+    func testSettle_forwardsPrepositionFallbackFlag_toSearchPerformed() {
+        var flags: [Bool] = []
+        let fired = expectation(description: "settle event")
+        let viewModel = SKHistoryViewModel(
+            onSearchPerformed: { _, _, usedFallback in flags.append(usedFallback); fired.fulfill() },
+            onSearchNoResults: { _, _ in },
+            onSearchResultTapped: { _, _, _ in }
+        )
+
+        viewModel.recordSearchSettle(query: "всмысле", resultCount: 4, usedPrepositionFallback: true)
+
+        wait(for: [fired], timeout: Self.eventTimeout)
+
+        XCTAssertEqual(flags, [true])
+    }
+
+    func testSettle_forwardsPrepositionFallbackFlag_toSearchNoResults() {
+        var flags: [Bool] = []
+        let fired = expectation(description: "settle event")
+        let viewModel = SKHistoryViewModel(
+            onSearchPerformed: { _, _, _ in },
+            onSearchNoResults: { _, usedFallback in flags.append(usedFallback); fired.fulfill() },
+            onSearchResultTapped: { _, _, _ in }
+        )
+
+        viewModel.recordSearchSettle(query: "zzzqqq", resultCount: 0)
+
+        wait(for: [fired], timeout: Self.eventTimeout)
+
+        XCTAssertEqual(flags, [false], "no fallback unless the search reports one")
+    }
+
     // MARK: - Tap event (§3, no debounce, immediate)
 
     func testResultTapped_firesImmediately_withPositionAndActiveQuery() {
         var tapped: (word: SKWord, position: Int, query: String)?
         let viewModel = SKHistoryViewModel(
-            onSearchPerformed: { _, _ in },
-            onSearchNoResults: { _ in },
+            onSearchPerformed: { _, _, _ in },
+            onSearchNoResults: { _, _ in },
             onSearchResultTapped: { word, position, query in tapped = (word, position, query) }
         )
         viewModel.searchText = "мова"

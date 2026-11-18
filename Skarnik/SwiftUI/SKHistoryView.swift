@@ -25,16 +25,16 @@ final class SKHistoryViewModel {
 
     // Second, independent 500ms debounce layered on top of the search-as-you-type
     // above: only the last settle in a burst of typing fires a search analytics event.
-    private let searchSettleSubject = PassthroughSubject<(query: String, resultCount: Int), Never>()
+    private let searchSettleSubject = PassthroughSubject<(query: String, resultCount: Int, usedPrepositionFallback: Bool), Never>()
     @ObservationIgnored private var cancellables = Set<AnyCancellable>()
 
-    private let onSearchPerformed: (_ query: String, _ resultCount: Int) -> Void
-    private let onSearchNoResults: (_ query: String) -> Void
+    private let onSearchPerformed: (_ query: String, _ resultCount: Int, _ usedPrepositionFallback: Bool) -> Void
+    private let onSearchNoResults: (_ query: String, _ usedPrepositionFallback: Bool) -> Void
     private let onSearchResultTapped: (_ word: SKWord, _ position: Int, _ query: String) -> Void
 
     init(
-        onSearchPerformed: @escaping (_ query: String, _ resultCount: Int) -> Void = SKAnalyticsManager.logSearchPerformed,
-        onSearchNoResults: @escaping (_ query: String) -> Void = SKAnalyticsManager.logSearchNoResults,
+        onSearchPerformed: @escaping (_ query: String, _ resultCount: Int, _ usedPrepositionFallback: Bool) -> Void = SKAnalyticsManager.logSearchPerformed,
+        onSearchNoResults: @escaping (_ query: String, _ usedPrepositionFallback: Bool) -> Void = SKAnalyticsManager.logSearchNoResults,
         onSearchResultTapped: @escaping (_ word: SKWord, _ position: Int, _ query: String) -> Void = SKAnalyticsManager.logSearchResultTapped
     ) {
         self.onSearchPerformed = onSearchPerformed
@@ -46,9 +46,9 @@ final class SKHistoryViewModel {
             .sink { [weak self] settle in
                 guard let self else { return }
                 if settle.resultCount > 0 {
-                    self.onSearchPerformed(settle.query, settle.resultCount)
+                    self.onSearchPerformed(settle.query, settle.resultCount, settle.usedPrepositionFallback)
                 } else {
-                    self.onSearchNoResults(settle.query)
+                    self.onSearchNoResults(settle.query, settle.usedPrepositionFallback)
                 }
             }
             .store(in: &cancellables)
@@ -75,11 +75,11 @@ final class SKHistoryViewModel {
         let trimmedText = text.trimmingCharacters(in: .whitespacesAndNewlines)
         searchTask = Task.detached(priority: .userInitiated) { [weak self] in
             guard !Task.isCancelled else { return }
-            let results = SKVocabularyIndex.shared.search(query: query, vocabularyType: .all, limit: 20).words
+            let (results, usedFallback) = SKVocabularyIndex.shared.search(query: query, vocabularyType: .all, limit: 20)
             guard !Task.isCancelled, let self else { return }
             await MainActor.run {
                 self.searchResults = results
-                self.recordSearchSettle(query: trimmedText, resultCount: results.count)
+                self.recordSearchSettle(query: trimmedText, resultCount: results.count, usedPrepositionFallback: usedFallback)
             }
         }
     }
@@ -87,8 +87,8 @@ final class SKHistoryViewModel {
     /// Feeds the 500ms analytics debounce (§3 of the search analytics spec). Exposed
     /// (not private) so tests can drive settle timing without depending on the real
     /// SQLite-backed search pipeline in `updateSearch`.
-    func recordSearchSettle(query: String, resultCount: Int) {
-        searchSettleSubject.send((query: query, resultCount: resultCount))
+    func recordSearchSettle(query: String, resultCount: Int, usedPrepositionFallback: Bool = false) {
+        searchSettleSubject.send((query: query, resultCount: resultCount, usedPrepositionFallback: usedPrepositionFallback))
     }
 
     /// Enters search mode: focuses the field and shows the keyboard (Search tab re-tap).
