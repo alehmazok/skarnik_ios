@@ -156,6 +156,8 @@ struct SKWordDetailsView: View {
     @State private var toastMessage: String?
     /// True once the large headword has scrolled out of view; only then does the nav bar show it.
     @State private var isHeaderScrolledAway = false
+    /// The word screen's UIKit view, which the share sheet is presented from.
+    @State private var shareAnchor = SKShareAnchorHolder()
 
     private static let scrollSpace = "SKWordDetailsScroll"
 
@@ -207,6 +209,7 @@ struct SKWordDetailsView: View {
                 }
             }
         }
+        .background(SKShareAnchor(holder: shareAnchor))
         .background(Color.appBackground.ignoresSafeArea())
         .navigationTitle(isHeaderScrolledAway ? (viewModel.navigationTitle ?? "") : "")
         .navigationBarTitleDisplayMode(.inline)
@@ -246,34 +249,19 @@ struct SKWordDetailsView: View {
 
     /// Shares «word — link»: the word (stressed form when known) as text and subject, so a plain
     /// chat shows what the link is about and Mail gets a subject; the link keeps its preview.
-    /// `ShareLink`, which SwiftUI shows as a popover from the button on iPad.
-    @ViewBuilder
+    /// A plain button, so the tap always logs `share` (`ShareLink` has no action callback, #95);
+    /// `SKShareSheet` presents the sheet, as a popover from the button on iPad.
     private var shareButton: some View {
-        let icon = Image(systemName: "square.and.arrow.up")
-        if let translation = viewModel.translation, let url = URL(string: translation.sharingUrl) {
-            let title = translation.shareTitle
-            ShareLink(item: url,
-                      subject: Text(title),
-                      message: Text(title)) {
-                icon
-            }
-            // ShareLink has no action callback; a simultaneous tap still reports the click.
-            .simultaneousGesture(TapGesture().onEnded {
-                logShareClicked(translation)
-            })
-            .accessibilityLabel(SKLocalization.wordDetailsShare)
-            .accessibilityIdentifier("wordDetails.share")
-        } else {
-            // Same slot, disabled until the translation (and so the link) is there.
-            Button(action: {}) { icon }
-                .accessibilityLabel(SKLocalization.wordDetailsShare)
-                .accessibilityIdentifier("wordDetails.share")
-                .disabled(true)
+        Button(action: {
+            guard let translation = viewModel.translation else { return }
+            SKShareSheet.present(translation, from: shareAnchor.view)
+        }) {
+            Image(systemName: "square.and.arrow.up")
         }
-    }
-
-    private func logShareClicked(_ translation: SKSkarnikTranslation) {
-        SKAnalyticsManager.logShareClicked(word: translation.word, url: translation.sharingUrl)
+        .accessibilityLabel(SKLocalization.wordDetailsShare)
+        .accessibilityIdentifier(SKShareSheet.shareButtonIdentifier)
+        // Same slot, disabled until the translation (and so the link) is there.
+        .disabled(viewModel.translation.flatMap { URL(string: $0.sharingUrl) } == nil)
     }
 
     // MARK: Header

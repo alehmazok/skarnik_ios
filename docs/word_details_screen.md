@@ -111,7 +111,9 @@ Opens stress and spelling tables; full behaviour in [stress_feature_spec.md](str
   (stressed form when known, `shareTitle`) as the message text and subject, so a plain-text chat
   reads «добразычлівасць — https://skarnik.app/r/belrus/27890» (`shareText`) and the link still
   gets its preview. It logs the Firebase `share` event (`logShareClicked`). (#23)
-- It uses `ShareLink`, which on iPad is a popover from the button instead of a full sheet.
+- It is a plain button that logs `share` and then presents `UIActivityViewController` (`SKShareSheet`); on iPad
+  that is a popover from the button instead of a full sheet. Not `ShareLink`: it has no action callback, and a
+  simultaneous tap gesture on it often did not fire, so `share` was under-reported. (#95)
 - The report button is hidden until it is ready (TODO in the view).
 
 ### Redirect toast (#18)
