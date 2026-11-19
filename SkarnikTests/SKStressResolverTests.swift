@@ -197,4 +197,19 @@ struct SKStressResolverTableTests {
             return
         }
     }
+
+    @Test("part-of-speech labels are Belarusian, incl. Predicatives (шкада́)")
+    func wordTypeLabels() {
+        let expected = [
+            "Nouns": "назоўнік", "Adjectives": "прыметнік", "Verbs": "дзеяслоў", "Adverbs": "прыслоўе",
+            "Pronouns": "займеннік", "Numerals": "лічэбнік", "Conjunctions": "злучнік",
+            "Prepositions": "прыназоўнік", "Particles": "часціца", "Interjections": "выклічнік",
+            "Participles": "дзеепрыметнік", "Predicatives": "прэдыкатыў"
+        ]
+        for (tableName, label) in expected {
+            let entry = SKStressWordEntry(id: 1, lemma: "шкада", word: "шкада́", tableName: tableName, source: .api)
+            #expect(entry.wordTypeLabel == label)
+        }
+        #expect(SKLocalization.wordType("Unknown") == "Unknown")
+    }
 }

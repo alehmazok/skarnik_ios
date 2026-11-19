@@ -140,7 +140,8 @@ class SKLocalization: Any {
         "Prepositions": "прыназоўнік",
         "Particles": "часціца",
         "Interjections": "выклічнік",
-        "Participles": "дзеепрыметнік"
+        "Participles": "дзеепрыметнік",
+        "Predicatives": "прэдыкатыў"
     ]
 
     /// Localizes a starnik.by `table_name` (e.g. "Nouns") into a Belarusian part-of-speech
