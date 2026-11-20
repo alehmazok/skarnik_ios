@@ -151,9 +151,8 @@ struct SKStressWordPickerView: View {
     }
 
     private func sameStressBanner(_ word: String) -> some View {
-        let wordText = Text(word)
+        let wordText = Text(SKStressWordPicker.highlightedWord(word))
             .font(.system(size: 34, weight: .semibold))
-            .foregroundStyle(Color.accentColor)
             .lineLimit(1)
             .minimumScaleFactor(0.5)
         let hint = Text(SKLocalization.stressPickerSameStress)
