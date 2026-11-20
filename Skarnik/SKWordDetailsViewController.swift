@@ -37,9 +37,16 @@ class SKWordDetailsViewController: UIHostingController<SKWordDetailsView> {
         )
     }
 
+    /// In-flight «На́ціск» lookup; one at a time, dropped when the word changes.
+    private var stressLookupTask: Task<Void, Never>?
+
     var word: SKWord? {
         get { viewModel.word }
-        set { viewModel.updateWord(newValue) }
+        set {
+            stressLookupTask?.cancel()
+            stressLookupTask = nil
+            viewModel.updateWord(newValue)
+        }
     }
 
     var entryPoint: String {
@@ -69,11 +76,15 @@ class SKWordDetailsViewController: UIHostingController<SKWordDetailsView> {
     }
 
     private func openSpellingWord(_ word: String) {
+        guard stressLookupTask == nil else { return }
         SKAnalyticsManager.logStressClicked(word: word)
 
-        Task { @MainActor [weak self] in
+        stressLookupTask = Task { @MainActor [weak self] in
             guard let self else { return }
-            switch await SKStressResolver.shared.resolveWordList(word) {
+            defer { self.stressLookupTask = nil }
+            let result = await SKStressResolver.shared.resolveWordList(word)
+            guard !Task.isCancelled else { return }
+            switch result {
             case .success(let entries):
                 if entries.count > 1 {
                     self.presentSpellingWordPicker(entries)
@@ -96,9 +107,12 @@ class SKWordDetailsViewController: UIHostingController<SKWordDetailsView> {
     }
 
     func stressWordPicker(for candidates: [SKStressWordEntry]) -> UIViewController {
+        var didSelect = false
         let pickerView = SKStressWordPickerView(
             entries: candidates,
             onSelect: { [weak self] entry in
+                guard !didSelect else { return }
+                didSelect = true
                 self?.dismiss(animated: true) { [weak self] in
                     self?.pushWordStress(entry)
                 }

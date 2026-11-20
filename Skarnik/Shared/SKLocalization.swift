@@ -45,7 +45,7 @@ class SKLocalization: Any {
     class var stressPickerTitle: String { "Выберыце слова" }
     class var stressPickerClose: String { "Закрыць" }
     class var stressPickerSameStress: String { "Націск аднолькавы ва ўсіх словах. Выберыце, каб убачыць формы." }
-    class var stressPickerNoMeanings: String { "Тлумачэнняў няма: дадзеныя з рэзервовай крыніцы." }
+    class var stressPickerNoMeanings: String { "Тлумачэнняў для гэтых слоў няма." }
     /// "1 значэнне", "2 значэнні", "5 значэнняў" — Belarusian plural rules.
     class func stressPickerMeaningCount(_ count: Int) -> String {
         let mod10 = count % 10, mod100 = count % 100

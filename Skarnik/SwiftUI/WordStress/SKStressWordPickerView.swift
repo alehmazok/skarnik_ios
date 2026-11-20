@@ -93,9 +93,9 @@ struct SKStressWordPickerView: View {
 
     private var sections: [SKStressWordPickerSection] { SKStressWordPicker.sections(for: entries) }
 
-    /// Only the cloud fallback answered and it carries no meanings.
+    /// No entry carries a meaning (the cloud fallback, or empty meanings from the primary API).
     private var showsNoMeaningsNote: Bool {
-        !entries.isEmpty && entries.allSatisfy { $0.source == .cloud && $0.meaning == nil }
+        !entries.isEmpty && entries.allSatisfy { $0.meaning == nil }
     }
 
     var body: some View {
@@ -151,14 +151,24 @@ struct SKStressWordPickerView: View {
     }
 
     private func sameStressBanner(_ word: String) -> some View {
-        HStack(spacing: 14) {
-            Text(word)
-                .font(.system(size: 34, weight: .semibold))
-                .foregroundStyle(Color.accentColor)
-            Text(SKLocalization.stressPickerSameStress)
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-                .fixedSize(horizontal: false, vertical: true)
+        let wordText = Text(word)
+            .font(.system(size: 34, weight: .semibold))
+            .foregroundStyle(Color.accentColor)
+            .lineLimit(1)
+            .minimumScaleFactor(0.5)
+        let hint = Text(SKLocalization.stressPickerSameStress)
+            .font(.subheadline)
+            .foregroundStyle(.secondary)
+            .fixedSize(horizontal: false, vertical: true)
+        return ViewThatFits(in: .horizontal) {
+            HStack(spacing: 14) {
+                wordText.fixedSize()
+                hint
+            }
+            VStack(alignment: .leading, spacing: 6) {
+                wordText
+                hint
+            }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(14)
@@ -171,9 +181,12 @@ struct SKStressWordPickerView: View {
             HStack(alignment: .firstTextBaseline, spacing: 10) {
                 Text(SKStressWordPicker.highlightedWord(section.word))
                     .font(.system(size: 28, weight: .semibold))
-                Text(SKLocalization.stressPickerMeaningCount(section.rows.count))
-                    .font(.footnote)
-                    .foregroundStyle(.secondary)
+                let meanings = section.rows.filter { $0.entry.meaning != nil }.count
+                if meanings > 0 {
+                    Text(SKLocalization.stressPickerMeaningCount(meanings))
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                }
             }
             .padding(.horizontal, 4)
             .accessibilityElement(children: .combine)

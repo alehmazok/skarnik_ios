@@ -58,11 +58,8 @@ final class NetworkUITests: SkarnikUITestCase {
         }
         XCTAssertTrue(stress.exists, "Stress table did not open")
 
-        let loaded = XCTNSPredicateExpectation(predicate: NSPredicate(format: "count > 0"),
-                                               object: stress.descendants(matching: .cell))
-        let result = XCTWaiter().wait(for: [loaded], timeout: 30)
+        waitFor(element("wordStress.cell"), timeout: 30, "Stress table has no rows")
         XCTAssertFalse(element("wordStress.error").exists, "Stress table error: \(element("wordStress.error").label)")
-        XCTAssertEqual(result, .completed, "Stress table has no rows")
 
         goBack()
         waitFor(element("wordDetails"), "Did not return to the word")
