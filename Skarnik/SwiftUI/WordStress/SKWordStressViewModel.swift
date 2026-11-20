@@ -15,7 +15,8 @@ final class SKWordStressViewModel {
     var table: [SKStressRow] = []
     var error: String?
     var isLoading: Bool
-    private let entry: SKStressWordEntry
+    /// The picked word: its stressed form, part of speech and full meaning head the table.
+    let entry: SKStressWordEntry
     private let resolver: SKStressResolver
 
     init(_ entry: SKStressWordEntry, resolver: SKStressResolver = .shared) {
