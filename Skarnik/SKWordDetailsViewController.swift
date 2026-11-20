@@ -92,29 +92,26 @@ class SKWordDetailsViewController: UIHostingController<SKWordDetailsView> {
     // different word IDs with different stress/spelling data, so the user must pick which
     // one they mean rather than us guessing the first one back.
     private func presentSpellingWordPicker(_ candidates: [SKStressWordEntry]) {
-        let alertController = spellingWordPickerAlert(for: candidates)
-        if let popPresenter = alertController.popoverPresentationController {
-            popPresenter.sourceView = view
-            popPresenter.sourceRect = CGRect(x: view.bounds.midX, y: view.bounds.midY, width: 0, height: 0)
-            popPresenter.permittedArrowDirections = []
-        }
-        present(alertController, animated: true)
+        present(stressWordPicker(for: candidates), animated: true)
     }
 
-    func spellingWordPickerAlert(for candidates: [SKStressWordEntry]) -> UIAlertController {
-        let alertController = UIAlertController(
-            title: SKLocalization.wordDetailsSpellingTitle,
-            message: SKLocalization.wordDetailsSpellingMessage,
-            preferredStyle: .actionSheet
+    func stressWordPicker(for candidates: [SKStressWordEntry]) -> UIViewController {
+        let pickerView = SKStressWordPickerView(
+            entries: candidates,
+            onSelect: { [weak self] entry in
+                self?.dismiss(animated: true) { [weak self] in
+                    self?.pushWordStress(entry)
+                }
+            },
+            onDismiss: { [weak self] in self?.dismiss(animated: true) }
         )
-        for candidate in candidates {
-            let title = [candidate.word, candidate.wordTypeLabel].compactMap { $0 }.joined(separator: " — ")
-            alertController.addAction(UIAlertAction(title: title, style: .default) { [weak self] _ in
-                self?.pushWordStress(candidate)
-            })
+        let hostingController = UIHostingController(rootView: pickerView)
+        if let sheet = hostingController.sheetPresentationController {
+            sheet.detents = [.medium(), .large()]
+            sheet.prefersGrabberVisible = true
+            sheet.preferredCornerRadius = 20
         }
-        alertController.addAction(UIAlertAction(title: SKLocalization.wordDetailsSpellingCancel, style: .cancel))
-        return alertController
+        return hostingController
     }
 
     private func presentStressMessage(_ message: String) {

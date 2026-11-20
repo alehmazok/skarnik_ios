@@ -22,6 +22,7 @@ struct SKStarnikStressBackend: SKStressBackend {
             let word: String
             let id: Int
             let table_name: String?
+            let meaning: String?
         }
         let word_list: [WordListBody]
     }
@@ -54,7 +55,9 @@ struct SKStarnikStressBackend: SKStressBackend {
     static func parseWordList(data: Data) throws -> [SKStressWordEntry] {
         let wordList = try JSONDecoder().decode(WordList.self, from: data)
         return wordList.word_list.map {
-            SKStressWordEntry(id: $0.id, lemma: $0.lemma, word: $0.word, tableName: $0.table_name, source: .api)
+            let meaning = $0.meaning?.trimmingCharacters(in: .whitespacesAndNewlines)
+            return SKStressWordEntry(id: $0.id, lemma: $0.lemma, word: $0.word, tableName: $0.table_name, source: .api,
+                                     meaning: meaning?.isEmpty == false ? meaning : nil)
         }
     }
 

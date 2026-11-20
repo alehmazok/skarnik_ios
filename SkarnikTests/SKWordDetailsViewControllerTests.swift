@@ -1,6 +1,7 @@
 
 import XCTest
 import Combine
+import SwiftUI
 @testable import Skarnik
 
 final class SKWordDetailsViewControllerTests: XCTestCase {
@@ -76,45 +77,24 @@ final class SKWordDetailsViewControllerTests: XCTestCase {
         }
     }
 
-    // MARK: - spellingWordPickerAlert
+    // MARK: - stressWordPicker
 
-    // Regression: resolving a tapped word to a starnik.by entry can surface several
-    // homonyms (e.g. "а" as noun/conjunction/preposition/...); the picker must offer one
-    // action per candidate plus a cancel action, not silently pick the first.
+    // Homonyms (e.g. "пара") open a resizable sheet listing every candidate,
+    // not an action sheet and not a silent pick of the first one.
     @MainActor
-    func testSpellingWordPickerAlert_oneActionPerCandidatePlusCancel() {
+    func testStressWordPicker_isResizableSheetWithAllCandidates() {
         let candidates = [
-            SKStressWordEntry(id: 1, lemma: "а", word: "а", tableName: "Nouns", source: .api),
-            SKStressWordEntry(id: 234065, lemma: "а", word: "а", tableName: "Conjunctions", source: .api)
+            SKStressWordEntry(id: 52855, lemma: "пара", word: "па́ра", tableName: "Nouns", source: .api, meaning: "два аднолькавыя прадметы"),
+            SKStressWordEntry(id: 52857, lemma: "пара", word: "пара́", tableName: "Nouns", source: .api)
         ]
 
-        let alert = sut.spellingWordPickerAlert(for: candidates)
+        let picker = sut.stressWordPicker(for: candidates)
 
-        XCTAssertEqual(alert.title, SKLocalization.wordDetailsSpellingTitle)
-        XCTAssertEqual(alert.message, SKLocalization.wordDetailsSpellingMessage)
-        XCTAssertEqual(alert.actions.count, 3)
-        XCTAssertEqual(alert.actions[0].title, "а — назоўнік")
-        XCTAssertEqual(alert.actions[1].title, "а — злучнік")
-        XCTAssertEqual(alert.actions[2].title, SKLocalization.wordDetailsSpellingCancel)
-        XCTAssertEqual(alert.actions[2].style, .cancel)
-    }
-
-    @MainActor
-    func testSpellingWordPickerAlert_fallsBackToRawTableNameWhenUnmapped() {
-        let candidate = SKStressWordEntry(id: 1, lemma: "тэст", word: "тэст", tableName: "Gerunds", source: .api)
-
-        let alert = sut.spellingWordPickerAlert(for: [candidate])
-
-        XCTAssertEqual(alert.actions.first?.title, "тэст — Gerunds")
-    }
-
-    @MainActor
-    func testSpellingWordPickerAlert_omitsPosSeparatorWhenTypeMissing() {
-        let candidate = SKStressWordEntry(id: 1, lemma: "тэст", word: "тэст", tableName: nil, source: .api)
-
-        let alert = sut.spellingWordPickerAlert(for: [candidate])
-
-        XCTAssertEqual(alert.actions.first?.title, "тэст")
+        let hosting = picker as? UIHostingController<SKStressWordPickerView>
+        XCTAssertNotNil(hosting)
+        XCTAssertEqual(hosting?.rootView.entries, candidates)
+        XCTAssertEqual(picker.sheetPresentationController?.detents, [.medium(), .large()])
+        XCTAssertEqual(picker.sheetPresentationController?.prefersGrabberVisible, true)
     }
 
     // MARK: - stressMessageAlert

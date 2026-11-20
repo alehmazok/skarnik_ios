@@ -120,10 +120,10 @@ final class AppStoreScreenshotsUITests: SkarnikUITestCase {
         let stress = element("wordStress")
         let deadline = Date().addingTimeInterval(30)
         while !stress.exists && Date() < deadline {
-            // Homographs: an action sheet asks which word is meant.
-            let picker = app.sheets.firstMatch
-            if picker.exists {
-                picker.buttons.matching(NSPredicate(format: "label != %@", "Адмена")).firstMatch.tap()
+            // Homonyms: a sheet asks which word is meant.
+            let choice = element("wordStressPicker.row")
+            if choice.exists {
+                choice.tap()
                 continue
             }
             _ = stress.waitForExistence(timeout: 1)

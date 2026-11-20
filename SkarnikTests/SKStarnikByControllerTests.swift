@@ -46,6 +46,22 @@ final class SKStarnikStressBackendTests: XCTestCase {
         XCTAssertEqual(entries?.map { $0.id }, [1, 234065, 250353])
     }
 
+    func testParseWordList_mapsMeaningAndTreatsEmptyOrMissingAsNil() {
+        let json = """
+        {
+            "word_list": [
+                {"lemma": "пара", "word": "па́ра", "id": 52856, "table_name": "Nouns", "meaning": " стан вадкасці "},
+                {"lemma": "пара", "word": "пара́", "id": 52857, "table_name": "Nouns", "meaning": ""},
+                {"lemma": "пара", "word": "пара́", "id": 52858, "table_name": "Nouns"}
+            ]
+        }
+        """
+
+        let entries = try? SKStarnikStressBackend.parseWordList(data: Data(json.utf8))
+
+        XCTAssertEqual(entries?.map { $0.meaning }, ["стан вадкасці", nil, nil])
+    }
+
     func testParseWordList_usesStressedWordNotRawLemmaForDisplay() {
         // Regression: homonyms share a lemma but differ in stress placement (e.g. "казак"
         // could stress the first or second syllable depending on sense). Using the raw
