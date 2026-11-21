@@ -37,9 +37,16 @@ class SKWordDetailsViewController: UIHostingController<SKWordDetailsView> {
         )
     }
 
+    /// In-flight «На́ціск» lookup; one at a time, dropped when the word changes.
+    private var stressLookupTask: Task<Void, Never>?
+
     var word: SKWord? {
         get { viewModel.word }
-        set { viewModel.updateWord(newValue) }
+        set {
+            stressLookupTask?.cancel()
+            stressLookupTask = nil
+            viewModel.updateWord(newValue)
+        }
     }
 
     var entryPoint: String {
@@ -69,11 +76,15 @@ class SKWordDetailsViewController: UIHostingController<SKWordDetailsView> {
     }
 
     private func openSpellingWord(_ word: String) {
+        guard stressLookupTask == nil else { return }
         SKAnalyticsManager.logStressClicked(word: word)
 
-        Task { @MainActor [weak self] in
+        stressLookupTask = Task { @MainActor [weak self] in
             guard let self else { return }
-            switch await SKStressResolver.shared.resolveWordList(word) {
+            defer { self.stressLookupTask = nil }
+            let result = await SKStressResolver.shared.resolveWordList(word)
+            guard !Task.isCancelled else { return }
+            switch result {
             case .success(let entries):
                 if entries.count > 1 {
                     self.presentSpellingWordPicker(entries)
@@ -92,29 +103,29 @@ class SKWordDetailsViewController: UIHostingController<SKWordDetailsView> {
     // different word IDs with different stress/spelling data, so the user must pick which
     // one they mean rather than us guessing the first one back.
     private func presentSpellingWordPicker(_ candidates: [SKStressWordEntry]) {
-        let alertController = spellingWordPickerAlert(for: candidates)
-        if let popPresenter = alertController.popoverPresentationController {
-            popPresenter.sourceView = view
-            popPresenter.sourceRect = CGRect(x: view.bounds.midX, y: view.bounds.midY, width: 0, height: 0)
-            popPresenter.permittedArrowDirections = []
-        }
-        present(alertController, animated: true)
+        present(stressWordPicker(for: candidates), animated: true)
     }
 
-    func spellingWordPickerAlert(for candidates: [SKStressWordEntry]) -> UIAlertController {
-        let alertController = UIAlertController(
-            title: SKLocalization.wordDetailsSpellingTitle,
-            message: SKLocalization.wordDetailsSpellingMessage,
-            preferredStyle: .actionSheet
+    func stressWordPicker(for candidates: [SKStressWordEntry]) -> UIViewController {
+        var didSelect = false
+        let pickerView = SKStressWordPickerView(
+            entries: candidates,
+            onSelect: { [weak self] entry in
+                guard !didSelect else { return }
+                didSelect = true
+                self?.dismiss(animated: true) { [weak self] in
+                    self?.pushWordStress(entry)
+                }
+            },
+            onDismiss: { [weak self] in self?.dismiss(animated: true) }
         )
-        for candidate in candidates {
-            let title = [candidate.word, candidate.wordTypeLabel].compactMap { $0 }.joined(separator: " — ")
-            alertController.addAction(UIAlertAction(title: title, style: .default) { [weak self] _ in
-                self?.pushWordStress(candidate)
-            })
+        let hostingController = UIHostingController(rootView: pickerView)
+        if let sheet = hostingController.sheetPresentationController {
+            sheet.detents = [.medium(), .large()]
+            sheet.prefersGrabberVisible = true
+            sheet.preferredCornerRadius = 20
         }
-        alertController.addAction(UIAlertAction(title: SKLocalization.wordDetailsSpellingCancel, style: .cancel))
-        return alertController
+        return hostingController
     }
 
     private func presentStressMessage(_ message: String) {

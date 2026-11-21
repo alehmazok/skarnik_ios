@@ -32,6 +32,8 @@ struct SKStressWordEntry: Equatable {
     let word: String    // stressed form, used for display
     let tableName: String?
     let source: SKStressSource
+    /// Short definition that tells homonyms apart (starnik.by only; nil when absent or empty).
+    var meaning: String? = nil
 
     var wordTypeLabel: String? {
         guard let tableName else { return nil }

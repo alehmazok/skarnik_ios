@@ -43,11 +43,9 @@ final class NetworkUITests: SkarnikUITestCase {
         let stress = element("wordStress")
         let deadline = Date().addingTimeInterval(30)
         while !stress.exists && Date() < deadline {
-            // Homographs: an action sheet asks which word is meant.
-            let picker = app.sheets.firstMatch
-            if picker.exists {
-                let choice = picker.buttons.matching(NSPredicate(format: "label != %@", "Адмена")).firstMatch
-                XCTAssertTrue(choice.exists, "Word picker has no choices")
+            // Homonyms: a sheet asks which word is meant.
+            let choice = element("wordStressPicker.row")
+            if choice.exists {
                 choice.tap()
                 continue
             }
@@ -60,11 +58,8 @@ final class NetworkUITests: SkarnikUITestCase {
         }
         XCTAssertTrue(stress.exists, "Stress table did not open")
 
-        let loaded = XCTNSPredicateExpectation(predicate: NSPredicate(format: "count > 0"),
-                                               object: stress.descendants(matching: .cell))
-        let result = XCTWaiter().wait(for: [loaded], timeout: 30)
+        waitFor(element("wordStress.cell"), timeout: 30, "Stress table has no rows")
         XCTAssertFalse(element("wordStress.error").exists, "Stress table error: \(element("wordStress.error").label)")
-        XCTAssertEqual(result, .completed, "Stress table has no rows")
 
         goBack()
         waitFor(element("wordDetails"), "Did not return to the word")

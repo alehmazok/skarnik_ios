@@ -42,7 +42,7 @@ Code:
 5. On tap: log `stress_clicked` with the chosen word (before any network call).
 6. Resolve the word to stress entries (Step 2):
    - **one entry** → push the stress table screen;
-   - **several entries** (homonyms) → action sheet to pick one, then push;
+   - **several entries** (homonyms) → bottom sheet to pick one, then push;
    - **not found** → alert «Інфармацыя аб націску для гэтага слова не знойдзена.»;
    - **error** (both sources failed) → alert «Адбылася памылка падчас загрузкі інфармацыі аб націску.»
 7. The table screen fetches the table from the source the entry came from (Step 3).
@@ -122,13 +122,17 @@ sources. Getting this wrong makes cloud exact matches silently never match.
 ### Homonym picker
 
 Homonyms (e.g. «а» as noun, conjunction, preposition…) share a lemma but have different ids and
-tables, so the app never guesses. With more than one entry an action sheet is shown:
+tables, so the app never guesses. With more than one entry a bottom sheet (`SKStressWordPickerView`,
+medium/large detents, «Закрыць» button) is shown:
 
-- title «Націск і арфаграфія», message «для прагляду, калі ласка, абярыце слова»;
-- one action per entry: `"{stressed word} — {part of speech}"`, or just the word when there is
-  no `table_name`. Parts of speech come from `SKLocalization.wordType` (`Nouns` → «назоўнік»,
-  etc.; unknown values are shown raw);
-- «Адмена» cancels. On iPad the sheet is a centred popover with no arrow.
+- title «Выберыце слова»; entries are grouped into sections by stressed form, in API order;
+- one row per entry: the meaning (`meaning`, cut to two lines) with the part of speech as a chip
+  (`SKLocalization.wordType`: `Nouns` → «назоўнік», etc.), or the part of speech alone when there
+  is no meaning. Rows that would read the same are numbered;
+- section caption «N значэнні» counts only entries with a meaning;
+- one section only (same stress everywhere) → banner «Націск аднолькавы ва ўсіх словах…»;
+- no entry has a meaning → note «Тлумачэнняў для гэтых слоў няма.»;
+- only the first selection counts; the stress screen shows the full meaning above the table.
 
 ---
 

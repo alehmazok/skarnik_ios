@@ -42,9 +42,23 @@ class SKLocalization: Any {
     class var dictionaryLinkBelRusTitle: String { "Пераклад на рускую мову" }
     class var dictionaryLinkTsbmText: String { "Гэта слова ў Тлумачальным слоўніку" }
     class var dictionaryLinkBelRusText: String { "Гэта слова ў Беларуска-рускім слоўніку" }
-    class var wordDetailsSpellingTitle: String { "Націск і арфаграфія" }
-    class var wordDetailsSpellingMessage: String { "для прагляду, калі ласка, абярыце слова" }
-    class var wordDetailsSpellingCancel: String { "Адмена" }
+    class var stressPickerTitle: String { "Выберыце слова" }
+    class var stressPickerClose: String { "Закрыць" }
+    class var stressPickerSameStress: String { "Націск аднолькавы ва ўсіх словах. Выберыце, каб убачыць формы." }
+    class var stressPickerNoMeanings: String { "Тлумачэнняў для гэтых слоў няма." }
+    /// "1 значэнне", "2 значэнні", "5 значэнняў" — Belarusian plural rules.
+    class func stressPickerMeaningCount(_ count: Int) -> String {
+        let mod10 = count % 10, mod100 = count % 100
+        let noun: String
+        if mod10 == 1 && mod100 != 11 {
+            noun = "значэнне"
+        } else if (2...4).contains(mod10) && !(12...14).contains(mod100) {
+            noun = "значэнні"
+        } else {
+            noun = "значэнняў"
+        }
+        return "\(count) \(noun)"
+    }
     class var wordDetailsShare: String { "Падзяліцца" }
     class var articleColorsTitle: String { "Колеры артыкула" }
     class var articleColorsSystem: String { "Сістэмныя" }

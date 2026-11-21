@@ -41,6 +41,7 @@
 		B251A3812AF1AE5C00E78923 /* SKWhatsNewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B251A3802AF1AE5C00E78923 /* SKWhatsNewView.swift */; };
 		B251A3832AF1AFCB00E78923 /* SKSwiftUiViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B251A3822AF1AFCB00E78923 /* SKSwiftUiViewController.swift */; };
 		B25728E92AFD9631007ADCF5 /* SKWordStressView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B25728E82AFD9631007ADCF5 /* SKWordStressView.swift */; };
+		B2FA57E5500000000000A002 /* SKStressWordPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2FA57E5500000000000A001 /* SKStressWordPickerView.swift */; };
 		B25728EB2AFD9682007ADCF5 /* SKWordStressViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B25728EA2AFD9682007ADCF5 /* SKWordStressViewModel.swift */; };
 		B25728F22AFDA1D2007ADCF5 /* SKHtmlTextView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B25728F12AFDA1D2007ADCF5 /* SKHtmlTextView.swift */; };
 		B27D996328FB11E60047CCBF /* SKLocalization.swift in Sources */ = {isa = PBXBuildFile; fileRef = B27D996228FB11E60047CCBF /* SKLocalization.swift */; };
@@ -178,6 +179,7 @@
 		B255CD5D2AE71EF60086F5A0 /* SKWordFetchService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SKWordFetchService.swift; sourceTree = "<group>"; };
 		B255CD622AE745E90086F5A0 /* SKLevenshtein.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SKLevenshtein.swift; sourceTree = "<group>"; };
 		B25728E82AFD9631007ADCF5 /* SKWordStressView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SKWordStressView.swift; sourceTree = "<group>"; };
+		B2FA57E5500000000000A001 /* SKStressWordPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SKStressWordPickerView.swift; sourceTree = "<group>"; };
 		B25728EA2AFD9682007ADCF5 /* SKWordStressViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SKWordStressViewModel.swift; sourceTree = "<group>"; };
 		B25728F12AFDA1D2007ADCF5 /* SKHtmlTextView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SKHtmlTextView.swift; sourceTree = "<group>"; };
 		B27D996228FB11E60047CCBF /* SKLocalization.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SKLocalization.swift; sourceTree = "<group>"; };
@@ -438,6 +440,7 @@
 			children = (
 				B25728EA2AFD9682007ADCF5 /* SKWordStressViewModel.swift */,
 				B25728E82AFD9631007ADCF5 /* SKWordStressView.swift */,
+				B2FA57E5500000000000A001 /* SKStressWordPickerView.swift */,
 			);
 			path = WordStress;
 			sourceTree = "<group>";
@@ -698,6 +701,7 @@
 				D1C7A1000000000000000002 /* SKDictionaryLink.swift in Sources */,
 				C5E0A1000000000000000007 /* SKErrorReporting.swift in Sources */,
 				B25728EB2AFD9682007ADCF5 /* SKWordStressViewModel.swift in Sources */,
+				B2FA57E5500000000000A002 /* SKStressWordPickerView.swift in Sources */,
 				B251A34A2AE9931700E78923 /* SKWordFetchEntry.swift in Sources */,
 				B2AF083B29148AF00005E3E6 /* URLSession+Skarnik.swift in Sources */,
 				B2362A90290697E50059B13C /* SKAppstoreReviewController.swift in Sources */,
